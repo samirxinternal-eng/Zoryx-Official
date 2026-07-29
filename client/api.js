@@ -23,7 +23,7 @@ const API = {
 
             const options = {
 
-                method,
+                method: method,
 
                 headers: {
 
@@ -52,17 +52,53 @@ const API = {
 
 
 
-            const result =
-                await response.json();
+            const text =
+                await response.text();
+
+
+
+            let result;
+
+
+            try {
+
+                result = JSON.parse(text);
+
+            } catch(error) {
+
+
+                console.error(
+                    "Invalid JSON Response:",
+                    text.substring(0,200)
+                );
+
+
+                return {
+
+                    success:false,
+
+                    message:
+                    "Server returned invalid response"
+
+                };
+
+            }
 
 
 
             if(!response.ok){
 
-                throw new Error(
+
+                return {
+
+                    success:false,
+
+                    message:
                     result.message ||
                     "API Request Failed"
-                );
+
+                };
+
 
             }
 
@@ -79,7 +115,6 @@ const API = {
                 "API Error:",
                 error
             );
-
 
 
             return {
@@ -102,6 +137,7 @@ const API = {
 
     // ======================================
     // Telegram Authentication
+    // POST /api/auth/login
     // ======================================
 
 
@@ -110,7 +146,7 @@ const API = {
 
         return await this.request(
 
-            "/api/auth",
+            "/api/auth/login",
 
             "POST",
 
@@ -131,7 +167,8 @@ const API = {
 
 
     // ======================================
-    // Profile
+    // User Profile
+    // GET /api/user/:telegramId
     // ======================================
 
 
@@ -140,7 +177,33 @@ const API = {
 
         return await this.request(
 
-            `/api/profile/${telegramId}`
+            `/api/user/${telegramId}`
+
+        );
+
+
+    },
+
+
+
+
+
+    // ======================================
+    // Update Profile
+    // PUT /api/user/:telegramId
+    // ======================================
+
+
+    async updateProfile(telegramId,data){
+
+
+        return await this.request(
+
+            `/api/user/${telegramId}`,
+
+            "PUT",
+
+            data
 
         );
 
@@ -153,6 +216,7 @@ const API = {
 
     // ======================================
     // Tap / Mining
+    // POST /api/tap
     // ======================================
 
 
@@ -187,14 +251,38 @@ const API = {
     // ======================================
 
 
+    async getBalance(telegramId){
+
+
+        return await this.request(
+
+            `/api/balance/${telegramId}`
+
+        );
+
+
+    },
+
+
+
+
+
     async addBalance(userId, amount){
 
 
-        return await this.tap(
+        return await this.request(
 
-            userId,
+            "/api/balance/add",
 
-            amount
+            "POST",
+
+            {
+
+                userId,
+
+                amount
+
+            }
 
         );
 
@@ -206,7 +294,7 @@ const API = {
 
 
     // ======================================
-    // Reward
+    // Daily Reward
     // ======================================
 
 
@@ -221,7 +309,7 @@ const API = {
 
             {
 
-                telegramId:userId
+                userId
 
             }
 
@@ -279,6 +367,8 @@ const API = {
 
 
 
+// ==========================================
 // Global
+// ==========================================
 
 window.API = API;
