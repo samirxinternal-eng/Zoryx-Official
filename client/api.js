@@ -3,104 +3,282 @@
 // client/api.js
 // ==========================================
 
+
 const API = {
+
+
     BASE_URL: window.location.origin,
 
+
+
+    // ======================================
+    // Request Handler
+    // ======================================
+
     async request(endpoint, method = "GET", data = null) {
+
+
         try {
+
+
             const options = {
+
                 method,
+
                 headers: {
+
                     "Content-Type": "application/json"
+
                 }
+
             };
 
-            if (data) {
-                options.body = JSON.stringify(data);
+
+
+            if(data){
+
+                options.body =
+                    JSON.stringify(data);
+
             }
 
-            const response = await fetch(`${this.BASE_URL}${endpoint}`, options);
 
-            const result = await response.json();
 
-            if (!response.ok) {
-                throw new Error(result.message || "API Request Failed");
+            const response =
+                await fetch(
+                    `${this.BASE_URL}${endpoint}`,
+                    options
+                );
+
+
+
+            const result =
+                await response.json();
+
+
+
+            if(!response.ok){
+
+                throw new Error(
+                    result.message ||
+                    "API Request Failed"
+                );
+
             }
+
+
 
             return result;
 
-        } catch (error) {
-            console.error("API Error:", error);
+
+
+        } catch(error){
+
+
+            console.error(
+                "API Error:",
+                error
+            );
+
+
+
             return {
-                success: false,
-                message: error.message
+
+                success:false,
+
+                message:error.message
+
             };
+
+
         }
+
+
     },
 
+
+
+
+
     // ======================================
-    // Authentication
+    // Telegram Authentication
     // ======================================
 
-    async login() {
-        return await this.request("/api/auth/login", "POST", {
-            initData: TelegramApp.initData
-        });
+
+    async login(){
+
+
+        return await this.request(
+
+            "/api/auth",
+
+            "POST",
+
+            {
+
+                initData:
+                TelegramApp.initData
+
+            }
+
+        );
+
+
     },
 
+
+
+
+
     // ======================================
-    // User
+    // Profile
     // ======================================
 
-    async getProfile(userId) {
-        return await this.request(`/api/user/${userId}`);
+
+    async getProfile(telegramId){
+
+
+        return await this.request(
+
+            `/api/profile/${telegramId}`
+
+        );
+
+
     },
 
-    async updateProfile(userId, data) {
-        return await this.request(`/api/user/${userId}`, "PUT", data);
+
+
+
+
+    // ======================================
+    // Tap / Mining
+    // ======================================
+
+
+    async tap(telegramId, amount){
+
+
+        return await this.request(
+
+            "/api/tap",
+
+            "POST",
+
+            {
+
+                telegramId,
+
+                tap: amount
+
+            }
+
+        );
+
+
     },
+
+
+
+
 
     // ======================================
     // Balance
     // ======================================
 
-    async getBalance(userId) {
-        return await this.request(`/api/balance/${userId}`);
-    },
 
-    async addBalance(userId, amount) {
-        return await this.request("/api/balance/add", "POST", {
+    async addBalance(userId, amount){
+
+
+        return await this.tap(
+
             userId,
+
             amount
-        });
+
+        );
+
+
     },
 
+
+
+
+
     // ======================================
-    // Daily Reward
+    // Reward
     // ======================================
 
-    async claimDaily(userId) {
-        return await this.request("/api/reward/daily", "POST", {
-            userId
-        });
+
+    async claimDaily(userId){
+
+
+        return await this.request(
+
+            "/api/reward/daily",
+
+            "POST",
+
+            {
+
+                telegramId:userId
+
+            }
+
+        );
+
+
     },
+
+
+
+
 
     // ======================================
     // Referral
     // ======================================
 
-    async getReferrals(userId) {
-        return await this.request(`/api/referrals/${userId}`);
+
+    async getReferrals(userId){
+
+
+        return await this.request(
+
+            `/api/referrals/${userId}`
+
+        );
+
+
     },
+
+
+
+
 
     // ======================================
     // Leaderboard
     // ======================================
 
-    async getLeaderboard() {
-        return await this.request("/api/leaderboard");
+
+    async getLeaderboard(){
+
+
+        return await this.request(
+
+            "/api/leaderboard"
+
+        );
+
+
     }
+
+
 };
 
-// Global Access
+
+
+
+
+// Global
+
 window.API = API;
