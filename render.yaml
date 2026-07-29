@@ -1,1 +1,30 @@
+services:
+  - type: web
+    name: zoryx
+    runtime: node
+    plan: free
 
+    buildCommand: npm install
+    startCommand: node server/server.js
+
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+
+      - key: NODE_ENV
+        value: production
+
+      - key: PORT
+        value: 10000
+
+      - key: MONGODB_URI
+        sync: false
+
+      - key: BOT_TOKEN
+        sync: false
+
+      - key: BOT_USERNAME
+        sync: false
+
+      - key: JWT_SECRET
+        sync: false
