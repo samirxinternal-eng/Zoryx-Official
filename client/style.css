@@ -1,6 +1,6 @@
 /* ==========================================
-   Zoryx - Telegram WebApp
-   style.css
+   Zoryx Telegram Mini App
+   client/style.css
 ========================================== */
 
 * {
@@ -11,182 +11,440 @@
 }
 
 :root {
+
     --bg: #0b0b0f;
     --card: #16161d;
     --primary: #ffc107;
-    --secondary: #2b2b35;
     --text: #ffffff;
     --muted: #9b9b9b;
-    --success: #00d26a;
-    --danger: #ff4d4d;
-    --radius: 18px;
+    --border: #262631;
+
 }
+
 
 body {
+
+    width: 100%;
+    min-height: 100vh;
+
     background: var(--bg);
     color: var(--text);
-    font-family: Arial, Helvetica, sans-serif;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    overflow-x: hidden;
+
 }
 
-.container {
-    width: 100%;
-    max-width: 500px;
-    margin: auto;
-    padding: 20px;
+
+
+/* ==========================
+   Loading
+========================== */
+
+#loading {
+
+    height: 100vh;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 15px;
+
 }
 
-.header {
-    text-align: center;
-    margin-bottom: 25px;
-}
 
-.logo {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    margin-bottom: 12px;
-    border: 3px solid var(--primary);
-}
+#loading h2 {
 
-.title {
+    color: var(--primary);
+
     font-size: 28px;
-    font-weight: bold;
+
 }
 
-.subtitle {
-    color: var(--muted);
-    margin-top: 6px;
-    font-size: 14px;
-}
 
-.card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 18px;
-    margin-bottom: 18px;
-    box-shadow: 0 0 20px rgba(0,0,0,.35);
-}
+.loader {
 
-.card h2 {
-    font-size: 18px;
-    margin-bottom: 12px;
-}
+    width: 45px;
 
-.balance {
-    font-size: 34px;
-    color: var(--primary);
-    font-weight: bold;
-    text-align: center;
-}
+    height: 45px;
 
-.info {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-}
-
-.info-item {
-    text-align: center;
-    flex: 1;
-}
-
-.info-item h3 {
-    font-size: 14px;
-    color: var(--muted);
-}
-
-.info-item p {
-    margin-top: 6px;
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.button {
-    width: 100%;
-    background: var(--primary);
-    color: #000;
-    border: none;
-    border-radius: 14px;
-    padding: 14px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: .2s;
-}
-
-.button:active {
-    transform: scale(.98);
-}
-
-.button.secondary {
-    background: var(--secondary);
-    color: #fff;
-}
-
-.menu {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: #111118;
-    border-top: 1px solid #222;
-    display: flex;
-    justify-content: space-around;
-    padding: 12px 0;
-}
-
-.menu button {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.menu button.active {
-    color: var(--primary);
-}
-
-.avatar {
-    width: 70px;
-    height: 70px;
     border-radius: 50%;
-    border: 2px solid var(--primary);
-    display: block;
+
+    border: 5px solid #333;
+
+    border-top-color: var(--primary);
+
+    animation: spin 1s linear infinite;
+
+}
+
+
+@keyframes spin {
+
+    to {
+
+        transform: rotate(360deg);
+
+    }
+
+}
+
+
+
+/* ==========================
+   App
+========================== */
+
+#app {
+
+    width: 100%;
+
+    max-width: 500px;
+
     margin: auto;
+
+    padding: 15px;
+
+    padding-bottom: 90px;
+
 }
 
-.username {
-    text-align: center;
-    margin-top: 10px;
+
+
+/* ==========================
+   Header
+========================== */
+
+
+#header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 20px;
+
+}
+
+
+.profile {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+}
+
+
+.profile img {
+
+    width: 55px;
+
+    height: 55px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    border: 2px solid var(--primary);
+
+}
+
+
+
+#userName {
+
     font-size: 18px;
-    font-weight: bold;
+
 }
 
-.badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 20px;
-    background: var(--success);
-    color: #fff;
-    font-size: 12px;
+
+#userLevel {
+
+    color: var(--primary);
+
+    font-size: 13px;
+
+}
+
+
+
+#settingButton {
+
+    width: 45px;
+
+    height: 45px;
+
+    border-radius: 50%;
+
+    border: none;
+
+    background: var(--card);
+
+    color: white;
+
+    font-size: 22px;
+
+}
+
+
+
+/* ==========================
+   Balance
+========================== */
+
+
+#balanceCard {
+
+    background: var(--card);
+
+    border-radius: 22px;
+
+    padding: 25px;
+
+    text-align: center;
+
+    margin-bottom: 15px;
+
+}
+
+
+#balance {
+
+    font-size: 40px;
+
+    color: var(--primary);
+
+}
+
+
+#balanceCard p {
+
+    color: var(--muted);
+
     margin-top: 8px;
+
 }
 
-.hidden {
-    display: none;
+
+
+/* ==========================
+   Energy
+========================== */
+
+
+#energyCard {
+
+    background: var(--card);
+
+    border-radius: 18px;
+
+    padding: 18px;
+
+    margin-bottom: 20px;
+
 }
 
-@media (max-width: 500px) {
-    .container {
-        padding: 15px;
+
+.energyTop {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    margin-bottom: 12px;
+
+}
+
+
+
+.energyBar {
+
+    width: 100%;
+
+    height: 12px;
+
+    background: #30303a;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+}
+
+
+#energyFill {
+
+    width: 100%;
+
+    height: 100%;
+
+    background: var(--primary);
+
+}
+
+
+
+/* ==========================
+   Coin Area
+========================== */
+
+
+#coinArea {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    margin: 35px 0;
+
+}
+
+
+
+#coin {
+
+    width: 220px;
+
+    height: 220px;
+
+    border-radius: 50%;
+
+    background:
+
+    radial-gradient(
+        circle at 30% 30%,
+        #ffe082,
+        #ffc107,
+        #d99500
+    );
+
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+
+    color: white;
+
+    font-size: 90px;
+
+    font-weight: bold;
+
+
+    box-shadow:
+
+    0 0 35px rgba(255,193,7,.5);
+
+
+    user-select: none;
+
+}
+
+
+
+#coin:active {
+
+    transform: scale(.92);
+
+}
+
+
+
+/* ==========================
+   Bottom Navigation
+========================== */
+
+
+nav {
+
+    position: fixed;
+
+    bottom: 0;
+
+    left: 0;
+
+    width: 100%;
+
+
+    background: #111118;
+
+    border-top: 1px solid var(--border);
+
+
+    display: flex;
+
+    justify-content: space-around;
+
+
+    padding: 12px 5px;
+
+
+}
+
+
+.nav {
+
+    background: none;
+
+    border: none;
+
+    color: var(--muted);
+
+    font-size: 13px;
+
+}
+
+
+.nav.active {
+
+    color: var(--primary);
+
+}
+
+
+
+/* ==========================
+   Mobile
+========================== */
+
+
+@media(max-width:500px){
+
+
+    #coin {
+
+        width: 180px;
+
+        height: 180px;
+
+        font-size: 75px;
+
     }
 
-    .balance {
-        font-size: 28px;
+
+    #balance {
+
+        font-size: 32px;
+
     }
 
-    .title {
-        font-size: 24px;
-    }
-  }
+
+   }
