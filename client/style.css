@@ -4,19 +4,15 @@
 ========================================== */
 
 
-* {
-
+*{
     margin:0;
     padding:0;
     box-sizing:border-box;
-
     -webkit-tap-highlight-color:transparent;
-
 }
 
 
-
-:root {
+:root{
 
     --bg:#0b0b0f;
     --card:#16161d;
@@ -29,12 +25,17 @@
 
 
 
-
-
-body {
+html,
+body{
 
     width:100%;
-    min-height:100vh;
+    min-height:100%;
+
+}
+
+
+
+body{
 
     background:var(--bg);
 
@@ -55,14 +56,12 @@ body {
 
 
 
-
 /* ==========================
  Loading
 ========================== */
 
 
-#loading {
-
+#loading{
 
     height:100vh;
 
@@ -76,55 +75,48 @@ body {
 
     gap:15px;
 
-
 }
 
 
-#loading h2 {
 
+#loading h2{
 
     color:var(--primary);
 
-    font-size:28px;
-
+    font-size:30px;
 
 }
 
 
 
-.loader {
+.loader{
 
+    width:50px;
 
-    width:45px;
-
-    height:45px;
+    height:50px;
 
     border-radius:50%;
-
 
     border:5px solid #333;
 
     border-top-color:var(--primary);
 
-
     animation:spin 1s linear infinite;
-
 
 }
 
 
 
-@keyframes spin {
+@keyframes spin{
 
-
-    100% {
+    to{
 
         transform:rotate(360deg);
 
     }
 
-
 }
+
 
 
 
@@ -136,8 +128,7 @@ body {
 ========================== */
 
 
-#app {
-
+#app{
 
     width:100%;
 
@@ -145,11 +136,9 @@ body {
 
     margin:auto;
 
-
     padding:15px;
 
     padding-bottom:100px;
-
 
 }
 
@@ -164,8 +153,7 @@ body {
 ========================== */
 
 
-#header {
-
+#header{
 
     display:flex;
 
@@ -173,16 +161,13 @@ body {
 
     align-items:center;
 
-
     margin-bottom:20px;
-
 
 }
 
 
 
-.profile {
-
+.profile{
 
     display:flex;
 
@@ -190,78 +175,61 @@ body {
 
     gap:12px;
 
-
 }
 
 
 
-.profile img {
-
+.profile img{
 
     width:55px;
 
     height:55px;
 
-
     border-radius:50%;
-
 
     object-fit:cover;
 
-
     border:2px solid var(--primary);
-
 
 }
 
 
 
-
-#userName {
-
+#userName{
 
     font-size:18px;
 
+    font-weight:bold;
 
 }
 
 
 
-
-#userLevel {
-
+#userLevel{
 
     color:var(--primary);
 
     font-size:13px;
 
-
 }
 
 
 
-#settingButton {
-
+#settingButton{
 
     width:45px;
 
     height:45px;
 
-
     border-radius:50%;
-
 
     border:none;
 
-
     background:var(--card);
-
 
     color:white;
 
-
     font-size:22px;
-
 
 }
 
@@ -276,48 +244,39 @@ body {
 ========================== */
 
 
-#balanceCard {
-
+#balanceCard{
 
     background:var(--card);
 
-
     border-radius:22px;
-
 
     padding:25px;
 
-
     text-align:center;
-
 
     margin-bottom:15px;
 
-
 }
 
 
 
-#balance {
+#balance{
 
+    font-size:42px;
 
-    font-size:40px;
-
+    font-weight:bold;
 
     color:var(--primary);
 
-
 }
 
 
 
-#balanceCard p {
-
+#balanceCard p{
 
     color:var(--muted);
 
     margin-top:8px;
-
 
 }
 
@@ -332,81 +291,59 @@ body {
 ========================== */
 
 
-#energyCard {
-
+#energyCard{
 
     background:var(--card);
 
-
     border-radius:18px;
-
 
     padding:18px;
 
-
     margin-bottom:20px;
-
 
 }
 
 
 
-
-.energyTop {
-
+.energyTop{
 
     display:flex;
 
     justify-content:space-between;
 
-
     margin-bottom:12px;
-
 
 }
 
 
 
-.energyBar {
-
+.energyBar{
 
     width:100%;
-
 
     height:12px;
 
-
     background:#30303a;
-
 
     border-radius:20px;
 
-
     overflow:hidden;
-
 
 }
 
 
 
-
-#energyFill {
-
+#energyFill{
 
     width:100%;
 
-
     height:100%;
-
 
     background:var(--primary);
 
-
-    transition:.3s;
-
+    transition:.3s ease;
 
 }
-
 
 
 
@@ -415,109 +352,86 @@ body {
 
 
 /* ==========================
- Coin
+ Coin Area
 ========================== */
 
 
-#coinArea {
-
+#coinArea{
 
     position:relative;
 
-
     display:flex;
-
 
     justify-content:center;
 
     align-items:center;
 
-
     margin:40px 0;
-
 
 }
 
 
 
 
-#coin {
 
+#coin{
 
     width:220px;
 
-
     height:220px;
 
-
     border-radius:50%;
-
 
 
     background:
 
     radial-gradient(
-
-    circle at 30% 30%,
-
-    #ffe082,
-
-    #ffc107,
-
-    #d99500
-
+        circle at 30% 30%,
+        #fff3b0,
+        #ffc107,
+        #d99500
     );
-
 
 
     display:flex;
 
-
     justify-content:center;
-
 
     align-items:center;
 
 
-
-
     color:white;
 
-
     font-size:90px;
-
 
     font-weight:bold;
 
 
-
-
     box-shadow:
 
-    0 0 35px rgba(255,193,7,.5);
-
+    0 0 25px rgba(255,193,7,.5),
+    inset 0 0 20px rgba(255,255,255,.3);
 
 
     cursor:pointer;
 
 
-    transition:.1s;
+    transition:.12s;
 
 
     touch-action:manipulation;
 
-
 }
 
 
 
-
-
-#coin:active {
-
+#coin:active{
 
     transform:scale(.90);
 
+    box-shadow:
+
+    0 0 50px rgba(255,193,7,.8);
 
 }
 
@@ -528,108 +442,79 @@ body {
 
 
 /* ==========================
- Tap +1 Effect
+ Tap Effects
 ========================== */
 
 
-#tapEffects {
-
-
-    position:absolute;
-
-
-    width:100%;
-
-    height:100%;
-
-
-    pointer-events:none;
-
-
-}
-
-
-
-
-.tap-effect {
-
-
-    position:absolute;
-
-
-    color:#ffc107;
-
-
-    font-size:30px;
-
-
-    font-weight:bold;
-
-
-    animation:tapUp .8s ease-out forwards;
-
-
-}
-
-
-
-
-
-@keyframes tapUp {
-
-
-    0% {
-
-
-        opacity:1;
-
-        transform:translateY(0)
-        scale(1);
-
-
-    }
-
-
-    100% {
-
-
-        opacity:0;
-
-
-        transform:
-
-        translateY(-100px)
-
-        scale(1.4);
-
-
-    }
-
-
-}
-
-
-
-
-
-
-
-/* ==========================
- Bottom Nav
-========================== */
-
-
-nav {
-
+.tap-effect{
 
     position:fixed;
 
+    color:#ffc107;
+
+    font-size:28px;
+
+    font-weight:bold;
+
+    pointer-events:none;
+
+    z-index:9999;
+
+
+    animation:
+    tapMove .8s ease forwards;
+
+}
+
+
+
+
+
+@keyframes tapMove{
+
+
+    0%{
+
+        opacity:1;
+
+        transform:
+        translateY(0)
+        scale(1);
+
+    }
+
+
+    100%{
+
+        opacity:0;
+
+        transform:
+        translateY(-90px)
+        scale(1.4);
+
+    }
+
+
+}
+
+
+
+
+
+
+
+/* ==========================
+ Bottom Navigation
+========================== */
+
+
+nav{
+
+    position:fixed;
 
     bottom:0;
 
-
     left:0;
-
 
     width:100%;
 
@@ -637,11 +522,12 @@ nav {
     background:#111118;
 
 
-    border-top:1px solid var(--border);
+    border-top:
+
+    1px solid var(--border);
 
 
     display:flex;
-
 
     justify-content:space-around;
 
@@ -649,8 +535,7 @@ nav {
     padding:12px 5px;
 
 
-    z-index:10;
-
+    z-index:100;
 
 }
 
@@ -658,11 +543,9 @@ nav {
 
 
 
-.nav {
-
+.nav{
 
     background:none;
-
 
     border:none;
 
@@ -677,15 +560,12 @@ nav {
 
 
 
-
-
-.nav.active {
-
+.nav.active{
 
     color:var(--primary);
 
-
 }
+
 
 
 
@@ -700,12 +580,10 @@ nav {
 @media(max-width:500px){
 
 
-
-    #coin {
+    #coin{
 
 
         width:180px;
-
 
         height:180px;
 
@@ -717,11 +595,9 @@ nav {
 
 
 
-    #balance {
-
+    #balance{
 
         font-size:32px;
-
 
     }
 
