@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
 
     <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
     <meta name="theme-color" content="#000000">
 
@@ -14,19 +14,35 @@
 
     <meta name="mobile-web-app-capable" content="yes">
 
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <meta name="description" content="Zoryx Telegram Mini App">
+
     <title>Zoryx</title>
+
+    <!-- Manifest -->
 
     <link rel="manifest" href="manifest.json">
 
+    <!-- Icon -->
+
+    <link rel="icon" href="icon-192.png">
+
+    <!-- CSS -->
+
     <link rel="stylesheet" href="style.css">
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Telegram WebApp -->
+
+    <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
 
 </head>
 
 <body>
 
-    <!-- Loading -->
+    <!-- ==========================
+         Loading Screen
+    =========================== -->
 
     <div id="loading">
 
@@ -38,7 +54,9 @@
 
     </div>
 
-    <!-- App -->
+    <!-- ==========================
+         Main App
+    =========================== -->
 
     <div id="app" style="display:none;">
 
@@ -48,11 +66,16 @@
 
             <div class="profile">
 
-                <img id="userPhoto" alt="Profile">
+                <img
+                    id="userPhoto"
+                    src="icon-192.png"
+                    alt="Profile">
 
                 <div>
 
-                    <h3 id="userName">Loading...</h3>
+                    <h3 id="userName">
+                        Loading...
+                    </h3>
 
                     <span id="userLevel">
                         Level 1
@@ -63,7 +86,7 @@
             </div>
 
             <button id="settingButton">
-                ⚙
+                ⚙️
             </button>
 
         </header>
@@ -112,7 +135,9 @@
 
             <div id="coin">
 
-                <span>Z</span>
+                <span>
+                    Z
+                </span>
 
             </div>
 
@@ -120,25 +145,25 @@
 
         <!-- Bottom Navigation -->
 
-        <nav>
+        <nav id="bottomNav">
 
-            <button class="nav active">
+            <button class="nav active" id="navHome">
                 Home
             </button>
 
-            <button class="nav">
+            <button class="nav" id="navEarn">
                 Earn
             </button>
 
-            <button class="nav">
+            <button class="nav" id="navFriends">
                 Friends
             </button>
 
-            <button class="nav">
+            <button class="nav" id="navWallet">
                 Wallet
             </button>
 
-            <button class="nav">
+            <button class="nav" id="navProfile">
                 Profile
             </button>
 
@@ -146,12 +171,14 @@
 
     </div>
 
-    <script src="telegram.js"></script>
+    <!-- Scripts -->
 
-    <script src="api.js"></script>
+    <script src="telegram.js" defer></script>
 
-    <script src="app.js"></script>
+    <script src="api.js" defer></script>
+
+    <script src="app.js" defer></script>
 
 </body>
 
-  </html>
+                </html>
