@@ -3,180 +3,238 @@
    client/style.css
 ========================================== */
 
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
+
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+
+    -webkit-tap-highlight-color:transparent;
+
 }
+
+
 
 :root {
 
-    --bg: #0b0b0f;
-    --card: #16161d;
-    --primary: #ffc107;
-    --text: #ffffff;
-    --muted: #9b9b9b;
-    --border: #262631;
+    --bg:#0b0b0f;
+    --card:#16161d;
+    --primary:#ffc107;
+    --text:#ffffff;
+    --muted:#9b9b9b;
+    --border:#262631;
 
 }
+
+
+
 
 
 body {
 
-    width: 100%;
-    min-height: 100vh;
+    width:100%;
+    min-height:100vh;
 
-    background: var(--bg);
-    color: var(--text);
+    background:var(--bg);
+
+    color:var(--text);
 
     font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
+    Arial,
+    Helvetica,
+    sans-serif;
 
-    overflow-x: hidden;
+    overflow-x:hidden;
+
+    user-select:none;
 
 }
 
 
 
+
+
+
 /* ==========================
-   Loading
+ Loading
 ========================== */
+
 
 #loading {
 
-    height: 100vh;
 
-    display: flex;
+    height:100vh;
 
-    flex-direction: column;
+    display:flex;
 
-    justify-content: center;
+    flex-direction:column;
 
-    align-items: center;
+    justify-content:center;
 
-    gap: 15px;
+    align-items:center;
+
+    gap:15px;
+
 
 }
 
 
 #loading h2 {
 
-    color: var(--primary);
 
-    font-size: 28px;
+    color:var(--primary);
+
+    font-size:28px;
+
 
 }
+
 
 
 .loader {
 
-    width: 45px;
 
-    height: 45px;
+    width:45px;
 
-    border-radius: 50%;
+    height:45px;
 
-    border: 5px solid #333;
+    border-radius:50%;
 
-    border-top-color: var(--primary);
 
-    animation: spin 1s linear infinite;
+    border:5px solid #333;
+
+    border-top-color:var(--primary);
+
+
+    animation:spin 1s linear infinite;
+
 
 }
+
 
 
 @keyframes spin {
 
-    to {
 
-        transform: rotate(360deg);
+    100% {
+
+        transform:rotate(360deg);
 
     }
 
+
 }
 
 
 
+
+
+
 /* ==========================
-   App
+ App
 ========================== */
+
 
 #app {
 
-    width: 100%;
 
-    max-width: 500px;
+    width:100%;
 
-    margin: auto;
+    max-width:500px;
 
-    padding: 15px;
+    margin:auto;
 
-    padding-bottom: 90px;
+
+    padding:15px;
+
+    padding-bottom:100px;
+
 
 }
 
 
 
+
+
+
+
 /* ==========================
-   Header
+ Header
 ========================== */
 
 
 #header {
 
-    display: flex;
 
-    justify-content: space-between;
+    display:flex;
 
-    align-items: center;
+    justify-content:space-between;
 
-    margin-bottom: 20px;
+    align-items:center;
+
+
+    margin-bottom:20px;
+
 
 }
+
 
 
 .profile {
 
-    display: flex;
 
-    align-items: center;
+    display:flex;
 
-    gap: 12px;
+    align-items:center;
+
+    gap:12px;
+
 
 }
+
 
 
 .profile img {
 
-    width: 55px;
 
-    height: 55px;
+    width:55px;
 
-    border-radius: 50%;
+    height:55px;
 
-    object-fit: cover;
 
-    border: 2px solid var(--primary);
+    border-radius:50%;
+
+
+    object-fit:cover;
+
+
+    border:2px solid var(--primary);
+
 
 }
+
 
 
 
 #userName {
 
-    font-size: 18px;
+
+    font-size:18px;
+
 
 }
 
 
+
+
 #userLevel {
 
-    color: var(--primary);
 
-    font-size: 13px;
+    color:var(--primary);
+
+    font-size:13px;
+
 
 }
 
@@ -184,88 +242,126 @@ body {
 
 #settingButton {
 
-    width: 45px;
 
-    height: 45px;
+    width:45px;
 
-    border-radius: 50%;
+    height:45px;
 
-    border: none;
 
-    background: var(--card);
+    border-radius:50%;
 
-    color: white;
 
-    font-size: 22px;
+    border:none;
+
+
+    background:var(--card);
+
+
+    color:white;
+
+
+    font-size:22px;
+
 
 }
 
 
 
+
+
+
+
 /* ==========================
-   Balance
+ Balance
 ========================== */
 
 
 #balanceCard {
 
-    background: var(--card);
 
-    border-radius: 22px;
+    background:var(--card);
 
-    padding: 25px;
 
-    text-align: center;
+    border-radius:22px;
 
-    margin-bottom: 15px;
+
+    padding:25px;
+
+
+    text-align:center;
+
+
+    margin-bottom:15px;
+
 
 }
+
 
 
 #balance {
 
-    font-size: 40px;
 
-    color: var(--primary);
+    font-size:40px;
+
+
+    color:var(--primary);
+
 
 }
+
 
 
 #balanceCard p {
 
-    color: var(--muted);
 
-    margin-top: 8px;
+    color:var(--muted);
+
+    margin-top:8px;
+
 
 }
 
 
 
+
+
+
+
 /* ==========================
-   Energy
+ Energy
 ========================== */
 
 
 #energyCard {
 
-    background: var(--card);
 
-    border-radius: 18px;
+    background:var(--card);
 
-    padding: 18px;
 
-    margin-bottom: 20px;
+    border-radius:18px;
+
+
+    padding:18px;
+
+
+    margin-bottom:20px;
+
 
 }
 
 
+
+
 .energyTop {
 
-    display: flex;
 
-    justify-content: space-between;
+    display:flex;
 
-    margin-bottom: 12px;
+    justify-content:space-between;
+
+
+    margin-bottom:12px;
+
 
 }
 
@@ -273,80 +369,127 @@ body {
 
 .energyBar {
 
-    width: 100%;
 
-    height: 12px;
+    width:100%;
 
-    background: #30303a;
 
-    border-radius: 20px;
+    height:12px;
 
-    overflow: hidden;
+
+    background:#30303a;
+
+
+    border-radius:20px;
+
+
+    overflow:hidden;
+
 
 }
+
+
 
 
 #energyFill {
 
-    width: 100%;
 
-    height: 100%;
+    width:100%;
 
-    background: var(--primary);
+
+    height:100%;
+
+
+    background:var(--primary);
+
+
+    transition:.3s;
+
 
 }
 
 
 
+
+
+
+
+
 /* ==========================
-   Coin Area
+ Coin
 ========================== */
 
 
 #coinArea {
 
-    display: flex;
 
-    justify-content: center;
+    position:relative;
 
-    align-items: center;
 
-    margin: 35px 0;
+    display:flex;
+
+
+    justify-content:center;
+
+    align-items:center;
+
+
+    margin:40px 0;
+
 
 }
 
 
 
+
 #coin {
 
-    width: 220px;
 
-    height: 220px;
+    width:220px;
 
-    border-radius: 50%;
+
+    height:220px;
+
+
+    border-radius:50%;
+
+
 
     background:
 
     radial-gradient(
-        circle at 30% 30%,
-        #ffe082,
-        #ffc107,
-        #d99500
+
+    circle at 30% 30%,
+
+    #ffe082,
+
+    #ffc107,
+
+    #d99500
+
     );
 
 
-    display: flex;
 
-    justify-content: center;
-
-    align-items: center;
+    display:flex;
 
 
-    color: white;
+    justify-content:center;
 
-    font-size: 90px;
 
-    font-weight: bold;
+    align-items:center;
+
+
+
+
+    color:white;
+
+
+    font-size:90px;
+
+
+    font-weight:bold;
+
+
 
 
     box-shadow:
@@ -354,95 +497,231 @@ body {
     0 0 35px rgba(255,193,7,.5);
 
 
-    user-select: none;
+
+    cursor:pointer;
+
+
+    transition:.1s;
+
+
+    touch-action:manipulation;
+
 
 }
+
+
 
 
 
 #coin:active {
 
-    transform: scale(.92);
+
+    transform:scale(.90);
+
 
 }
 
 
 
+
+
+
+
 /* ==========================
-   Bottom Navigation
+ Tap +1 Effect
+========================== */
+
+
+#tapEffects {
+
+
+    position:absolute;
+
+
+    width:100%;
+
+    height:100%;
+
+
+    pointer-events:none;
+
+
+}
+
+
+
+
+.tap-effect {
+
+
+    position:absolute;
+
+
+    color:#ffc107;
+
+
+    font-size:30px;
+
+
+    font-weight:bold;
+
+
+    animation:tapUp .8s ease-out forwards;
+
+
+}
+
+
+
+
+
+@keyframes tapUp {
+
+
+    0% {
+
+
+        opacity:1;
+
+        transform:translateY(0)
+        scale(1);
+
+
+    }
+
+
+    100% {
+
+
+        opacity:0;
+
+
+        transform:
+
+        translateY(-100px)
+
+        scale(1.4);
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+/* ==========================
+ Bottom Nav
 ========================== */
 
 
 nav {
 
-    position: fixed;
 
-    bottom: 0;
-
-    left: 0;
-
-    width: 100%;
+    position:fixed;
 
 
-    background: #111118;
-
-    border-top: 1px solid var(--border);
+    bottom:0;
 
 
-    display: flex;
-
-    justify-content: space-around;
+    left:0;
 
 
-    padding: 12px 5px;
+    width:100%;
+
+
+    background:#111118;
+
+
+    border-top:1px solid var(--border);
+
+
+    display:flex;
+
+
+    justify-content:space-around;
+
+
+    padding:12px 5px;
+
+
+    z-index:10;
 
 
 }
+
+
+
 
 
 .nav {
 
-    background: none;
 
-    border: none;
+    background:none;
 
-    color: var(--muted);
 
-    font-size: 13px;
+    border:none;
+
+
+    color:var(--muted);
+
+
+    font-size:13px;
+
 
 }
+
+
+
 
 
 .nav.active {
 
-    color: var(--primary);
+
+    color:var(--primary);
+
 
 }
 
 
 
+
+
+
 /* ==========================
-   Mobile
+ Mobile
 ========================== */
 
 
 @media(max-width:500px){
 
 
+
     #coin {
 
-        width: 180px;
 
-        height: 180px;
+        width:180px;
 
-        font-size: 75px;
+
+        height:180px;
+
+
+        font-size:75px;
+
 
     }
 
 
+
     #balance {
 
-        font-size: 32px;
+
+        font-size:32px;
+
 
     }
 
