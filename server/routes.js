@@ -19,48 +19,42 @@ const router = express.Router();
 // ========================================
 
 const ENERGY_RESTORE_TIME = 4000;
-// 4 second = 1 Energy
-
-
 
 const DEFAULT_ENERGY = 1000;
 
 
 
-
-
 // ========================================
-// Calculate Energy
+// Energy Calculator
 // ========================================
 
 function calculateEnergy(user){
 
 
     let energy =
-        user.energy ?? DEFAULT_ENERGY;
+    user.energy ?? DEFAULT_ENERGY;
 
 
 
-    let lastUpdate =
-        user.lastEnergyUpdate
-        ?
-        new Date(user.lastEnergyUpdate).getTime()
-        :
-        Date.now();
+    let last =
+    user.lastEnergyUpdate
+    ?
+    new Date(user.lastEnergyUpdate).getTime()
+    :
+    Date.now();
 
 
 
     const now =
-        Date.now();
+    Date.now();
 
 
 
     const passed =
-        Math.floor(
-            (now - lastUpdate)
-            /
-            ENERGY_RESTORE_TIME
-        );
+    Math.floor(
+        (now - last) /
+        ENERGY_RESTORE_TIME
+    );
 
 
 
@@ -82,7 +76,9 @@ function calculateEnergy(user){
         }
 
 
-        lastUpdate = now;
+
+        last =
+        now;
 
 
     }
@@ -96,7 +92,7 @@ function calculateEnergy(user){
 
 
         lastEnergyUpdate:
-        new Date(lastUpdate)
+        new Date(last)
 
 
     };
@@ -110,9 +106,8 @@ function calculateEnergy(user){
 
 
 
-
 // ========================================
-// API Status
+// Status
 // ========================================
 
 
@@ -133,7 +128,6 @@ router.get("/",(req,res)=>{
 
 
 });
-
 
 
 
@@ -173,10 +167,8 @@ try{
 
 
 
-
     const db =
     getDatabase();
-
 
 
     const users =
@@ -199,7 +191,6 @@ try{
     if(!user){
 
 
-
         user={
 
 
@@ -207,30 +198,24 @@ try{
             crypto.randomUUID(),
 
 
-
             telegramId:
             result.user.id,
-
 
 
             firstName:
             result.user.first_name || "User",
 
 
-
             lastName:
             result.user.last_name || "",
-
 
 
             username:
             result.user.username || "",
 
 
-
             photo:
             result.user.photo_url || "",
-
 
 
             balance:0,
@@ -248,7 +233,6 @@ try{
             new Date(),
 
 
-
             level:1,
 
 
@@ -256,7 +240,6 @@ try{
 
 
             referrals:0,
-
 
 
             createdAt:
@@ -268,7 +251,6 @@ try{
 
 
         await users.insertOne(user);
-
 
 
     }
@@ -304,7 +286,6 @@ try{
         energyData.lastEnergyUpdate;
 
 
-
     }
 
 
@@ -328,8 +309,7 @@ catch(error){
 
         success:false,
 
-        message:
-        error.message
+        message:error.message
 
     });
 
@@ -380,20 +360,15 @@ try{
 
 
 
-
     if(!user){
 
-
-        return res.status(404)
-        .json({
+        return res.json({
 
             success:false,
 
-            message:
-            "User Not Found"
+            message:"User Not Found"
 
         });
-
 
     }
 
@@ -402,7 +377,6 @@ try{
 
     const energyData =
     calculateEnergy(user);
-
 
 
 
@@ -422,14 +396,8 @@ try{
 
 
 
-
     user.energy =
     energyData.energy;
-
-
-
-    user.lastEnergyUpdate =
-    energyData.lastEnergyUpdate;
 
 
 
@@ -447,14 +415,82 @@ try{
 catch(error){
 
 
-    res.status(500).json({
+res.status(500).json({
 
-        success:false,
+success:false,
 
-        message:
-        error.message
+message:error.message
 
-    });
+});
+
+
+}
+
+
+});
+
+
+
+
+
+
+
+
+
+// ========================================
+// Update Profile
+// ========================================
+
+
+router.put(
+"/user/:telegramId",
+async(req,res)=>{
+
+
+try{
+
+
+const db =
+getDatabase();
+
+
+
+await db.collection("users")
+.updateOne(
+
+{
+telegramId:
+Number(req.params.telegramId)
+},
+
+{
+
+$set:req.body
+
+}
+
+);
+
+
+
+res.json({
+
+success:true
+
+});
+
+
+}
+catch(error){
+
+
+res.status(500).json({
+
+success:false,
+
+message:error.message
+
+});
 
 
 }
@@ -483,184 +519,250 @@ async(req,res)=>{
 try{
 
 
-    const {
-        telegramId,
-        tap
-    }
-    =
-    req.body;
+const telegramId =
+Number(req.body.telegramId);
 
 
 
+const amount =
+Math.max(
+1,
+Number(req.body.tap) || 1
+);
 
-    const db =
-    getDatabase();
 
 
+const db =
+getDatabase();
 
-    const users =
-    db.collection("users");
 
 
+const users =
+db.collection("users");
 
 
-    let user =
-    await users.findOne({
 
-        telegramId:
-        Number(telegramId)
+let user =
+await users.findOne({
 
-    });
+telegramId
 
+});
 
 
 
+if(!user){
 
-    if(!user){
 
+return res.json({
 
-        return res.json({
+success:false,
 
-            success:false,
+message:"User Not Found"
 
-            message:
-            "User Not Found"
+});
 
-        });
 
+}
 
-    }
 
 
 
 
+const energyData =
+calculateEnergy(user);
 
-    const energyData =
-    calculateEnergy(user);
 
 
+let energy =
+energyData.energy;
 
-    let energy =
-    energyData.energy;
 
 
+if(energy <=0){
 
 
+return res.json({
 
-    if(energy <= 0){
+success:false,
 
+message:"Energy Empty"
 
-        return res.json({
+});
 
-            success:false,
 
-            message:
-            "Energy Empty"
+}
 
-        });
 
 
-    }
+energy--;
 
 
 
+await users.updateOne(
 
-    const amount =
-    Number(tap) || 1;
+{
+telegramId
+},
 
+{
 
+$inc:{
 
+balance:amount,
 
-    energy -= 1;
+totalTap:amount
 
+},
 
 
+$set:{
 
+energy,
 
-    await users.updateOne(
+lastEnergyUpdate:
+new Date()
 
-        {
-            telegramId:
-            Number(telegramId)
-        },
+}
 
 
-        {
+}
 
-            $inc:{
+);
 
-                balance:
-                amount,
 
 
-                totalTap:
-                amount
 
-            },
+const updated =
+await users.findOne({
 
+telegramId
 
-            $set:{
+});
 
 
-                energy,
 
+res.json({
 
-                lastEnergyUpdate:
-                new Date()
+success:true,
 
+balance:
+updated.balance,
 
-            }
+energy:
+updated.energy
 
 
-        }
-
-    );
-
-
-
-
-
-    const updated =
-    await users.findOne({
-
-        telegramId:
-        Number(telegramId)
-
-    });
-
-
-
-
-
-    res.json({
-
-        success:true,
-
-
-        balance:
-        updated.balance,
-
-
-        energy:
-        updated.energy
-
-
-    });
-
+});
 
 
 }
 catch(error){
 
 
-    res.status(500).json({
+res.status(500).json({
 
-        success:false,
+success:false,
 
-        message:
-        error.message
+message:error.message
 
-    });
+});
+
+
+}
+
+
+});
+
+
+
+
+
+
+
+
+
+// ========================================
+// Balance Add
+// ========================================
+
+
+router.post(
+"/balance/add",
+async(req,res)=>{
+
+
+try{
+
+
+const userId =
+Number(req.body.userId);
+
+
+
+const amount =
+Number(req.body.amount);
+
+
+
+if(amount<=0){
+
+return res.json({
+
+success:false,
+
+message:"Invalid Amount"
+
+});
+
+}
+
+
+
+const db =
+getDatabase();
+
+
+
+await db.collection("users")
+.updateOne(
+
+{
+telegramId:userId
+},
+
+{
+
+$inc:{
+
+balance:amount
+
+}
+
+}
+
+);
+
+
+
+res.json({
+
+success:true
+
+});
+
+
+}
+catch(error){
+
+
+res.status(500).json({
+
+success:false,
+
+message:error.message
+
+});
 
 
 }
@@ -689,44 +791,43 @@ async(req,res)=>{
 try{
 
 
-    const db =
-    getDatabase();
+const db =
+getDatabase();
 
 
 
-    const user =
-    await db.collection("users")
-    .findOne({
+const user =
+await db.collection("users")
+.findOne({
 
-        telegramId:
-        Number(req.params.telegramId)
+telegramId:
+Number(req.params.telegramId)
 
-    });
+});
 
 
 
-    res.json({
+res.json({
 
-        success:true,
+success:true,
 
-        referrals:
-        user?.referrals || 0
+referrals:
+user?.referrals || 0
 
-    });
+});
 
 
 }
 catch(error){
 
 
-    res.status(500).json({
+res.status(500).json({
 
-        success:false,
+success:false,
 
-        message:
-        error.message
+message:error.message
 
-    });
+});
 
 
 }
@@ -755,53 +856,60 @@ async(req,res)=>{
 try{
 
 
-    const db =
-    getDatabase();
+const db =
+getDatabase();
 
 
 
-    const leaderboard =
-    await db.collection("users")
-    .find({})
-    .sort({
+const leaderboard =
+await db.collection("users")
+.find(
+{},
+{
+projection:{
+firstName:1,
+username:1,
+balance:1,
+level:1
+}
+}
+)
+.sort({
 
-        balance:-1
+balance:-1
 
-    })
-    .limit(20)
-    .toArray();
-
-
+})
+.limit(20)
+.toArray();
 
 
-    res.json({
 
-        success:true,
+res.json({
 
-        leaderboard
+success:true,
 
-    });
+leaderboard
+
+});
 
 
 }
 catch(error){
 
 
-    res.status(500).json({
+res.status(500).json({
 
-        success:false,
+success:false,
 
-        message:
-        error.message
+message:error.message
 
-    });
+});
 
 
 }
 
 
 });
-
 
 
 
