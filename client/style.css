@@ -443,6 +443,7 @@ body{
 
 /* ==========================
  Tap Effects
+ Notcoin Style
 ========================== */
 
 
@@ -450,19 +451,28 @@ body{
 
     position:fixed;
 
-    color:#ffc107;
+    color:#00ff66;
 
-    font-size:28px;
+    font-size:30px;
 
-    font-weight:bold;
+    font-weight:900;
+
 
     pointer-events:none;
 
     z-index:9999;
 
 
+    text-shadow:
+
+    0 0 8px #00ff66,
+
+    0 0 15px #00ff66;
+
+
     animation:
-    tapMove .8s ease forwards;
+
+    tapMove .4s ease-out forwards;
 
 }
 
@@ -478,10 +488,13 @@ body{
         opacity:1;
 
         transform:
+
         translateY(0)
+
         scale(1);
 
     }
+
 
 
     100%{
@@ -489,8 +502,10 @@ body{
         opacity:0;
 
         transform:
-        translateY(-90px)
-        scale(1.4);
+
+        translateY(-70px)
+
+        scale(1.35);
 
     }
 
