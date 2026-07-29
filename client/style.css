@@ -110,9 +110,7 @@ body{
 @keyframes spin{
 
     to{
-
         transform:rotate(360deg);
-
     }
 
 }
@@ -341,7 +339,8 @@ body{
 
     background:var(--primary);
 
-    transition:.3s ease;
+    transition:
+    width .3s ease;
 
 }
 
@@ -410,13 +409,15 @@ body{
     box-shadow:
 
     0 0 25px rgba(255,193,7,.5),
+
     inset 0 0 20px rgba(255,255,255,.3);
 
 
     cursor:pointer;
 
 
-    transition:.12s;
+    transition:
+    transform .08s ease;
 
 
     touch-action:manipulation;
@@ -428,10 +429,6 @@ body{
 #coin:active{
 
     transform:scale(.90);
-
-    box-shadow:
-
-    0 0 50px rgba(255,193,7,.8);
 
 }
 
@@ -451,14 +448,18 @@ body{
 
     position:fixed;
 
+
     color:#00ff66;
 
+
     font-size:30px;
+
 
     font-weight:900;
 
 
     pointer-events:none;
+
 
     z-index:9999;
 
@@ -472,9 +473,11 @@ body{
 
     animation:
 
-    tapMove .4s ease-out forwards;
+    tapMove .45s ease-out forwards;
 
 }
+
+
 
 
 
@@ -491,7 +494,15 @@ body{
 
         translateY(0)
 
-        scale(1);
+        scale(.8);
+
+    }
+
+
+
+    50%{
+
+        opacity:1;
 
     }
 
@@ -501,16 +512,35 @@ body{
 
         opacity:0;
 
+
         transform:
 
-        translateY(-70px)
+        translateY(-80px)
 
-        scale(1.35);
+        scale(1.4);
 
     }
 
 
 }
+
+
+
+
+
+
+
+/* ==========================
+ Prevent Effect Overflow
+========================== */
+
+
+#coinArea{
+
+    overflow:visible;
+
+}
+
 
 
 
