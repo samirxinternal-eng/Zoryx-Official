@@ -17,8 +17,8 @@ const router = express.Router();
 // Config
 // ========================================
 
-const ENERGY_RESTORE_TIME = 10000; 
-// 10 second = 1 energy
+const ENERGY_RESTORE_TIME = 4000; 
+// 4 second = 1 energy
 
 
 
