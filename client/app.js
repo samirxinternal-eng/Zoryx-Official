@@ -3,39 +3,50 @@
 // client/app.js
 // ==========================================
 
-let currentUser = null;
 
-let tapCount = 0;
+let currentUser = null;
 
 let energy = 1000;
 
 let maxEnergy = 1000;
 
-const tapPower = 1;
+let tapPower = 1;
+
+let localBalance = 0;
+
 
 
 // ==========================================
 // Initialize
 // ==========================================
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener(
+    "DOMContentLoaded",
+    async ()=>{
 
-    console.log("🚀 Starting Zoryx...");
+
+    console.log(
+        "🚀 Starting Zoryx..."
+    );
 
 
     showLoading(true);
 
 
-    if (!window.TelegramApp) {
 
-        alert("Telegram WebApp not found.");
+    if(!window.TelegramApp){
+
+        alert(
+            "Telegram WebApp not found."
+        );
 
         return;
 
     }
 
 
-    try {
+
+    try{
 
 
         await login();
@@ -44,17 +55,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         registerEvents();
 
 
-        startEnergyRecharge();
+
+    }catch(error){
 
 
-    } catch (err) {
-
-
-        console.error(err);
+        console.error(error);
 
 
         TelegramApp.alert(
-            "Application failed to start."
+            "Application failed."
         );
 
 
@@ -65,17 +74,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
+
+
 // ==========================================
 // Login
 // ==========================================
 
-async function login() {
+async function login(){
 
 
-    const res = await API.login();
+    const res =
+        await API.login();
 
 
-    if (!res.success) {
+
+    if(!res.success){
 
 
         showLoading(false);
@@ -83,7 +96,7 @@ async function login() {
 
         TelegramApp.popup(
             "Login Failed",
-            res.message || "Unable to authenticate."
+            res.message
         );
 
 
@@ -93,26 +106,32 @@ async function login() {
 
 
 
-    currentUser = res.user;
-
-
-    console.log(
-        "Logged In:",
-        currentUser
-    );
+    currentUser =
+        res.user;
 
 
 
-    energy = currentUser.energy || 1000;
+    localBalance =
+        currentUser.balance || 0;
 
-    maxEnergy = currentUser.maxEnergy || 1000;
+
+
+    energy =
+        currentUser.energy || 1000;
+
+
+
+    maxEnergy =
+        currentUser.maxEnergy || 1000;
 
 
 
     updateUserUI();
 
 
+
     await loadUserData();
+
 
 
     showLoading(false);
@@ -123,60 +142,59 @@ async function login() {
 
 
 
+
+
 // ==========================================
 // Load User
 // ==========================================
 
-async function loadUserData() {
+async function loadUserData(){
 
 
-    if (!currentUser) return;
+    if(!currentUser)
+        return;
 
 
 
-    try {
-
-
-        const profile = await API.getProfile(
-
+    const res =
+        await API.getProfile(
             currentUser.telegramId
-
         );
 
 
 
-        if(profile.success && profile.user){
+    if(res.success){
 
 
-            currentUser = profile.user;
-
-
-
-            energy =
-                currentUser.energy || energy;
+        currentUser =
+            res.user;
 
 
 
-            maxEnergy =
-                currentUser.maxEnergy || maxEnergy;
+        localBalance =
+            currentUser.balance || 0;
 
 
 
-            updateUserUI();
-
-
-        }
+        energy =
+            currentUser.energy || energy;
 
 
 
-    } catch(err){
+        maxEnergy =
+            currentUser.maxEnergy || maxEnergy;
 
-        console.error(err);
+
+
+        updateUserUI();
+
 
     }
 
 
 }
+
+
 
 
 
@@ -188,14 +206,14 @@ async function loadUserData() {
 function updateUserUI(){
 
 
-    if(!currentUser) return;
+    if(!currentUser)
+        return;
 
 
 
     setText(
         "userName",
         currentUser.firstName ||
-        TelegramApp.getFirstName() ||
         "User"
     );
 
@@ -210,7 +228,7 @@ function updateUserUI(){
 
     setText(
         "balance",
-        (currentUser.balance || 0) + tapCount
+        localBalance
     );
 
 
@@ -224,24 +242,21 @@ function updateUserUI(){
 
     if(photo){
 
-
         photo.src =
             currentUser.photo ||
-            TelegramApp.getPhoto() ||
             "icon-192.png";
-
 
     }
 
 
 
-    updateEnergy(
-        energy,
-        maxEnergy
-    );
+    updateEnergyUI();
 
 
 }
+
+
+
 
 
 
@@ -250,7 +265,7 @@ function updateUserUI(){
 // Energy UI
 // ==========================================
 
-function updateEnergy(current,max){
+function updateEnergyUI(){
 
 
     const text =
@@ -269,7 +284,7 @@ function updateEnergy(current,max){
     if(text){
 
         text.textContent =
-            `${current} / ${max}`;
+        `${energy} / ${maxEnergy}`;
 
     }
 
@@ -278,13 +293,13 @@ function updateEnergy(current,max){
     if(fill){
 
         fill.style.width =
-            ((current / max) * 100)
-            + "%";
+        `${(energy/maxEnergy)*100}%`;
 
     }
 
 
 }
+
 
 
 
@@ -309,41 +324,12 @@ function registerEvents(){
 
         coin.addEventListener(
             "click",
-            tapCoin
+            handleCoinTap
         );
 
 
     }
 
-
-
-    document
-    .querySelectorAll(".nav")
-    .forEach(btn=>{
-
-
-        btn.addEventListener(
-            "click",
-            ()=>{
-
-
-                document
-                .querySelectorAll(".nav")
-                .forEach(x=>
-                    x.classList.remove("active")
-                );
-
-
-                btn.classList.add(
-                    "active"
-                );
-
-
-            }
-        );
-
-
-    });
 
 
 }
@@ -352,11 +338,13 @@ function registerEvents(){
 
 
 
+
 // ==========================================
-// Tap Coin
+// Coin Tap
 // ==========================================
 
-async function tapCoin(){
+async function handleCoinTap(event){
+
 
 
     if(energy <= 0){
@@ -364,7 +352,7 @@ async function tapCoin(){
 
         TelegramApp.popup(
             "Energy Empty",
-            "Wait for recharge!"
+            "Wait for recharge"
         );
 
 
@@ -374,23 +362,21 @@ async function tapCoin(){
 
 
 
-    energy--;
 
 
-    tapCount += tapPower;
+    energy -= 1;
+
+
+    localBalance += tapPower;
 
 
 
-    updateEnergy(
-        energy,
-        maxEnergy
-    );
+    updateEnergyUI();
 
 
     setText(
         "balance",
-        (currentUser.balance || 0)
-        + tapCount
+        localBalance
     );
 
 
@@ -401,25 +387,27 @@ async function tapCoin(){
 
 
 
+
+    // Coin Animation
+
     const coin =
         document.getElementById(
             "coin"
         );
 
 
-
     if(coin){
 
 
         coin.style.transform =
-            "scale(.90)";
+        "scale(.90)";
 
 
         setTimeout(()=>{
 
 
             coin.style.transform =
-                "scale(1)";
+            "scale(1)";
 
 
         },100);
@@ -430,28 +418,32 @@ async function tapCoin(){
 
 
 
-    // Save after tap
+
+
+    // +1 Effect
+
+    createTapEffect(
+        event.clientX,
+        event.clientY
+    );
+
+
+
+
+
+
+    // Save
 
     if(currentUser){
 
 
-        try{
+        await API.addBalance(
 
+            currentUser.telegramId,
 
-            await API.addBalance(
+            tapPower
 
-                currentUser.telegramId,
-
-                tapPower
-
-            );
-
-
-        }catch(err){
-
-            console.log(err);
-
-        }
+        );
 
 
     }
@@ -463,36 +455,139 @@ async function tapCoin(){
 
 
 
+
+
+// ==========================================
+// Floating +1 Effect
+// ==========================================
+
+function createTapEffect(x,y){
+
+
+
+    const plus =
+        document.createElement(
+            "div"
+        );
+
+
+
+    plus.innerHTML =
+        "+1";
+
+
+
+    plus.style.position =
+        "fixed";
+
+
+
+    plus.style.left =
+        x + "px";
+
+
+
+    plus.style.top =
+        y + "px";
+
+
+
+    plus.style.color =
+        "#ffc107";
+
+
+
+    plus.style.fontSize =
+        "24px";
+
+
+
+    plus.style.fontWeight =
+        "bold";
+
+
+
+    plus.style.pointerEvents =
+        "none";
+
+
+
+    plus.style.zIndex =
+        "9999";
+
+
+
+    plus.style.transition =
+        "all .7s ease";
+
+
+
+    document.body.appendChild(
+        plus
+    );
+
+
+
+
+    setTimeout(()=>{
+
+
+        plus.style.transform =
+        "translateY(-80px)";
+
+
+
+        plus.style.opacity =
+        "0";
+
+
+
+    },20);
+
+
+
+
+    setTimeout(()=>{
+
+
+        plus.remove();
+
+
+    },800);
+
+
+}
+
+
+
+
+
+
 // ==========================================
 // Energy Recharge
 // ==========================================
 
-function startEnergyRecharge(){
+setInterval(()=>{
 
 
-    setInterval(()=>{
+    if(
+        energy < maxEnergy
+    ){
 
 
-        if(energy < maxEnergy){
+        energy++;
 
 
-            energy++;
+        updateEnergyUI();
 
 
-            updateEnergy(
-                energy,
-                maxEnergy
-            );
+    }
 
 
-        }
+},10000);
 
 
 
-    },10000);
-
-
-}
 
 
 
@@ -522,29 +617,13 @@ function showLoading(show){
 
 
 
-    if(show){
+    loading.style.display =
+        show ? "flex":"none";
 
 
-        loading.style.display =
-            "flex";
 
-
-        app.style.display =
-            "none";
-
-
-    }else{
-
-
-        loading.style.display =
-            "none";
-
-
-        app.style.display =
-            "block";
-
-
-    }
+    app.style.display =
+        show ? "none":"block";
 
 
 }
@@ -553,9 +632,6 @@ function showLoading(show){
 
 
 
-// ==========================================
-// Helper
-// ==========================================
 
 function setText(id,value){
 
@@ -568,10 +644,9 @@ function setText(id,value){
     if(el){
 
         el.textContent =
-            value;
+        value;
 
     }
-
 
 }
 
@@ -579,15 +654,12 @@ function setText(id,value){
 
 
 
-// ==========================================
-// Global
-// ==========================================
 
 window.Zoryx = {
 
 
     reload:
-        loadUserData,
+    loadUserData,
 
 
     getUser(){
