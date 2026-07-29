@@ -3,98 +3,178 @@
 // client/telegram.js
 // ==========================================
 
+
 const tg = window.Telegram.WebApp;
 
-// Initialize Telegram WebApp
+
+// Initialize
+
 tg.ready();
+
 tg.expand();
 
+
+
 // Theme
-document.body.style.background = tg.themeParams.bg_color || "#0b0b0f";
 
-// Enable Closing Confirmation
-tg.enableClosingConfirmation();
+document.body.style.background =
+    tg.themeParams.bg_color ||
+    "#0b0b0f";
 
-// User Information
-const telegramUser = tg.initDataUnsafe?.user || null;
 
-// Export User
+
+// User
+
+const telegramUser =
+    tg.initDataUnsafe?.user || null;
+
+
+
+
 window.TelegramApp = {
+
+
     tg,
+
+
     user: telegramUser,
-    initData: tg.initData,
 
-    isTelegram() {
+
+    initData: tg.initData || "",
+
+
+
+    isTelegram(){
+
         return !!telegramUser;
+
     },
 
-    getUser() {
-        return telegramUser;
+
+
+    getUser(){
+
+        return this.user;
+
     },
 
-    getUserId() {
+
+
+    getUserId(){
+
         return telegramUser?.id || null;
+
     },
 
-    getUsername() {
+
+
+    getUsername(){
+
         return telegramUser?.username || "";
+
     },
 
-    getFirstName() {
-        return telegramUser?.first_name || "";
+
+
+    getFirstName(){
+
+        return telegramUser?.first_name || "User";
+
     },
 
-    getLastName() {
+
+
+    getLastName(){
+
         return telegramUser?.last_name || "";
+
     },
 
-    getPhoto() {
+
+
+    getPhoto(){
+
         return telegramUser?.photo_url || "";
+
     },
 
-    getLanguage() {
-        return telegramUser?.language_code || "en";
+
+
+    haptic(type="light"){
+
+        try{
+
+            tg.HapticFeedback
+              .impactOccurred(type);
+
+        }catch(e){}
+
     },
 
-    haptic(type = "light") {
-        try {
-            tg.HapticFeedback.impactOccurred(type);
-        } catch (e) {}
+
+
+    popup(title,message){
+
+        try{
+
+            tg.showPopup({
+
+                title,
+
+                message,
+
+                buttons:[
+                    {
+                        type:"ok"
+                    }
+                ]
+
+            });
+
+        }catch(e){
+
+            alert(message);
+
+        }
+
     },
 
-    popup(title, message) {
-        tg.showPopup({
-            title,
-            message,
-            buttons: [
-                {
-                    type: "ok"
-                }
-            ]
-        });
+
+
+    alert(message){
+
+        try{
+
+            tg.showAlert(message);
+
+        }catch(e){
+
+            alert(message);
+
+        }
+
     },
 
-    alert(message) {
-        tg.showAlert(message);
-    },
 
-    close() {
+    close(){
+
         tg.close();
+
     }
+
+
 };
 
-// Debug (Browser Mode)
-if (!telegramUser) {
-    console.warn("Running outside Telegram.");
 
-    window.TelegramApp.user = {
-        id: 123456789,
-        username: "developer",
-        first_name: "Developer",
-        last_name: "",
-        language_code: "en",
-        photo_url: ""
-    };
-}
 
-console.log("Telegram User:", window.TelegramApp.user);
+
+console.log(
+    "Telegram InitData:",
+    tg.initData
+);
+
+
+console.log(
+    "Telegram User:",
+    window.TelegramApp.user
+);
