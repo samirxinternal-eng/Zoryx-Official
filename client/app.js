@@ -573,7 +573,7 @@ function startEnergyRecharge(){
 
 
 
-    },1000);
+    },4000);
 
 
 }
