@@ -20,165 +20,323 @@
 
     <title>Zoryx</title>
 
+
     <!-- Manifest -->
 
     <link rel="manifest" href="manifest.json">
+
 
     <!-- Icon -->
 
     <link rel="icon" href="icon-192.png">
 
+
     <!-- CSS -->
 
     <link rel="stylesheet" href="style.css">
 
+
     <!-- Telegram WebApp -->
 
-    <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
 
 </head>
 
+
 <body>
 
-    <!-- ==========================
-         Loading Screen
-    =========================== -->
 
-    <div id="loading">
+<!-- ==========================
+     Loading Screen
+=========================== -->
 
-        <div class="loader"></div>
 
-        <h2>Zoryx</h2>
+<div id="loading">
 
-        <p>Loading...</p>
 
-    </div>
+    <div class="loader"></div>
 
-    <!-- ==========================
-         Main App
-    =========================== -->
 
-    <div id="app" style="display:none;">
+    <h2>
+        Zoryx
+    </h2>
 
-        <!-- Header -->
 
-        <header id="header">
+    <p>
+        Loading...
+    </p>
 
-            <div class="profile">
 
-                <img
-                    id="userPhoto"
-                    src="icon-192.png"
-                    alt="Profile">
+</div>
 
-                <div>
 
-                    <h3 id="userName">
-                        Loading...
-                    </h3>
 
-                    <span id="userLevel">
-                        Level 1
-                    </span>
 
-                </div>
 
-            </div>
+<!-- ==========================
+     Main App
+=========================== -->
 
-            <button id="settingButton">
-                ⚙️
-            </button>
 
-        </header>
+<div id="app" style="display:none;">
 
-        <!-- Balance -->
 
-        <section id="balanceCard">
 
-            <h1 id="balance">
-                0
-            </h1>
+<!-- Header -->
 
-            <p>
-                Zoryx Coin
-            </p>
+<header id="header">
 
-        </section>
 
-        <!-- Energy -->
+    <div class="profile">
 
-        <section id="energyCard">
 
-            <div class="energyTop">
+        <img
+            id="userPhoto"
+            src="icon-192.png"
+            alt="Profile">
 
-                <span>
-                    Energy
-                </span>
 
-                <span id="energyText">
-                    1000 / 1000
-                </span>
 
-            </div>
+        <div>
 
-            <div class="energyBar">
 
-                <div id="energyFill"></div>
+            <h3 id="userName">
+                Loading...
+            </h3>
 
-            </div>
 
-        </section>
 
-        <!-- Coin -->
+            <span id="userLevel">
+                Level 1
+            </span>
 
-        <section id="coinArea">
 
-            <div id="coin">
+        </div>
 
-                <span>
-                    Z
-                </span>
-
-            </div>
-
-        </section>
-
-        <!-- Bottom Navigation -->
-
-        <nav id="bottomNav">
-
-            <button class="nav active" id="navHome">
-                Home
-            </button>
-
-            <button class="nav" id="navEarn">
-                Earn
-            </button>
-
-            <button class="nav" id="navFriends">
-                Friends
-            </button>
-
-            <button class="nav" id="navWallet">
-                Wallet
-            </button>
-
-            <button class="nav" id="navProfile">
-                Profile
-            </button>
-
-        </nav>
 
     </div>
 
-    <!-- Scripts -->
 
-    <script src="telegram.js" defer></script>
 
-    <script src="api.js" defer></script>
+    <button id="settingButton">
 
-    <script src="app.js" defer></script>
+        ⚙️
+
+    </button>
+
+
+
+</header>
+
+
+
+
+
+
+<!-- Balance -->
+
+
+<section id="balanceCard">
+
+
+    <h1 id="balance">
+        0
+    </h1>
+
+
+
+    <p>
+        Zoryx Coin
+    </p>
+
+
+</section>
+
+
+
+
+
+
+
+<!-- Energy -->
+
+
+<section id="energyCard">
+
+
+    <div class="energyTop">
+
+
+        <span>
+            Energy
+        </span>
+
+
+
+        <span id="energyText">
+
+            1000 / 1000
+
+        </span>
+
+
+    </div>
+
+
+
+
+
+    <div class="energyBar">
+
+
+        <div id="energyFill"></div>
+
+
+    </div>
+
+
+
+</section>
+
+
+
+
+
+
+
+
+<!-- Coin Area -->
+
+
+<section id="coinArea">
+
+
+
+    <div id="coin">
+
+
+        <span>
+            Z
+        </span>
+
+
+
+    </div>
+
+
+
+
+
+    <!-- Tap +1 Effects -->
+
+    <div id="tapEffects"></div>
+
+
+
+</section>
+
+
+
+
+
+
+
+
+<!-- Bottom Navigation -->
+
+
+<nav id="bottomNav">
+
+
+
+    <button class="nav active">
+
+        🏠
+        <span>
+            Home
+        </span>
+
+    </button>
+
+
+
+
+    <button class="nav">
+
+        🎁
+        <span>
+            Earn
+        </span>
+
+    </button>
+
+
+
+
+
+    <button class="nav">
+
+        👥
+        <span>
+            Friends
+        </span>
+
+    </button>
+
+
+
+
+
+    <button class="nav">
+
+        💰
+        <span>
+            Wallet
+        </span>
+
+    </button>
+
+
+
+
+
+    <button class="nav">
+
+        👤
+        <span>
+            Profile
+        </span>
+
+    </button>
+
+
+
+</nav>
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+<!-- Scripts -->
+
+
+<script src="telegram.js"></script>
+
+<script src="api.js"></script>
+
+<script src="app.js"></script>
+
+
 
 </body>
 
-                </html>
+    </html>
