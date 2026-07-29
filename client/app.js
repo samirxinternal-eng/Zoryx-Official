@@ -14,6 +14,8 @@ let localBalance = 0;
 
 let tapPower = 1;
 
+let activeEffects = 0;
+
 
 // ==========================================
 // Initialize
@@ -37,6 +39,9 @@ async()=>{
 
 
         registerEvents();
+
+
+        startEnergyRecharge();
 
 
     }
@@ -90,9 +95,7 @@ async function login(){
 
 
 
-    currentUser =
-    res.user;
-
+    currentUser = res.user;
 
 
     localBalance =
@@ -373,7 +376,6 @@ async function handleCoinTap(event){
 
 
 
-    // Server Tap
 
     const result =
     await API.tap(
@@ -389,19 +391,11 @@ async function handleCoinTap(event){
     if(!result.success){
 
 
-        TelegramApp.popup(
-            "Error",
-            result.message
-        );
-
-
         return;
 
     }
 
 
-
-    // Update From Server
 
     localBalance =
     result.balance;
@@ -429,7 +423,6 @@ async function handleCoinTap(event){
 
 
     animateCoin();
-
 
 
     createTapEffect(
@@ -477,7 +470,7 @@ function animateCoin(){
         "scale(1)";
 
 
-    },100);
+    },80);
 
 
 }
@@ -489,10 +482,20 @@ function animateCoin(){
 
 
 // ==========================================
-// +1 Effect
+// Notcoin Style +1 Effect
 // ==========================================
 
 function createTapEffect(x,y){
+
+
+    // Too many effects stop
+    if(activeEffects >= 5)
+        return;
+
+
+
+    activeEffects++;
+
 
 
     const effect =
@@ -501,45 +504,21 @@ function createTapEffect(x,y){
     );
 
 
+    effect.className =
+    "tap-effect";
+
+
     effect.innerText =
     "+1";
 
 
 
-    effect.style.position =
-    "fixed";
-
-
     effect.style.left =
-    x+"px";
+    x + "px";
 
 
     effect.style.top =
-    y+"px";
-
-
-    effect.style.color =
-    "#ffc107";
-
-
-    effect.style.fontSize =
-    "26px";
-
-
-    effect.style.fontWeight =
-    "bold";
-
-
-    effect.style.zIndex =
-    "9999";
-
-
-    effect.style.pointerEvents =
-    "none";
-
-
-    effect.style.transition =
-    "all .8s ease";
+    y + "px";
 
 
 
@@ -552,25 +531,49 @@ function createTapEffect(x,y){
     setTimeout(()=>{
 
 
-        effect.style.transform =
-        "translateY(-80px)";
-
-
-        effect.style.opacity =
-        "0";
-
-
-    },20);
-
-
-
-    setTimeout(()=>{
-
-
         effect.remove();
 
+        activeEffects--;
 
-    },900);
+
+    },400);
+
+
+
+}
+
+
+
+
+
+
+
+// ==========================================
+// Live Energy Recharge
+// ==========================================
+
+function startEnergyRecharge(){
+
+
+    setInterval(()=>{
+
+
+        if(
+            energy < maxEnergy
+        ){
+
+
+            energy++;
+
+
+            updateEnergyUI();
+
+
+        }
+
+
+
+    },1000);
 
 
 }
