@@ -1,1 +1,31 @@
-
+{
+  "name": "zoryx",
+  "version": "1.0.0",
+  "description": "Zoryx Telegram Mini App",
+  "type": "module",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js"
+  },
+  "keywords": [
+    "zoryx",
+    "telegram",
+    "miniapp",
+    "tap",
+    "mining",
+    "webapp"
+  ],
+  "author": "Zoryx",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "mongodb": "^6.18.0",
+    "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
