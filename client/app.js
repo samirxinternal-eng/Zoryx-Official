@@ -6,20 +6,34 @@
 let currentUser = null;
 
 // ==========================================
-// Initialize App
+// Initialize
 // ==========================================
 
 document.addEventListener("DOMContentLoaded", async () => {
-    console.log("Starting Zoryx...");
+
+    console.log("🚀 Starting Zoryx...");
+
+    showLoading(true);
 
     if (!window.TelegramApp) {
         alert("Telegram WebApp not found.");
         return;
     }
 
-    await login();
+    try {
 
-    registerEvents();
+        await login();
+
+        registerEvents();
+
+    } catch (err) {
+
+        console.error(err);
+
+        TelegramApp.alert("Application failed to start.");
+
+    }
+
 });
 
 // ==========================================
@@ -28,38 +42,34 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function login() {
 
-    try {
+    const res = await API.login();
 
-        const res = await API.login();
+    if (!res.success) {
 
-        if (!res.success) {
-            TelegramApp.popup(
-                "Login Failed",
-                res.message || "Unable to authenticate."
-            );
-            return;
-        }
+        showLoading(false);
 
-        currentUser = res.user;
+        TelegramApp.popup(
+            "Login Failed",
+            res.message || "Unable to authenticate."
+        );
 
-        console.log("Logged In:", currentUser);
-
-        updateUserUI();
-
-        await loadUserData();
-
-    } catch (err) {
-
-        console.error(err);
-
-        TelegramApp.alert("Unexpected error.");
-
+        return;
     }
+
+    currentUser = res.user;
+
+    console.log("Logged In:", currentUser);
+
+    updateUserUI();
+
+    await loadUserData();
+
+    showLoading(false);
 
 }
 
 // ==========================================
-// Load User Data
+// Load User
 // ==========================================
 
 async function loadUserData() {
@@ -68,15 +78,22 @@ async function loadUserData() {
 
     try {
 
-        const profile = await API.getProfile(currentUser.telegramId);
+        const profile = await API.getProfile(
+            currentUser.telegramId
+        );
 
         if (profile.success && profile.user) {
+
             currentUser = profile.user;
+
             updateUserUI();
+
         }
 
-    } catch (e) {
-        console.error(e);
+    } catch (err) {
+
+        console.error(err);
+
     }
 
 }
@@ -89,86 +106,142 @@ function updateUserUI() {
 
     if (!currentUser) return;
 
-    setText("username",
+    setText(
+        "userName",
         currentUser.firstName ||
-        TelegramApp.getFirstName()
+        TelegramApp.getFirstName() ||
+        "User"
     );
 
-    setText("balance",
-        currentUser.balance ?? 0
+    setText(
+        "userLevel",
+        `Level ${currentUser.level || 1}`
     );
 
-    setText("level",
-        currentUser.level ?? 1
+    setText(
+        "balance",
+        currentUser.balance || 0
     );
 
-    setText("referrals",
-        currentUser.referrals ?? 0
-    );
+    const photo = document.getElementById("userPhoto");
 
-    const avatar = document.getElementById("avatar");
+    if (photo) {
 
-    if (avatar) {
-
-        avatar.src =
+        photo.src =
             currentUser.photo ||
             TelegramApp.getPhoto() ||
-            "https://placehold.co/120x120";
+            "icon-192.png";
+
+    }
+
+    updateEnergy(
+        currentUser.energy || 1000,
+        currentUser.maxEnergy || 1000
+    );
+
+}
+
+// ==========================================
+// Energy
+// ==========================================
+
+function updateEnergy(current, max) {
+
+    const text = document.getElementById("energyText");
+
+    const fill = document.getElementById("energyFill");
+
+    if (text) {
+
+        text.textContent = `${current} / ${max}`;
+
+    }
+
+    if (fill) {
+
+        const percent = Math.min(
+            100,
+            (current / max) * 100
+        );
+
+        fill.style.width = percent + "%";
 
     }
 
 }
 
 // ==========================================
-// Register Button Events
+// Events
 // ==========================================
 
 function registerEvents() {
 
-    const rewardBtn = document.getElementById("dailyReward");
+    const coin = document.getElementById("coin");
 
-    if (rewardBtn) {
+    if (coin) {
 
-        rewardBtn.addEventListener("click", claimDailyReward);
+        coin.addEventListener("click", () => {
+
+            TelegramApp.haptic("light");
+
+            coin.style.transform = "scale(.95)";
+
+            setTimeout(() => {
+
+                coin.style.transform = "scale(1)";
+
+            }, 100);
+
+        });
 
     }
+
+    document.querySelectorAll(".nav").forEach(btn => {
+
+        btn.addEventListener("click", () => {
+
+            document
+                .querySelectorAll(".nav")
+                .forEach(x => x.classList.remove("active"));
+
+            btn.classList.add("active");
+
+        });
+
+    });
 
 }
 
 // ==========================================
-// Daily Reward
+// Loading
 // ==========================================
 
-async function claimDailyReward() {
+function showLoading(show) {
 
-    if (!currentUser) return;
+    const loading = document.getElementById("loading");
 
-    TelegramApp.haptic("medium");
+    const app = document.getElementById("app");
 
-    const res = await API.claimDaily(currentUser.telegramId);
+    if (!loading || !app) return;
 
-    if (res.success) {
+    if (show) {
 
-        TelegramApp.popup(
-            "Success",
-            res.message || "Reward Claimed!"
-        );
+        loading.style.display = "flex";
 
-        await loadUserData();
+        app.style.display = "none";
 
     } else {
 
-        TelegramApp.popup(
-            "Failed",
-            res.message || "Please try again later."
-        );
+        loading.style.display = "none";
+
+        app.style.display = "block";
 
     }
 
 }
 
 // ==========================================
-// Helpers
+// Helper
 // ==========================================
 
 function setText(id, value) {
@@ -176,7 +249,9 @@ function setText(id, value) {
     const el = document.getElementById(id);
 
     if (el) {
+
         el.textContent = value;
+
     }
 
 }
@@ -189,8 +264,10 @@ window.Zoryx = {
 
     reload: loadUserData,
 
-    user() {
+    getUser() {
+
         return currentUser;
+
     }
 
 };
