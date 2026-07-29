@@ -14,35 +14,23 @@ let tapPower = 1;
 
 let localBalance = 0;
 
+let saving = false;
 
 
 // ==========================================
 // Initialize
 // ==========================================
 
+
 document.addEventListener(
-    "DOMContentLoaded",
-    async ()=>{
+"DOMContentLoaded",
+async()=>{
 
 
-    console.log(
-        "🚀 Starting Zoryx..."
-    );
+    console.log("🚀 Zoryx Starting...");
 
 
     showLoading(true);
-
-
-
-    if(!window.TelegramApp){
-
-        alert(
-            "Telegram WebApp not found."
-        );
-
-        return;
-
-    }
 
 
 
@@ -55,6 +43,9 @@ document.addEventListener(
         registerEvents();
 
 
+        startEnergyRecharge();
+
+
 
     }catch(error){
 
@@ -63,11 +54,12 @@ document.addEventListener(
 
 
         TelegramApp.alert(
-            "Application failed."
+            "Application Error"
         );
 
 
     }
+
 
 
 });
@@ -80,11 +72,12 @@ document.addEventListener(
 // Login
 // ==========================================
 
+
 async function login(){
 
 
     const res =
-        await API.login();
+    await API.login();
 
 
 
@@ -96,33 +89,35 @@ async function login(){
 
         TelegramApp.popup(
             "Login Failed",
-            res.message
+            res.message ||
+            "Unable to login"
         );
 
 
         return;
+
 
     }
 
 
 
     currentUser =
-        res.user;
+    res.user;
 
 
 
     localBalance =
-        currentUser.balance || 0;
+    currentUser.balance || 0;
 
 
 
     energy =
-        currentUser.energy || 1000;
+    currentUser.energy ?? 1000;
 
 
 
     maxEnergy =
-        currentUser.maxEnergy || 1000;
+    currentUser.maxEnergy ?? 1000;
 
 
 
@@ -137,6 +132,7 @@ async function login(){
     showLoading(false);
 
 
+
 }
 
 
@@ -144,9 +140,11 @@ async function login(){
 
 
 
+
 // ==========================================
-// Load User
+// Load Profile
 // ==========================================
+
 
 async function loadUserData(){
 
@@ -157,9 +155,9 @@ async function loadUserData(){
 
 
     const res =
-        await API.getProfile(
-            currentUser.telegramId
-        );
+    await API.getProfile(
+        currentUser.telegramId
+    );
 
 
 
@@ -167,22 +165,22 @@ async function loadUserData(){
 
 
         currentUser =
-            res.user;
+        res.user;
 
 
 
         localBalance =
-            currentUser.balance || 0;
+        currentUser.balance || 0;
 
 
 
         energy =
-            currentUser.energy || energy;
+        currentUser.energy ?? energy;
 
 
 
         maxEnergy =
-            currentUser.maxEnergy || maxEnergy;
+        currentUser.maxEnergy ?? maxEnergy;
 
 
 
@@ -192,7 +190,9 @@ async function loadUserData(){
     }
 
 
+
 }
+
 
 
 
@@ -203,12 +203,8 @@ async function loadUserData(){
 // Update UI
 // ==========================================
 
+
 function updateUserUI(){
-
-
-    if(!currentUser)
-        return;
-
 
 
     setText(
@@ -234,23 +230,26 @@ function updateUserUI(){
 
 
     const photo =
-        document.getElementById(
-            "userPhoto"
-        );
+    document.getElementById(
+        "userPhoto"
+    );
 
 
 
     if(photo){
 
+
         photo.src =
-            currentUser.photo ||
-            "icon-192.png";
+        currentUser.photo ||
+        "icon-192.png";
+
 
     }
 
 
 
     updateEnergyUI();
+
 
 
 }
@@ -265,26 +264,30 @@ function updateUserUI(){
 // Energy UI
 // ==========================================
 
+
 function updateEnergyUI(){
 
 
     const text =
-        document.getElementById(
-            "energyText"
-        );
+    document.getElementById(
+        "energyText"
+    );
+
 
 
     const fill =
-        document.getElementById(
-            "energyFill"
-        );
+    document.getElementById(
+        "energyFill"
+    );
 
 
 
     if(text){
 
+
         text.textContent =
         `${energy} / ${maxEnergy}`;
+
 
     }
 
@@ -292,13 +295,17 @@ function updateEnergyUI(){
 
     if(fill){
 
+
         fill.style.width =
         `${(energy/maxEnergy)*100}%`;
+
 
     }
 
 
+
 }
+
 
 
 
@@ -309,13 +316,14 @@ function updateEnergyUI(){
 // Events
 // ==========================================
 
+
 function registerEvents(){
 
 
     const coin =
-        document.getElementById(
-            "coin"
-        );
+    document.getElementById(
+        "coin"
+    );
 
 
 
@@ -332,7 +340,39 @@ function registerEvents(){
 
 
 
+
+    document
+    .querySelectorAll(".nav")
+    .forEach(btn=>{
+
+
+        btn.addEventListener(
+        "click",
+        ()=>{
+
+
+            document
+            .querySelectorAll(".nav")
+            .forEach(x=>
+            x.classList.remove("active")
+            );
+
+
+            btn.classList.add(
+                "active"
+            );
+
+
+        });
+
+
+
+    });
+
+
+
 }
+
 
 
 
@@ -343,7 +383,12 @@ function registerEvents(){
 // Coin Tap
 // ==========================================
 
-async function handleCoinTap(event){
+
+async function handleCoinTap(e){
+
+
+
+    e.stopPropagation();
 
 
 
@@ -358,14 +403,14 @@ async function handleCoinTap(event){
 
         return;
 
+
     }
 
 
 
 
 
-    energy -= 1;
-
+    energy--;
 
     localBalance += tapPower;
 
@@ -387,54 +432,90 @@ async function handleCoinTap(event){
 
 
 
+    animateCoin();
 
-    // Coin Animation
+
+
+    createTapEffect();
+
+
+
+    saveTap();
+
+
+
+}
+
+
+
+
+
+
+
+// ==========================================
+// Coin Animation
+// ==========================================
+
+
+function animateCoin(){
+
 
     const coin =
-        document.getElementById(
-            "coin"
-        );
-
-
-    if(coin){
-
-
-        coin.style.transform =
-        "scale(.90)";
-
-
-        setTimeout(()=>{
-
-
-            coin.style.transform =
-            "scale(1)";
-
-
-        },100);
-
-
-    }
-
-
-
-
-
-
-    // +1 Effect
-
-    createTapEffect(
-        event.clientX,
-        event.clientY
+    document.getElementById(
+        "coin"
     );
 
 
 
+    if(!coin)
+        return;
 
 
 
-    // Save
+    coin.style.transform =
+    "scale(.9)";
 
-    if(currentUser){
+
+
+    setTimeout(()=>{
+
+
+        coin.style.transform =
+        "scale(1)";
+
+
+    },100);
+
+
+}
+
+
+
+
+
+
+
+// ==========================================
+// Save Tap
+// ==========================================
+
+
+async function saveTap(){
+
+
+    if(
+        !currentUser ||
+        saving
+    )
+    return;
+
+
+
+    saving=true;
+
+
+
+    try{
 
 
         await API.addBalance(
@@ -446,7 +527,18 @@ async function handleCoinTap(event){
         );
 
 
+
+    }catch(error){
+
+
+        console.log(error);
+
+
     }
+
+
+
+    saving=false;
 
 
 
@@ -457,106 +549,84 @@ async function handleCoinTap(event){
 
 
 
+
 // ==========================================
-// Floating +1 Effect
+// +1 Effect
 // ==========================================
 
-function createTapEffect(x,y){
+
+function createTapEffect(){
 
 
-
-    const plus =
-        document.createElement(
-            "div"
-        );
-
+    const coin =
+    document.getElementById(
+        "coin"
+    );
 
 
-    plus.innerHTML =
-        "+1";
-
-
-
-    plus.style.position =
-        "fixed";
-
-
-
-    plus.style.left =
-        x + "px";
-
-
-
-    plus.style.top =
-        y + "px";
-
-
-
-    plus.style.color =
-        "#ffc107";
-
-
-
-    plus.style.fontSize =
-        "24px";
-
-
-
-    plus.style.fontWeight =
-        "bold";
-
-
-
-    plus.style.pointerEvents =
-        "none";
-
-
-
-    plus.style.zIndex =
-        "9999";
-
-
-
-    plus.style.transition =
-        "all .7s ease";
-
-
-
-    document.body.appendChild(
-        plus
+    const area =
+    document.getElementById(
+        "coinArea"
     );
 
 
 
+    if(!coin || !area)
+    return;
+
+
+
+
+    const effect =
+    document.createElement(
+        "div"
+    );
+
+
+
+    effect.className =
+    "tap-effect";
+
+
+
+    effect.innerText =
+    "+1";
+
+
+
+    const rect =
+    coin.getBoundingClientRect();
+
+
+
+    effect.style.left =
+    (rect.width/2)+"px";
+
+
+
+    effect.style.top =
+    (rect.height/2)+"px";
+
+
+
+    area.appendChild(
+        effect
+    );
+
+
 
     setTimeout(()=>{
 
 
-        plus.style.transform =
-        "translateY(-80px)";
-
-
-
-        plus.style.opacity =
-        "0";
-
-
-
-    },20);
-
-
-
-
-    setTimeout(()=>{
-
-
-        plus.remove();
+        effect.remove();
 
 
     },800);
 
 
+
 }
+
 
 
 
@@ -567,24 +637,55 @@ function createTapEffect(x,y){
 // Energy Recharge
 // ==========================================
 
-setInterval(()=>{
+
+function startEnergyRecharge(){
 
 
-    if(
-        energy < maxEnergy
-    ){
+    setInterval(async()=>{
 
 
-        energy++;
+        if(
+            energy < maxEnergy
+        ){
 
 
-        updateEnergyUI();
+            energy++;
 
 
-    }
+            updateEnergyUI();
 
 
-},10000);
+
+            if(currentUser){
+
+
+                await API.updateProfile(
+
+                    currentUser.telegramId,
+
+                    {
+
+                        energy
+
+                    }
+
+                );
+
+
+            }
+
+
+
+        }
+
+
+
+    },10000);
+
+
+
+}
+
 
 
 
@@ -596,37 +697,40 @@ setInterval(()=>{
 // Loading
 // ==========================================
 
+
 function showLoading(show){
 
 
     const loading =
-        document.getElementById(
-            "loading"
-        );
+    document.getElementById(
+        "loading"
+    );
 
 
     const app =
-        document.getElementById(
-            "app"
-        );
+    document.getElementById(
+        "app"
+    );
 
 
 
     if(!loading || !app)
-        return;
+    return;
 
 
 
     loading.style.display =
-        show ? "flex":"none";
+    show ? "flex":"none";
 
 
 
     app.style.display =
-        show ? "none":"block";
+    show ? "none":"block";
+
 
 
 }
+
 
 
 
@@ -637,16 +741,13 @@ function setText(id,value){
 
 
     const el =
-        document.getElementById(id);
+    document.getElementById(id);
 
 
 
-    if(el){
+    if(el)
+    el.textContent=value;
 
-        el.textContent =
-        value;
-
-    }
 
 }
 
@@ -655,7 +756,8 @@ function setText(id,value){
 
 
 
-window.Zoryx = {
+
+window.Zoryx={
 
 
     reload:
@@ -664,7 +766,9 @@ window.Zoryx = {
 
     getUser(){
 
+
         return currentUser;
+
 
     }
 
