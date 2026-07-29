@@ -16,8 +16,13 @@ let tapPower = 1;
 
 
 // Effect Control
+let activeEffects = [];
 
-let effectTimer = [];
+
+// Server Save Control
+let pendingTap = 0;
+let savingTap = false;
+
 
 
 
@@ -40,6 +45,7 @@ async()=>{
     showLoading(true);
 
 
+
     try{
 
 
@@ -53,7 +59,8 @@ async()=>{
 
 
 
-    }catch(error){
+    }
+    catch(error){
 
 
         console.error(error);
@@ -68,6 +75,8 @@ async()=>{
 
 
 });
+
+
 
 
 
@@ -102,7 +111,6 @@ async function login(){
 
         return;
 
-
     }
 
 
@@ -127,7 +135,6 @@ async function login(){
 
 
 
-
     updateUserUI();
 
 
@@ -139,8 +146,9 @@ async function login(){
     showLoading(false);
 
 
-
 }
+
+
 
 
 
@@ -198,6 +206,8 @@ async function loadUserData(){
 
 
 }
+
+
 
 
 
@@ -269,6 +279,8 @@ function updateUserUI(){
 
 
 
+
+
 // ==========================================
 // Energy UI
 // ==========================================
@@ -293,10 +305,8 @@ function updateEnergyUI(){
 
     if(text){
 
-
         text.textContent =
         `${energy} / ${maxEnergy}`;
-
 
     }
 
@@ -313,6 +323,7 @@ function updateEnergyUI(){
 
 
 }
+
 
 
 
@@ -349,6 +360,7 @@ function registerEvents(){
 
 
 
+
     document
     .querySelectorAll(".nav")
     .forEach(btn=>{
@@ -366,6 +378,7 @@ function registerEvents(){
             );
 
 
+
             btn.classList.add(
                 "active"
             );
@@ -375,6 +388,7 @@ function registerEvents(){
 
 
     });
+
 
 
 }
@@ -392,7 +406,7 @@ function registerEvents(){
 // ==========================================
 
 
-async function handleCoinTap(event){
+function handleCoinTap(event){
 
 
 
@@ -412,17 +426,21 @@ async function handleCoinTap(event){
 
         return;
 
-
     }
 
 
 
-    // Instant UI Update
 
 
-    energy--;
+    // Instant Update
+
+    energy -= 1;
+
 
     localBalance += tapPower;
+
+
+    pendingTap += tapPower;
 
 
 
@@ -453,7 +471,47 @@ async function handleCoinTap(event){
 
 
 
-    // Server Sync
+    syncTap();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ==========================================
+// Server Sync
+// ==========================================
+
+
+async function syncTap(){
+
+
+    if(
+        savingTap ||
+        pendingTap <= 0
+    )
+    return;
+
+
+
+    savingTap = true;
+
+
+
+    const amount =
+    pendingTap;
+
+
+
+    pendingTap = 0;
+
 
 
     try{
@@ -464,7 +522,7 @@ async function handleCoinTap(event){
 
             currentUser.telegramId,
 
-            tapPower
+            amount
 
         );
 
@@ -475,7 +533,6 @@ async function handleCoinTap(event){
 
             energy =
             result.energy;
-
 
 
             localBalance =
@@ -496,18 +553,31 @@ async function handleCoinTap(event){
 
 
 
-    }catch(error){
+    }
+    catch(error){
 
 
-        console.log(error);
+        console.log(
+            error
+        );
 
 
     }
 
 
 
-}
+    savingTap = false;
 
+
+
+    if(pendingTap > 0){
+
+        syncTap();
+
+    }
+
+
+}
 
 
 
@@ -549,7 +619,8 @@ function animateCoin(){
         "scale(1)";
 
 
-    },70);
+    },80);
+
 
 
 }
@@ -563,7 +634,7 @@ function animateCoin(){
 
 
 // ==========================================
-// Notcoin Style +1 Effect
+// Notcoin Style Effect
 // ==========================================
 
 
@@ -571,21 +642,17 @@ function createTapEffect(x,y){
 
 
 
-    // Remove old effects
-
-    if(effectTimer.length >= 3){
+    if(activeEffects.length >= 3){
 
 
         const old =
-        effectTimer.shift();
-
+        activeEffects.shift();
 
 
         old.remove();
 
 
     }
-
 
 
 
@@ -623,10 +690,9 @@ function createTapEffect(x,y){
 
 
 
-    effectTimer.push(
+    activeEffects.push(
         effect
     );
-
 
 
 
@@ -636,11 +702,10 @@ function createTapEffect(x,y){
         effect.remove();
 
 
-        effectTimer =
-        effectTimer.filter(
+        activeEffects =
+        activeEffects.filter(
             e=>e!==effect
         );
-
 
 
     },450);
@@ -697,7 +762,6 @@ function startEnergyRecharge(){
 
 
 
-
 // ==========================================
 // Loading
 // ==========================================
@@ -710,7 +774,6 @@ function showLoading(show){
     document.getElementById(
         "loading"
     );
-
 
 
     const app =
@@ -734,8 +797,8 @@ function showLoading(show){
     show ? "none":"block";
 
 
-
 }
+
 
 
 
@@ -765,6 +828,7 @@ function setText(id,value){
 
 
 }
+
 
 
 
