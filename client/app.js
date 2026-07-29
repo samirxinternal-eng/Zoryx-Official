@@ -10,17 +10,14 @@ let energy = 1000;
 
 let maxEnergy = 1000;
 
-let tapPower = 1;
-
 let localBalance = 0;
 
-let saving = false;
+let tapPower = 1;
 
 
 // ==========================================
 // Initialize
 // ==========================================
-
 
 document.addEventListener(
 "DOMContentLoaded",
@@ -33,7 +30,6 @@ async()=>{
     showLoading(true);
 
 
-
     try{
 
 
@@ -43,11 +39,8 @@ async()=>{
         registerEvents();
 
 
-        startEnergyRecharge();
-
-
-
-    }catch(error){
+    }
+    catch(error){
 
 
         console.error(error);
@@ -61,9 +54,7 @@ async()=>{
     }
 
 
-
 });
-
 
 
 
@@ -71,7 +62,6 @@ async()=>{
 // ==========================================
 // Login
 // ==========================================
-
 
 async function login(){
 
@@ -89,8 +79,7 @@ async function login(){
 
         TelegramApp.popup(
             "Login Failed",
-            res.message ||
-            "Unable to login"
+            res.message || "Unable to login"
         );
 
 
@@ -110,10 +99,8 @@ async function login(){
     currentUser.balance || 0;
 
 
-
     energy =
     currentUser.energy ?? 1000;
-
 
 
     maxEnergy =
@@ -124,13 +111,10 @@ async function login(){
     updateUserUI();
 
 
-
     await loadUserData();
 
 
-
     showLoading(false);
-
 
 
 }
@@ -140,11 +124,9 @@ async function login(){
 
 
 
-
 // ==========================================
-// Load Profile
+// Load User
 // ==========================================
-
 
 async function loadUserData(){
 
@@ -168,15 +150,12 @@ async function loadUserData(){
         res.user;
 
 
-
         localBalance =
         currentUser.balance || 0;
 
 
-
         energy =
         currentUser.energy ?? energy;
-
 
 
         maxEnergy =
@@ -188,7 +167,6 @@ async function loadUserData(){
 
 
     }
-
 
 
 }
@@ -203,16 +181,18 @@ async function loadUserData(){
 // Update UI
 // ==========================================
 
-
 function updateUserUI(){
+
+
+    if(!currentUser)
+        return;
+
 
 
     setText(
         "userName",
-        currentUser.firstName ||
-        "User"
+        currentUser.firstName || "User"
     );
-
 
 
     setText(
@@ -238,18 +218,15 @@ function updateUserUI(){
 
     if(photo){
 
-
         photo.src =
         currentUser.photo ||
         "icon-192.png";
-
 
     }
 
 
 
     updateEnergyUI();
-
 
 
 }
@@ -264,7 +241,6 @@ function updateUserUI(){
 // Energy UI
 // ==========================================
 
-
 function updateEnergyUI(){
 
 
@@ -272,7 +248,6 @@ function updateEnergyUI(){
     document.getElementById(
         "energyText"
     );
-
 
 
     const fill =
@@ -284,10 +259,8 @@ function updateEnergyUI(){
 
     if(text){
 
-
         text.textContent =
         `${energy} / ${maxEnergy}`;
-
 
     }
 
@@ -295,13 +268,10 @@ function updateEnergyUI(){
 
     if(fill){
 
-
         fill.style.width =
         `${(energy/maxEnergy)*100}%`;
 
-
     }
-
 
 
 }
@@ -315,7 +285,6 @@ function updateEnergyUI(){
 // ==========================================
 // Events
 // ==========================================
-
 
 function registerEvents(){
 
@@ -340,7 +309,6 @@ function registerEvents(){
 
 
 
-
     document
     .querySelectorAll(".nav")
     .forEach(btn=>{
@@ -354,7 +322,7 @@ function registerEvents(){
             document
             .querySelectorAll(".nav")
             .forEach(x=>
-            x.classList.remove("active")
+                x.classList.remove("active")
             );
 
 
@@ -366,9 +334,7 @@ function registerEvents(){
         });
 
 
-
     });
-
 
 
 }
@@ -383,12 +349,12 @@ function registerEvents(){
 // Coin Tap
 // ==========================================
 
-
-async function handleCoinTap(e){
-
+async function handleCoinTap(event){
 
 
-    e.stopPropagation();
+
+    if(!currentUser)
+        return;
 
 
 
@@ -403,16 +369,46 @@ async function handleCoinTap(e){
 
         return;
 
+    }
+
+
+
+    // Server Tap
+
+    const result =
+    await API.tap(
+
+        currentUser.telegramId,
+
+        tapPower
+
+    );
+
+
+
+    if(!result.success){
+
+
+        TelegramApp.popup(
+            "Error",
+            result.message
+        );
+
+
+        return;
 
     }
 
 
 
+    // Update From Server
+
+    localBalance =
+    result.balance;
 
 
-    energy--;
-
-    localBalance += tapPower;
+    energy =
+    result.energy;
 
 
 
@@ -436,15 +432,14 @@ async function handleCoinTap(e){
 
 
 
-    createTapEffect();
-
-
-
-    saveTap();
-
+    createTapEffect(
+        event.clientX,
+        event.clientY
+    );
 
 
 }
+
 
 
 
@@ -456,7 +451,6 @@ async function handleCoinTap(e){
 // Coin Animation
 // ==========================================
 
-
 function animateCoin(){
 
 
@@ -466,14 +460,13 @@ function animateCoin(){
     );
 
 
-
     if(!coin)
         return;
 
 
 
     coin.style.transform =
-    "scale(.9)";
+    "scale(.90)";
 
 
 
@@ -496,85 +489,10 @@ function animateCoin(){
 
 
 // ==========================================
-// Save Tap
-// ==========================================
-
-
-async function saveTap(){
-
-
-    if(
-        !currentUser ||
-        saving
-    )
-    return;
-
-
-
-    saving=true;
-
-
-
-    try{
-
-
-        await API.addBalance(
-
-            currentUser.telegramId,
-
-            tapPower
-
-        );
-
-
-
-    }catch(error){
-
-
-        console.log(error);
-
-
-    }
-
-
-
-    saving=false;
-
-
-
-}
-
-
-
-
-
-
-
-// ==========================================
 // +1 Effect
 // ==========================================
 
-
-function createTapEffect(){
-
-
-    const coin =
-    document.getElementById(
-        "coin"
-    );
-
-
-    const area =
-    document.getElementById(
-        "coinArea"
-    );
-
-
-
-    if(!coin || !area)
-    return;
-
-
+function createTapEffect(x,y){
 
 
     const effect =
@@ -583,35 +501,66 @@ function createTapEffect(){
     );
 
 
-
-    effect.className =
-    "tap-effect";
-
-
-
     effect.innerText =
     "+1";
 
 
 
-    const rect =
-    coin.getBoundingClientRect();
-
+    effect.style.position =
+    "fixed";
 
 
     effect.style.left =
-    (rect.width/2)+"px";
-
+    x+"px";
 
 
     effect.style.top =
-    (rect.height/2)+"px";
+    y+"px";
+
+
+    effect.style.color =
+    "#ffc107";
+
+
+    effect.style.fontSize =
+    "26px";
+
+
+    effect.style.fontWeight =
+    "bold";
+
+
+    effect.style.zIndex =
+    "9999";
+
+
+    effect.style.pointerEvents =
+    "none";
+
+
+    effect.style.transition =
+    "all .8s ease";
 
 
 
-    area.appendChild(
+    document.body.appendChild(
         effect
     );
+
+
+
+    setTimeout(()=>{
+
+
+        effect.style.transform =
+        "translateY(-80px)";
+
+
+        effect.style.opacity =
+        "0";
+
+
+    },20);
 
 
 
@@ -621,71 +570,10 @@ function createTapEffect(){
         effect.remove();
 
 
-    },800);
-
-
-
-}
-
-
-
-
-
-
-
-// ==========================================
-// Energy Recharge
-// ==========================================
-
-
-function startEnergyRecharge(){
-
-
-    setInterval(async()=>{
-
-
-        if(
-            energy < maxEnergy
-        ){
-
-
-            energy++;
-
-
-            updateEnergyUI();
-
-
-
-            if(currentUser){
-
-
-                await API.updateProfile(
-
-                    currentUser.telegramId,
-
-                    {
-
-                        energy
-
-                    }
-
-                );
-
-
-            }
-
-
-
-        }
-
-
-
-    },10000);
-
+    },900);
 
 
 }
-
 
 
 
@@ -696,7 +584,6 @@ function startEnergyRecharge(){
 // ==========================================
 // Loading
 // ==========================================
-
 
 function showLoading(show){
 
@@ -715,7 +602,7 @@ function showLoading(show){
 
 
     if(!loading || !app)
-    return;
+        return;
 
 
 
@@ -723,10 +610,8 @@ function showLoading(show){
     show ? "flex":"none";
 
 
-
     app.style.display =
     show ? "none":"block";
-
 
 
 }
@@ -745,8 +630,12 @@ function setText(id,value){
 
 
 
-    if(el)
-    el.textContent=value;
+    if(el){
+
+        el.textContent =
+        value;
+
+    }
 
 
 }
@@ -757,7 +646,7 @@ function setText(id,value){
 
 
 
-window.Zoryx={
+window.Zoryx = {
 
 
     reload:
