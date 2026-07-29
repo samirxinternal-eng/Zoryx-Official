@@ -15,19 +15,20 @@ const API = {
     // Request Handler
     // ======================================
 
-    async request(endpoint, method = "GET", data = null) {
+    async request(endpoint, method = "GET", data = null){
 
 
-        try {
+        try{
 
 
             const options = {
 
-                method: method,
+                method,
 
-                headers: {
+                headers:{
 
-                    "Content-Type": "application/json"
+                    "Content-Type":
+                    "application/json"
 
                 }
 
@@ -38,37 +39,45 @@ const API = {
             if(data){
 
                 options.body =
-                    JSON.stringify(data);
+                JSON.stringify(data);
 
             }
 
 
 
             const response =
-                await fetch(
-                    `${this.BASE_URL}${endpoint}`,
-                    options
-                );
+            await fetch(
+
+                `${this.BASE_URL}${endpoint}`,
+
+                options
+
+            );
 
 
 
             const text =
-                await response.text();
+            await response.text();
 
 
 
             let result;
 
 
-            try {
 
-                result = JSON.parse(text);
+            try{
 
-            } catch(error) {
+
+                result =
+                JSON.parse(text);
+
+
+            }
+            catch(error){
 
 
                 console.error(
-                    "Invalid JSON Response:",
+                    "Invalid Server Response:",
                     text.substring(0,200)
                 );
 
@@ -78,9 +87,10 @@ const API = {
                     success:false,
 
                     message:
-                    "Server returned invalid response"
+                    "Invalid server response"
 
                 };
+
 
             }
 
@@ -95,7 +105,7 @@ const API = {
 
                     message:
                     result.message ||
-                    "API Request Failed"
+                    "Request Failed"
 
                 };
 
@@ -108,7 +118,8 @@ const API = {
 
 
 
-        } catch(error){
+        }
+        catch(error){
 
 
             console.error(
@@ -121,7 +132,8 @@ const API = {
 
                 success:false,
 
-                message:error.message
+                message:
+                error.message
 
             };
 
@@ -136,7 +148,7 @@ const API = {
 
 
     // ======================================
-    // Telegram Authentication
+    // Telegram Login
     // POST /api/auth/login
     // ======================================
 
@@ -166,6 +178,8 @@ const API = {
 
 
 
+
+
     // ======================================
     // User Profile
     // GET /api/user/:telegramId
@@ -188,13 +202,17 @@ const API = {
 
 
 
+
     // ======================================
-    // Update Profile
+    // Update User
     // PUT /api/user/:telegramId
     // ======================================
 
 
-    async updateProfile(telegramId,data){
+    async updateProfile(
+        telegramId,
+        data
+    ){
 
 
         return await this.request(
@@ -214,13 +232,18 @@ const API = {
 
 
 
+
+
     // ======================================
-    // Tap / Mining
+    // Coin Tap Mining
     // POST /api/tap
     // ======================================
 
 
-    async tap(telegramId, amount){
+    async tap(
+        telegramId,
+        amount = 1
+    ){
 
 
         return await this.request(
@@ -233,7 +256,7 @@ const API = {
 
                 telegramId,
 
-                tap: amount
+                tap:amount
 
             }
 
@@ -241,6 +264,8 @@ const API = {
 
 
     },
+
+
 
 
 
@@ -264,30 +289,6 @@ const API = {
     },
 
 
-
-
-
-    async addBalance(userId, amount){
-
-
-        return await this.request(
-
-            "/api/balance/add",
-
-            "POST",
-
-            {
-
-                userId,
-
-                amount
-
-            }
-
-        );
-
-
-    },
 
 
 
@@ -322,6 +323,8 @@ const API = {
 
 
 
+
+
     // ======================================
     // Referral
     // ======================================
@@ -338,6 +341,8 @@ const API = {
 
 
     },
+
+
 
 
 
@@ -367,8 +372,9 @@ const API = {
 
 
 
+
 // ==========================================
-// Global
+// Global Export
 // ==========================================
 
 window.API = API;
