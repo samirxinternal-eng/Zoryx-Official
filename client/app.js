@@ -756,3 +756,1574 @@ function createTapEffect(event){
 
 registerCoin();
 
+
+// ==========================================
+// Anti Auto Click Detection
+// ==========================================
+
+let tapHistory = [];
+
+let autoClickStrike = 0;
+
+const AUTO_CLICK_LIMIT = 35;
+
+const AUTO_CLICK_WINDOW = 1000;
+
+function detectAutoClick(){
+
+    const now = Date.now();
+
+    tapHistory.push(now);
+
+    tapHistory = tapHistory.filter(
+
+        time => now - time <= AUTO_CLICK_WINDOW
+
+    );
+
+    if(tapHistory.length >= AUTO_CLICK_LIMIT){
+
+        autoClickStrike++;
+
+        pendingTap = 0;
+
+        localBalance = Math.max(
+
+            0,
+
+            localBalance - tapHistory.length
+
+        );
+
+        setText(
+
+            "balance",
+
+            Number(localBalance).toLocaleString()
+
+        );
+
+        popup(
+
+            "Auto Click Detected",
+
+            "Suspicious tapping detected.\nCoins removed."
+
+        );
+
+        tapHistory = [];
+
+        return true;
+
+    }
+
+    return false;
+
+}
+
+// ==========================================
+// Override Tap
+// ==========================================
+
+const originalHandleCoinTap = handleCoinTap;
+
+handleCoinTap = function(event){
+
+    if(detectAutoClick()){
+
+        return;
+
+    }
+
+    originalHandleCoinTap(event);
+
+};
+
+// ==========================================
+// Server Sync
+// ==========================================
+
+async function syncTap(){
+
+    if(savingTap)
+    return;
+
+    if(pendingTap<=0)
+    return;
+
+    savingTap = true;
+
+    const amount = pendingTap;
+
+    pendingTap = 0;
+
+    try{
+
+        const result =
+
+        await API.tap(
+
+            currentUser.telegramId,
+
+            amount
+
+        );
+
+        if(result.success){
+
+            localBalance =
+
+            result.balance;
+
+            energy =
+
+            result.energy;
+
+            updateEnergyUI();
+
+            setText(
+
+                "balance",
+
+                Number(localBalance)
+
+                .toLocaleString()
+
+            );
+
+        }
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+        pendingTap += amount;
+
+    }
+
+    savingTap = false;
+
+    if(pendingTap>0){
+
+        syncTap();
+
+    }
+
+}
+
+// ==========================================
+// Queue Sync
+// ==========================================
+
+setInterval(()=>{
+
+    if(
+
+        pendingTap>0 &&
+
+        !savingTap
+
+    ){
+
+        syncTap();
+
+    }
+
+},250);
+
+// ==========================================
+// Leaderboard Button
+// ==========================================
+
+const leaderboardButton =
+
+document.getElementById(
+
+    "leaderboardButton"
+
+);
+
+if(leaderboardButton){
+
+    leaderboardButton.addEventListener(
+
+        "click",
+
+        ()=>{
+
+            toast(
+
+                "Leaderboard Coming Soon"
+
+            );
+
+        }
+
+    );
+
+}
+
+// ==========================================
+// Copy Referral
+// ==========================================
+
+const copyReferral =
+
+document.getElementById(
+
+    "copyReferral"
+
+);
+
+if(copyReferral){
+
+    copyReferral.addEventListener(
+
+        "click",
+
+        ()=>{
+
+            const input =
+
+            document.getElementById(
+
+                "referralLink"
+
+            );
+
+            if(!input)
+            return;
+
+            input.select();
+
+            document.execCommand(
+
+                "copy"
+
+            );
+
+            toast(
+
+                "Referral Link Copied"
+
+            );
+
+        }
+
+    );
+
+}
+
+// ==========================================
+// Refresh Profile
+// ==========================================
+
+async function refreshProfile(){
+
+    if(!currentUser)
+    return;
+
+    try{
+
+        await loadUserData();
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+    }
+
+     }
+
+
+// ==========================================
+// Energy Recharge
+// ==========================================
+
+function startEnergyRecharge(){
+
+    setInterval(()=>{
+
+        if(energy < maxEnergy){
+
+            energy++;
+
+            updateEnergyUI();
+
+        }
+
+    },4000);
+
+}
+
+// ==========================================
+// Daily Reward
+// Reset : 05:00 GMT
+// ==========================================
+
+function checkDailyReward(){
+
+    const now = new Date();
+
+    const utcHour = now.getUTCHours();
+
+    const today = now.toISOString().slice(0,10);
+
+    let lastClaim =
+
+    localStorage.getItem(
+
+        "dailyReward"
+
+    );
+
+    if(lastClaim===today && utcHour>=5){
+
+        return;
+
+    }
+
+    if(utcHour>=5){
+
+        document
+        .getElementById("dailyModal")
+        ?.classList.remove("hidden");
+
+    }
+
+}
+
+document
+.getElementById(
+"claimDaily"
+)
+?.addEventListener(
+
+"click",
+
+()=>{
+
+    localBalance+=5000;
+
+    setText(
+
+        "balance",
+
+        Number(localBalance)
+
+        .toLocaleString()
+
+    );
+
+    localStorage.setItem(
+
+        "dailyReward",
+
+        new Date()
+
+        .toISOString()
+
+        .slice(0,10)
+
+    );
+
+    document
+    .getElementById("dailyModal")
+    ?.classList.add("hidden");
+
+    toast(
+
+        "+5000 Coin Claimed"
+
+    );
+
+});
+
+// ==========================================
+// Lucky Spin
+// ==========================================
+
+function checkLuckySpin(){
+
+    const url =
+
+    new URLSearchParams(
+
+        window.location.search
+
+    );
+
+    if(
+
+        url.has("startapp")
+
+    ){
+
+        const modal =
+
+        document.getElementById(
+
+            "spinModal"
+
+        );
+
+        modal?.classList.remove(
+
+            "hidden"
+
+        );
+
+    }
+
+}
+
+document
+.getElementById(
+"spinButton"
+)
+?.addEventListener(
+
+"click",
+
+()=>{
+
+    const reward =
+
+    Math.floor(
+
+        Math.random()*5000
+
+    )+1000;
+
+    localBalance+=reward;
+
+    setText(
+
+        "balance",
+
+        Number(localBalance)
+
+        .toLocaleString()
+
+    );
+
+    document
+    .getElementById("spinModal")
+    ?.classList.add("hidden");
+
+    popup(
+
+        "Lucky Spin",
+
+        `You won ${reward} Coins`
+
+    );
+
+});
+
+// ==========================================
+// Navigation
+// ==========================================
+
+function openPage(name){
+
+    document
+
+    .querySelectorAll(".page")
+
+    .forEach(page=>{
+
+        page.classList.remove(
+
+            "active"
+
+        );
+
+    });
+
+    const target =
+
+    document.getElementById(
+
+        name+"Page"
+
+    );
+
+    if(target){
+
+        target.classList.add(
+
+            "active"
+
+        );
+
+    }
+
+    document
+
+    .querySelectorAll(".nav")
+
+    .forEach(btn=>{
+
+        btn.classList.remove(
+
+            "active"
+
+        );
+
+        if(
+
+            btn.dataset.page===name
+
+        ){
+
+            btn.classList.add(
+
+                "active"
+
+            );
+
+        }
+
+    });
+
+}
+
+document
+.querySelectorAll(".nav")
+.forEach(btn=>{
+
+    btn.addEventListener(
+
+        "click",
+
+        ()=>{
+
+            openPage(
+
+                btn.dataset.page
+
+            );
+
+        }
+
+    );
+
+});
+
+// ==========================================
+// Popup
+// ==========================================
+
+function popup(title,message){
+
+    setText(
+
+        "popupTitle",
+
+        title
+
+    );
+
+    setText(
+
+        "popupMessage",
+
+        message
+
+    );
+
+    document
+
+    .getElementById("popup")
+
+    ?.classList.remove(
+
+        "hidden"
+
+    );
+
+}
+
+document
+.getElementById(
+"popupButton"
+)
+?.addEventListener(
+
+"click",
+
+()=>{
+
+    document
+
+    .getElementById("popup")
+
+    ?.classList.add(
+
+        "hidden"
+
+    );
+
+});
+
+// ==========================================
+// Toast
+// ==========================================
+
+function toast(text){
+
+    const box =
+
+    document
+
+    .getElementById(
+
+        "toastContainer"
+
+    );
+
+    if(!box)
+    return;
+
+    const item =
+
+    document
+
+    .createElement(
+
+        "div"
+
+    );
+
+    item.className="toast";
+
+    item.textContent=text;
+
+    box.appendChild(item);
+
+    setTimeout(()=>{
+
+        item.remove();
+
+    },2500);
+
+}
+
+// ==========================================
+// Start
+// ==========================================
+
+startEnergyRecharge();
+
+checkDailyReward();
+
+checkLuckySpin();
+
+// ==========================================
+// Final Export
+// ==========================================
+
+window.Zoryx={
+
+    reload(){
+
+        loadUserData();
+
+    },
+
+    open(page){
+
+        openPage(page);
+
+    },
+
+    getUser(){
+
+        return currentUser;
+
+    }
+
+};
+
+
+
+// ==========================================
+// Leaderboard System
+// ==========================================
+
+let leaderboardData = [];
+
+let leaderboardLoaded = false;
+
+// ==========================================
+// Load Leaderboard
+// ==========================================
+
+async function loadLeaderboard(){
+
+    try{
+
+        const result =
+        await API.getLeaderboard();
+
+        if(!result.success){
+
+            toast("Unable to load leaderboard");
+
+            return;
+
+        }
+
+        leaderboardData =
+        result.data || [];
+
+        leaderboardLoaded = true;
+
+        renderLeaderboard();
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+        toast("Leaderboard Error");
+
+    }
+
+}
+
+// ==========================================
+// Render Leaderboard
+// ==========================================
+
+function renderLeaderboard(){
+
+    let modal =
+    document.getElementById(
+        "leaderboardModal"
+    );
+
+    if(!modal)
+        return;
+
+    const list =
+    document.getElementById(
+        "leaderboardList"
+    );
+
+    if(!list)
+        return;
+
+    list.innerHTML = "";
+
+    if(leaderboardData.length===0){
+
+        list.innerHTML =
+
+        `
+        <div class="emptyLeaderboard">
+
+            No Players Found
+
+        </div>
+        `;
+
+        return;
+
+    }
+
+    leaderboardData.forEach(
+
+        (user,index)=>{
+
+            const item =
+            document.createElement(
+                "div"
+            );
+
+            item.className =
+            "leaderItem";
+
+            item.innerHTML =
+
+            `
+            <div class="leaderRank">
+
+                #${index+1}
+
+            </div>
+
+            <img
+            class="leaderPhoto"
+            src="${user.photo || 'icon-192.png'}">
+
+            <div class="leaderInfo">
+
+                <div class="leaderName">
+
+                    ${user.firstName}
+
+                </div>
+
+                <div class="leaderCoin">
+
+                    ${Number(user.balance)
+                    .toLocaleString()} Coin
+
+                </div>
+
+            </div>
+            `;
+
+            list.appendChild(item);
+
+        }
+
+    );
+
+}
+
+// ==========================================
+// Open Leaderboard
+// ==========================================
+
+function openLeaderboard(){
+
+    if(!leaderboardLoaded){
+
+        loadLeaderboard();
+
+    }
+
+    document
+    .getElementById(
+        "leaderboardModal"
+    )
+    ?.classList.remove(
+        "hidden"
+    );
+
+}
+
+// ==========================================
+// Close Leaderboard
+// ==========================================
+
+function closeLeaderboard(){
+
+    document
+    .getElementById(
+        "leaderboardModal"
+    )
+    ?.classList.add(
+        "hidden"
+    );
+
+}
+
+// ==========================================
+// Events
+// ==========================================
+
+document
+.getElementById(
+    "leaderboardButton"
+)
+?.addEventListener(
+
+    "click",
+
+    openLeaderboard
+
+);
+
+document
+.getElementById(
+    "closeLeaderboard"
+)
+?.addEventListener(
+
+    "click",
+
+    closeLeaderboard
+
+); 
+
+// ==========================================
+// Leaderboard Refresh
+// ==========================================
+
+let leaderboardRefreshing = false;
+
+async function refreshLeaderboard(){
+
+    if(leaderboardRefreshing)
+    return;
+
+    leaderboardRefreshing = true;
+
+    try{
+
+        const result =
+        await API.getLeaderboard();
+
+        if(result.success){
+
+            leaderboardData =
+            result.data || [];
+
+            renderLeaderboard();
+
+        }
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+    }
+
+    leaderboardRefreshing = false;
+
+}
+
+// ==========================================
+// Highlight Current User
+// ==========================================
+
+function getRankClass(index){
+
+    if(index===0)
+    return "gold";
+
+    if(index===1)
+    return "silver";
+
+    if(index===2)
+    return "bronze";
+
+    return "";
+
+}
+
+// ==========================================
+// Update Render
+// ==========================================
+
+function createLeaderItem(user,index){
+
+    const item =
+    document.createElement("div");
+
+    item.className =
+    "leaderItem " +
+    getRankClass(index);
+
+    const isMe =
+
+    currentUser &&
+
+    user.telegramId ===
+
+    currentUser.telegramId;
+
+    item.innerHTML =
+
+    `
+    <div class="leaderRank">
+
+        #${index+1}
+
+    </div>
+
+    <img
+    class="leaderPhoto"
+    src="${user.photo || "icon-192.png"}">
+
+    <div class="leaderInfo">
+
+        <div class="leaderName">
+
+            ${user.firstName}
+
+            ${isMe ? "⭐" : ""}
+
+        </div>
+
+        <div class="leaderCoin">
+
+            ${Number(user.balance)
+            .toLocaleString()}
+
+            Coin
+
+        </div>
+
+    </div>
+    `;
+
+    return item;
+
+}
+
+// ==========================================
+// New Render
+// ==========================================
+
+function renderLeaderboard(){
+
+    const list =
+
+    document.getElementById(
+
+        "leaderboardList"
+
+    );
+
+    if(!list)
+    return;
+
+    list.innerHTML="";
+
+    if(
+
+        leaderboardData.length===0
+
+    ){
+
+        list.innerHTML=
+
+        "<p class='emptyLeaderboard'>No Data</p>";
+
+        return;
+
+    }
+
+    leaderboardData.forEach(
+
+        (user,index)=>{
+
+            list.appendChild(
+
+                createLeaderItem(
+
+                    user,
+
+                    index
+
+                )
+
+            );
+
+        }
+
+    );
+
+}
+
+// ==========================================
+// Auto Refresh
+// ==========================================
+
+setInterval(()=>{
+
+    if(
+
+        leaderboardLoaded
+
+    ){
+
+        refreshLeaderboard();
+
+    }
+
+},30000);
+
+
+// ==========================================
+// Leaderboard Top 3
+// ==========================================
+
+function renderTopPlayers(){
+
+    const topBox =
+
+    document.getElementById(
+
+        "leaderboardTop"
+
+    );
+
+    if(!topBox)
+    return;
+
+    topBox.innerHTML="";
+
+    leaderboardData
+    .slice(0,3)
+    .forEach((user,index)=>{
+
+        const card=
+        document.createElement("div");
+
+        card.className=
+        "topPlayer";
+
+        let medal="🥉";
+
+        if(index===0) medal="🥇";
+        if(index===1) medal="🥈";
+
+        card.innerHTML=`
+
+            <div class="topMedal">
+
+                ${medal}
+
+            </div>
+
+            <img
+            class="topPhoto"
+            src="${user.photo || "icon-192.png"}">
+
+            <div class="topName">
+
+                ${user.firstName}
+
+            </div>
+
+            <div class="topCoin">
+
+                ${Number(user.balance)
+                .toLocaleString()}
+
+            </div>
+
+        `;
+
+        topBox.appendChild(card);
+
+    });
+
+}
+
+// ==========================================
+// Current User Rank
+// ==========================================
+
+function updateMyRank(){
+
+    if(!currentUser)
+    return;
+
+    const rank=
+
+    leaderboardData.findIndex(
+
+        x=>
+
+        x.telegramId===
+
+        currentUser.telegramId
+
+    );
+
+    const myRank=
+
+    document.getElementById(
+
+        "myRank"
+
+    );
+
+    if(myRank){
+
+        myRank.textContent=
+
+        rank>=0 ?
+
+        "#"+(rank+1)
+
+        :
+
+        "--";
+
+    }
+
+}
+
+// ==========================================
+// Search Player
+// ==========================================
+
+function searchLeaderboard(keyword){
+
+    keyword=
+
+    keyword.toLowerCase();
+
+    const list=
+
+    document.getElementById(
+
+        "leaderboardList"
+
+    );
+
+    if(!list)
+    return;
+
+    list.innerHTML="";
+
+    leaderboardData
+
+    .filter(user=>
+
+        user.firstName
+
+        .toLowerCase()
+
+        .includes(keyword)
+
+    )
+
+    .forEach((user,index)=>{
+
+        list.appendChild(
+
+            createLeaderItem(
+
+                user,
+
+                index
+
+            )
+
+        );
+
+    });
+
+}
+
+// ==========================================
+// Search Event
+// ==========================================
+
+const leaderSearch=
+
+document.getElementById(
+
+    "leaderboardSearch"
+
+);
+
+if(leaderSearch){
+
+    leaderSearch
+
+    .addEventListener(
+
+        "input",
+
+        e=>{
+
+            searchLeaderboard(
+
+                e.target.value
+
+            );
+
+        }
+
+    );
+
+}
+
+// ==========================================
+// Update Leaderboard UI
+// ==========================================
+
+const oldRender=
+
+renderLeaderboard;
+
+renderLeaderboard=function(){
+
+    oldRender();
+
+    renderTopPlayers();
+
+    updateMyRank();
+
+};
+
+// ==========================================
+// Refresh Button
+// ==========================================
+
+document
+.getElementById(
+"refreshLeaderboard"
+)
+?.addEventListener(
+
+"click",
+
+()=>{
+
+    refreshLeaderboard();
+
+    toast(
+
+        "Leaderboard Updated"
+
+    );
+
+});
+
+
+// ==========================================
+// Earn / Task System
+// ==========================================
+
+let taskList = [];
+
+let taskLoaded = false;
+
+// ==========================================
+// Load Tasks
+// ==========================================
+
+async function loadTasks(){
+
+    try{
+
+        const result =
+        await API.getTasks();
+
+        if(!result.success){
+
+            toast("Unable to load tasks");
+
+            return;
+
+        }
+
+        taskList =
+        result.tasks || [];
+
+        taskLoaded = true;
+
+        renderTasks();
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+        toast("Task Loading Failed");
+
+    }
+
+}
+
+// ==========================================
+// Render Tasks
+// ==========================================
+
+function renderTasks(){
+
+    const list =
+    document.getElementById(
+        "taskList"
+    );
+
+    if(!list)
+    return;
+
+    list.innerHTML = "";
+
+    if(taskList.length===0){
+
+        list.innerHTML =
+
+        `
+        <div class="emptyTask">
+
+            No Task Available
+
+        </div>
+        `;
+
+        return;
+
+    }
+
+    taskList.forEach(task=>{
+
+        const item =
+        document.createElement("div");
+
+        item.className =
+        "taskCard";
+
+        item.innerHTML =
+
+        `
+        <div class="taskLeft">
+
+            <div class="taskTitle">
+
+                ${task.title}
+
+            </div>
+
+            <div class="taskReward">
+
+                +${Number(task.reward).toLocaleString()} Coin
+
+            </div>
+
+        </div>
+
+        <button
+        class="taskButton"
+
+        onclick="claimTask('${task.id}')">
+
+            ${task.completed ? "Claimed" : "Claim"}
+
+        </button>
+        `;
+
+        list.appendChild(item);
+
+    });
+
+}
+
+// ==========================================
+// Claim Task
+// ==========================================
+
+async function claimTask(id){
+
+    try{
+
+        const result =
+
+        await API.claimTask(
+
+            currentUser.telegramId,
+
+            id
+
+        );
+
+        if(!result.success){
+
+            popup(
+
+                "Task",
+
+                result.message
+
+            );
+
+            return;
+
+        }
+
+        localBalance =
+        result.balance;
+
+        setText(
+
+            "balance",
+
+            Number(localBalance)
+            .toLocaleString()
+
+        );
+
+        toast(
+
+            "+"+
+
+            Number(result.reward)
+
+            .toLocaleString()
+
+            +" Coin"
+
+        );
+
+        loadTasks();
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+    }
+
+}
+
+// ==========================================
+// Open Earn Page
+// ==========================================
+
+function openEarn(){
+
+    if(!taskLoaded){
+
+        loadTasks();
+
+    }
+
+}
+
+// ==========================================
+// Earn Navigation
+// ==========================================
+
+document
+
+.querySelectorAll(".nav")
+
+.forEach(btn=>{
+
+    btn.addEventListener(
+
+        "click",
+
+        ()=>{
+
+            if(
+
+                btn.dataset.page===
+
+                "earn"
+
+            ){
+
+                openEarn();
+
+            }
+
+        }
+
+    );
+
+});
+
+
