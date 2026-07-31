@@ -1,855 +1,758 @@
 // ==========================================
-// Zoryx Telegram WebApp
+// Zoryx Telegram Mini App
 // client/app.js
+// PART 1
 // ==========================================
 
+"use strict";
+
+// ==========================================
+// Global
+// ==========================================
 
 let currentUser = null;
+
+let localBalance = 0;
 
 let energy = 1000;
 
 let maxEnergy = 1000;
 
-let localBalance = 0;
-
 let tapPower = 1;
 
-
-// Effect Control
-let activeEffects = [];
-
-
-// Server Save Control
 let pendingTap = 0;
+
 let savingTap = false;
 
+let activeEffects = [];
 
+let currentPage = "home";
 
-
+let rechargeTimer = null;
 
 // ==========================================
-// Initialize
+// DOM Ready
 // ==========================================
-
 
 document.addEventListener(
 "DOMContentLoaded",
 async()=>{
 
-
-    console.log(
-        "🚀 Zoryx Starting..."
-    );
-
+    console.log("🚀 Zoryx Started");
 
     showLoading(true);
 
-
-
     try{
-
 
         await login();
 
-
         registerEvents();
-
 
         startEnergyRecharge();
 
+        switchPage("home");
 
+        showLoading(false);
 
     }
-    catch(error){
+    catch(e){
 
+        console.error(e);
 
-        console.error(error);
+        showLoading(false);
 
-
-        TelegramApp.alert(
-            "Application Error"
+        popup(
+            "Error",
+            "Unable to start application."
         );
 
-
     }
 
-
 });
-
-
-
-
-
-
-
-
 
 // ==========================================
 // Login
 // ==========================================
 
-
 async function login(){
-
 
     const res =
     await API.login();
 
-
-
     if(!res.success){
 
-
-        showLoading(false);
-
-
-        TelegramApp.popup(
+        popup(
             "Login Failed",
-            res.message || "Unable to login"
+            res.message || "Unknown Error"
         );
 
-
-        return;
+        throw new Error("Login Failed");
 
     }
-
-
 
     currentUser =
     res.user;
 
-
-
-    localBalance =
-    currentUser.balance || 0;
-
-
-
-    energy =
-    currentUser.energy ?? 1000;
-
-
-
-    maxEnergy =
-    currentUser.maxEnergy ?? 1000;
-
-
-
-    updateUserUI();
-
-
-
     await loadUserData();
-
-
-
-    showLoading(false);
-
 
 }
 
-
-
-
-
-
-
-
-
 // ==========================================
-// Load User
+// Load Profile
 // ==========================================
-
 
 async function loadUserData(){
 
-
-    if(!currentUser)
-        return;
-
-
-
-    const res =
+    const result =
     await API.getProfile(
         currentUser.telegramId
     );
 
-
-
-    if(res.success){
-
+    if(result.success){
 
         currentUser =
-        res.user;
-
-
-
-        localBalance =
-        currentUser.balance || 0;
-
-
-
-        energy =
-        currentUser.energy ?? energy;
-
-
-
-        maxEnergy =
-        currentUser.maxEnergy ?? maxEnergy;
-
-
-
-        updateUserUI();
-
+        result.user;
 
     }
 
+    localBalance =
+    currentUser.balance || 0;
+
+    energy =
+    currentUser.energy ?? 1000;
+
+    maxEnergy =
+    currentUser.maxEnergy ?? 1000;
+
+    updateUserUI();
 
 }
-
-
-
-
-
-
-
-
 
 // ==========================================
 // Update UI
 // ==========================================
 
-
 function updateUserUI(){
 
-
     if(!currentUser)
-        return;
-
-
+    return;
 
     setText(
         "userName",
         currentUser.firstName || "User"
     );
 
-
-
     setText(
         "userLevel",
-        `Level ${currentUser.level || 1}`
+        "Level " + (currentUser.level || 1)
     );
-
-
 
     setText(
         "balance",
-        localBalance
+        Number(localBalance).toLocaleString()
     );
-
-
 
     const photo =
-    document.getElementById(
-        "userPhoto"
+    currentUser.photo ||
+    "icon-192.png";
+
+    const ids=[
+
+        "userPhoto",
+
+        "profilePhoto"
+
+    ];
+
+    ids.forEach(id=>{
+
+        const img=
+        document.getElementById(id);
+
+        if(img){
+
+            img.src=photo;
+
+        }
+
+    });
+
+    setText(
+
+        "profileName",
+
+        currentUser.firstName || "User"
+
     );
 
+    setText(
 
+        "profileUsername",
 
-    if(photo){
+        currentUser.username ?
 
+        "@"+currentUser.username :
 
-        photo.src =
-        currentUser.photo ||
-        "icon-192.png";
+        "@telegram"
 
+    );
 
-    }
+    setText(
 
+        "telegramId",
 
+        currentUser.telegramId || "-"
+
+    );
+
+    setText(
+
+        "uid",
+
+        currentUser.uid || "-"
+
+    );
+
+    setText(
+
+        "profileBalance",
+
+        Number(localBalance).toLocaleString()
+
+    );
+
+    setText(
+
+        "totalTap",
+
+        Number(currentUser.totalTap || 0)
+
+        .toLocaleString()
+
+    );
+
+    setText(
+
+        "profileReferral",
+
+        currentUser.referrals || 0
+
+    );
+
+    setText(
+
+        "joinDate",
+
+        currentUser.joinDate || "-"
+
+    );
+
+    setText(
+
+        "currentLevel",
+
+        "Level " + (currentUser.level || 1)
+
+    );
 
     updateEnergyUI();
 
-
 }
 
-
-
-
-
-
-
-
-
 // ==========================================
-// Energy UI
+// Energy
 // ==========================================
-
 
 function updateEnergyUI(){
 
-
-    const text =
+    const txt=
     document.getElementById(
-        "energyText"
+    "energyText"
     );
 
-
-
-    const fill =
+    const fill=
     document.getElementById(
-        "energyFill"
+    "energyFill"
     );
 
+    if(txt){
 
+        txt.innerHTML=
 
-    if(text){
-
-        text.textContent =
-        `${energy} / ${maxEnergy}`;
+        energy+" / "+maxEnergy;
 
     }
-
-
 
     if(fill){
 
+        fill.style.width=
 
-        fill.style.width =
-        `${(energy/maxEnergy)*100}%`;
-
+        (energy/maxEnergy)*100+"%";
 
     }
-
 
 }
 
-
-
-
-
-
-
-
-
 // ==========================================
-// Events
+// Navigation
 // ==========================================
-
 
 function registerEvents(){
-
-
-    const coin =
-    document.getElementById(
-        "coin"
-    );
-
-
-
-    if(coin){
-
-
-        coin.addEventListener(
-            "click",
-            handleCoinTap
-        );
-
-
-    }
-
-
-
 
     document
     .querySelectorAll(".nav")
     .forEach(btn=>{
 
+        btn.onclick=()=>{
 
-        btn.addEventListener(
-        "click",
-        ()=>{
+            switchPage(
 
+                btn.dataset.page
 
-            document
-            .querySelectorAll(".nav")
-            .forEach(x=>
-            x.classList.remove("active")
             );
 
-
-
-            btn.classList.add(
-                "active"
-            );
-
-
-        });
-
+        };
 
     });
 
+    document
+    .getElementById("settingButton")
+    ?.addEventListener(
 
+        "click",
 
-}
+        ()=>{
 
-
-
-
-
-
-
-
-
-// ==========================================
-// Coin Tap
-// ==========================================
-
-
-function handleCoinTap(event){
-
-
-
-    if(!currentUser)
-        return;
-
-
-
-    if(energy <= 0){
-
-
-        TelegramApp.popup(
-            "Energy Empty",
-            "Wait for recharge"
-        );
-
-
-        return;
-
-    }
-
-
-
-
-
-    // Instant Update
-
-    energy -= 1;
-
-
-    localBalance += tapPower;
-
-
-    pendingTap += tapPower;
-
-
-
-    updateEnergyUI();
-
-
-    setText(
-        "balance",
-        localBalance
-    );
-
-
-
-    TelegramApp.haptic(
-        "light"
-    );
-
-
-
-    animateCoin();
-
-
-
-    createTapEffect(
-        event.clientX,
-        event.clientY
-    );
-
-
-
-    syncTap();
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ==========================================
-// Server Sync
-// ==========================================
-
-
-async function syncTap(){
-
-
-    if(
-        savingTap ||
-        pendingTap <= 0
-    )
-    return;
-
-
-
-    savingTap = true;
-
-
-
-    const amount =
-    pendingTap;
-
-
-
-    pendingTap = 0;
-
-
-
-    try{
-
-
-        const result =
-        await API.tap(
-
-            currentUser.telegramId,
-
-            amount
-
-        );
-
-
-
-        if(result.success){
-
-
-            energy =
-            result.energy;
-
-
-            localBalance =
-            result.balance;
-
-
-
-            updateEnergyUI();
-
-
-            setText(
-                "balance",
-                localBalance
-            );
-
+            openSettings();
 
         }
 
+    );
 
+    document
+    .getElementById("closeSettings")
+    ?.addEventListener(
 
-    }
-    catch(error){
+        "click",
 
+        closeSettings
 
-        console.log(
-            error
-        );
-
-
-    }
-
-
-
-    savingTap = false;
-
-
-
-    if(pendingTap > 0){
-
-        syncTap();
-
-    }
-
+    );
 
 }
 
-
-
-
-
-
-
-
-
 // ==========================================
-// Coin Animation
+// Page Switch
 // ==========================================
 
+function switchPage(page){
 
-function animateCoin(){
+    currentPage=page;
 
+    document
+    .querySelectorAll(".page")
+    .forEach(x=>x.classList.remove("active"));
 
-    const coin =
+    document
+    .querySelectorAll(".nav")
+    .forEach(x=>x.classList.remove("active"));
+
+    const p=
     document.getElementById(
-        "coin"
+        page+"Page"
     );
 
+    if(p){
 
-
-    if(!coin)
-        return;
-
-
-
-    coin.style.transform =
-    "scale(.88)";
-
-
-
-    setTimeout(()=>{
-
-
-        coin.style.transform =
-        "scale(1)";
-
-
-    },80);
-
-
-
-}
-
-
-
-
-
-
-
-
-
-// ==========================================
-// Notcoin Style Effect
-// ==========================================
-
-
-function createTapEffect(x,y){
-
-
-
-    if(activeEffects.length >= 3){
-
-
-        const old =
-        activeEffects.shift();
-
-
-        old.remove();
-
+        p.classList.add("active");
 
     }
 
+    document
+    .querySelector(
 
+    '.nav[data-page="'+page+'"]'
 
-
-    const effect =
-    document.createElement(
-        "div"
-    );
-
-
-
-    effect.className =
-    "tap-effect";
-
-
-
-    effect.innerText =
-    "+1";
-
-
-
-    effect.style.left =
-    x + "px";
-
-
-
-    effect.style.top =
-    y + "px";
-
-
-
-    document.body.appendChild(
-        effect
-    );
-
-
-
-    activeEffects.push(
-        effect
-    );
-
-
-
-    setTimeout(()=>{
-
-
-        effect.remove();
-
-
-        activeEffects =
-        activeEffects.filter(
-            e=>e!==effect
-        );
-
-
-    },450);
-
-
+    )?.classList.add("active");
 
 }
-
-
-
-
-
-
-
-
-
-// ==========================================
-// Energy Recharge
-// ==========================================
-
-
-function startEnergyRecharge(){
-
-
-    setInterval(()=>{
-
-
-        if(
-            energy < maxEnergy
-        ){
-
-
-            energy++;
-
-
-            updateEnergyUI();
-
-
-        }
-
-
-
-    },4000);
-
-
-
-}
-
-
-
-
-
-
-
-
 
 // ==========================================
 // Loading
 // ==========================================
 
-
 function showLoading(show){
 
+    document
+    .getElementById("loading")
+    .style.display=
 
-    const loading =
-    document.getElementById(
-        "loading"
+    show?"flex":"none";
+
+    document
+    .getElementById("app")
+    .classList.toggle(
+
+        "hidden",
+
+        show
+
     );
-
-
-    const app =
-    document.getElementById(
-        "app"
-    );
-
-
-
-    if(!loading || !app)
-        return;
-
-
-
-    loading.style.display =
-    show ? "flex":"none";
-
-
-
-    app.style.display =
-    show ? "none":"block";
-
 
 }
 
+// ==========================================
+// Popup
+// ==========================================
 
+function popup(title,msg){
 
+    document
+    .getElementById("popupTitle")
+    .textContent=title;
 
+    document
+    .getElementById("popupMessage")
+    .textContent=msg;
 
+    document
+    .getElementById("popup")
+    .classList.remove("hidden");
 
+    document
+    .getElementById("overlay")
+    .classList.remove("hidden");
 
+    document
+    .getElementById("popupButton")
+    .onclick=()=>{
 
+        document
+        .getElementById("popup")
+        .classList.add("hidden");
 
-function setText(id,value){
+        document
+        .getElementById("overlay")
+        .classList.add("hidden");
 
+    };
 
-    const el =
-    document.getElementById(
-        id
-    );
+}
 
+// ==========================================
+// Toast
+// ==========================================
 
+function toast(text){
+
+    const box=
+    document.createElement("div");
+
+    box.className="toast";
+
+    box.textContent=text;
+
+    document
+    .getElementById("toastContainer")
+    .appendChild(box);
+
+    setTimeout(()=>{
+
+        box.remove();
+
+    },2500);
+
+}
+
+// ==========================================
+// Settings
+// ==========================================
+
+function openSettings(){
+
+    document
+    .getElementById("settingsSheet")
+    .classList.remove("hidden");
+
+    document
+    .getElementById("overlay")
+    .classList.remove("hidden");
+
+}
+
+function closeSettings(){
+
+    document
+    .getElementById("settingsSheet")
+    .classList.add("hidden");
+
+    document
+    .getElementById("overlay")
+    .classList.add("hidden");
+
+}
+
+// ==========================================
+// Helper
+// ==========================================
+
+function setText(id,val){
+
+    const el=
+    document.getElementById(id);
 
     if(el){
 
-
-        el.textContent =
-        value;
-
+        el.textContent=val;
 
     }
 
+        }
+
+
+// ==========================================
+// Coin Events
+// ==========================================
+
+function registerCoin(){
+
+    const coin =
+    document.getElementById("coin");
+
+    if(!coin)
+    return;
+
+    coin.addEventListener(
+
+        "click",
+
+        handleCoinTap
+
+    );
 
 }
 
+// ==========================================
+// Coin Tap
+// ==========================================
 
+function handleCoinTap(e){
 
+    if(!currentUser)
+    return;
 
+    if(energy<=0){
 
+        toast("Energy Empty");
 
-
-
-window.Zoryx = {
-
-
-    reload:
-    loadUserData,
-
-
-    getUser(){
-
-
-        return currentUser;
-
+        return;
 
     }
 
+    energy--;
 
-};
+    localBalance+=tapPower;
+
+    pendingTap+=tapPower;
+
+    updateEnergyUI();
+
+    setText(
+
+        "balance",
+
+        Number(localBalance)
+
+        .toLocaleString()
+
+    );
+
+    animateCoin();
+
+    createRipple(e);
+
+    createTapEffect(e);
+
+    if(window.Telegram?.WebApp){
+
+        Telegram.WebApp
+
+        .HapticFeedback
+
+        .impactOccurred("light");
+
+    }
+
+    syncTap();
+
+}
+
+// ==========================================
+// Coin Animation
+// ==========================================
+
+function animateCoin(){
+
+    const coin=
+
+    document.getElementById(
+
+        "coin"
+
+    );
+
+    if(!coin)
+    return;
+
+    coin.classList.remove(
+
+        "coinBounce"
+
+    );
+
+    void coin.offsetWidth;
+
+    coin.classList.add(
+
+        "coinBounce"
+
+    );
+
+}
+
+// ==========================================
+// Ripple Effect
+// ==========================================
+
+function createRipple(event){
+
+    const box=
+
+    document.getElementById(
+
+        "rippleContainer"
+
+    );
+
+    if(!box)
+    return;
+
+    const ripple=
+
+    document.createElement(
+
+        "div"
+
+    );
+
+    ripple.className="ripple";
+
+    const rect=
+
+    document
+
+    .getElementById("coin")
+
+    .getBoundingClientRect();
+
+    ripple.style.left=
+
+    (event.clientX-rect.left)+"px";
+
+    ripple.style.top=
+
+    (event.clientY-rect.top)+"px";
+
+    box.appendChild(ripple);
+
+    setTimeout(()=>{
+
+        ripple.remove();
+
+    },550);
+
+}
+
+// ==========================================
+// Floating +1
+// ==========================================
+
+function createTapEffect(event){
+
+    const area=
+
+    document.getElementById(
+
+        "tapEffects"
+
+    );
+
+    if(!area)
+    return;
+
+    const effect=
+
+    document.createElement(
+
+        "div"
+
+    );
+
+    effect.className=
+
+    "tap-effect";
+
+    effect.innerHTML="+1";
+
+    const rect=
+
+    document
+
+    .getElementById("coin")
+
+    .getBoundingClientRect();
+
+    effect.style.left=
+
+    (event.clientX-rect.left)+"px";
+
+    effect.style.top=
+
+    (event.clientY-rect.top)+"px";
+
+    area.appendChild(effect);
+
+    activeEffects.push(effect);
+
+    if(activeEffects.length>8){
+
+        activeEffects
+
+        .shift()
+
+        .remove();
+
+    }
+
+    setTimeout(()=>{
+
+        effect.remove();
+
+        activeEffects=
+
+        activeEffects.filter(
+
+        x=>x!==effect
+
+        );
+
+    },550);
+
+}
+
+// ==========================================
+// Register Extra Events
+// ==========================================
+
+registerCoin();
+
