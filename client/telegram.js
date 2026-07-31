@@ -3,178 +3,473 @@
 // client/telegram.js
 // ==========================================
 
-
 const tg = window.Telegram.WebApp;
-
-
-// Initialize
 
 tg.ready();
 
 tg.expand();
 
+tg.enableClosingConfirmation();
+
+const TelegramApp = {};
 
 
+// ==========================================
 // Theme
+// ==========================================
 
-document.body.style.background =
-    tg.themeParams.bg_color ||
-    "#0b0b0f";
+TelegramApp.theme = tg.colorScheme || "dark";
+
+TelegramApp.version = tg.version;
+
+TelegramApp.platform = tg.platform;
 
 
-
+// ==========================================
 // User
+// ==========================================
 
-const telegramUser =
-    tg.initDataUnsafe?.user || null;
+TelegramApp.user =
 
+tg.initDataUnsafe?.user || null;
 
 
+// ==========================================
+// Init Data
+// ==========================================
 
-window.TelegramApp = {
+TelegramApp.getInitData = () => ({
 
+    ...tg.initDataUnsafe,
 
-    tg,
+    initData: tg.initData
 
+});
 
-    user: telegramUser,
 
+// ==========================================
+// Haptic Feedback
+// ==========================================
 
-    initData: tg.initData || "",
+TelegramApp.haptic =
 
+(type="light")=>{
 
+try{
 
-    isTelegram(){
+if(
 
-        return !!telegramUser;
+!tg.HapticFeedback
 
-    },
+)
 
+return;
 
+switch(type){
 
-    getUser(){
+case "light":
 
-        return this.user;
+tg.HapticFeedback.impactOccurred(
 
-    },
+"light"
 
+);
 
+break;
 
-    getUserId(){
+case "medium":
 
-        return telegramUser?.id || null;
+tg.HapticFeedback.impactOccurred(
 
-    },
+"medium"
 
+);
 
+break;
 
-    getUsername(){
+case "heavy":
 
-        return telegramUser?.username || "";
+tg.HapticFeedback.impactOccurred(
 
-    },
+"heavy"
 
+);
 
+break;
 
-    getFirstName(){
+case "success":
 
-        return telegramUser?.first_name || "User";
+tg.HapticFeedback.notificationOccurred(
 
-    },
+"success"
 
+);
 
+break;
 
-    getLastName(){
+case "warning":
 
-        return telegramUser?.last_name || "";
+tg.HapticFeedback.notificationOccurred(
 
-    },
+"warning"
 
+);
 
+break;
 
-    getPhoto(){
+case "error":
 
-        return telegramUser?.photo_url || "";
+tg.HapticFeedback.notificationOccurred(
 
-    },
+"error"
 
+);
 
+break;
 
-    haptic(type="light"){
+}
 
-        try{
-
-            tg.HapticFeedback
-              .impactOccurred(type);
-
-        }catch(e){}
-
-    },
-
-
-
-    popup(title,message){
-
-        try{
-
-            tg.showPopup({
-
-                title,
-
-                message,
-
-                buttons:[
-                    {
-                        type:"ok"
-                    }
-                ]
-
-            });
-
-        }catch(e){
-
-            alert(message);
-
-        }
-
-    },
-
-
-
-    alert(message){
-
-        try{
-
-            tg.showAlert(message);
-
-        }catch(e){
-
-            alert(message);
-
-        }
-
-    },
-
-
-    close(){
-
-        tg.close();
-
-    }
-
+}
+catch(e){}
 
 };
 
 
+// ==========================================
+// Popup
+// ==========================================
 
+TelegramApp.popup = (
 
-console.log(
-    "Telegram InitData:",
-    tg.initData
+title,
+
+message
+
+)=>{
+
+const popup =
+
+document.getElementById(
+
+"popup"
+
 );
 
+const overlay =
 
-console.log(
-    "Telegram User:",
-    window.TelegramApp.user
+document.getElementById(
+
+"overlay"
+
 );
+
+if(
+
+popup
+
+){
+
+document.getElementById(
+
+"popupTitle"
+
+).textContent = title;
+
+document.getElementById(
+
+"popupMessage"
+
+).textContent = message;
+
+popup.classList.remove(
+
+"hidden"
+
+);
+
+}
+
+if(
+
+overlay
+
+){
+
+overlay.classList.remove(
+
+"hidden"
+
+);
+
+}
+
+};
+
+
+// ==========================================
+// Close Popup
+// ==========================================
+
+TelegramApp.closePopup = ()=>{
+
+const popup =
+
+document.getElementById(
+
+"popup"
+
+);
+
+const overlay =
+
+document.getElementById(
+
+"overlay"
+
+);
+
+if(
+
+popup
+
+){
+
+popup.classList.add(
+
+"hidden"
+
+);
+
+}
+
+if(
+
+overlay
+
+){
+
+overlay.classList.add(
+
+"hidden"
+
+);
+
+}
+
+};
+
+
+// ==========================================
+// Alert
+// ==========================================
+
+TelegramApp.alert =
+
+(text)=>{
+
+if(
+
+tg.showAlert
+
+){
+
+tg.showAlert(
+
+text
+
+);
+
+}else{
+
+alert(text);
+
+}
+
+};
+
+
+// ==========================================
+// Confirm
+// ==========================================
+
+TelegramApp.confirm =
+
+(text,callback)=>{
+
+if(
+
+tg.showConfirm
+
+){
+
+tg.showConfirm(
+
+text,
+
+callback
+
+);
+
+}else{
+
+callback(
+
+confirm(text)
+
+);
+
+}
+
+};
+
+
+// ==========================================
+// Toast
+// ==========================================
+
+TelegramApp.toast =
+
+(message)=>{
+
+const container =
+
+document.getElementById(
+
+"toastContainer"
+
+);
+
+if(
+
+!container
+
+)
+
+return;
+
+const toast =
+
+document.createElement(
+
+"div"
+
+);
+
+toast.className =
+
+"toast";
+
+toast.innerText =
+
+message;
+
+container.appendChild(
+
+toast
+
+);
+
+setTimeout(
+
+()=>{
+
+toast.classList.add(
+
+"show"
+
+);
+
+},50);
+
+setTimeout(
+
+()=>{
+
+toast.classList.remove(
+
+"show"
+
+);
+
+setTimeout(
+
+()=>{
+
+toast.remove();
+
+},300);
+
+},2500);
+
+};
+
+
+// ==========================================
+// Main Button
+// ==========================================
+
+TelegramApp.mainButton = {
+
+show(text,callback){
+
+tg.MainButton.setText(
+
+text
+
+);
+
+tg.MainButton.show();
+
+tg.MainButton.offClick();
+
+tg.MainButton.onClick(
+
+callback
+
+);
+
+},
+
+hide(){
+
+tg.MainButton.hide();
+
+}
+
+};
+
+
+// ==========================================
+// Back Button
+// ==========================================
+
+TelegramApp.backButton = {
+
+show(callback){
+
+tg.BackButton.show();
+
+tg.BackButton.offClick();
+
+tg.BackButton.onClick(
+
+callback
+
+);
+
+},
+
+hide(){
+
+tg.BackButton.hide();
+
+}
+
+};
+
+
+// ==========================================
+// Export
+// ==========================================
+
+window.TelegramApp = TelegramApp;
