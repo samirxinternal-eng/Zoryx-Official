@@ -412,13 +412,26 @@
 
         <h2>👤 Profile</h2>
 
+        <p>
+            Your Zoryx account information
+        </p>
+
     </div>
+
+    <!-- Profile Card -->
 
     <div class="profileCard">
 
-        <img
-            id="profilePhoto"
-            alt="Profile">
+        <div class="profileAvatar">
+
+            <img
+                id="profilePhoto"
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+                alt="Telegram Profile">
+
+        </div>
 
         <h3 id="profileName">
 
@@ -432,13 +445,26 @@
 
         </span>
 
+        <div class="profileBadge">
+
+            🎖️ Level
+            <span id="profileLevel">
+
+                1
+
+            </span>
+
+        </div>
+
     </div>
+
+    <!-- Statistics -->
 
     <div class="profileInfo">
 
         <div class="infoRow">
 
-            <span>Telegram ID</span>
+            <span>🆔 Telegram ID</span>
 
             <span id="telegramId">
 
@@ -450,7 +476,7 @@
 
         <div class="infoRow">
 
-            <span>UID</span>
+            <span>🔐 UID</span>
 
             <span id="uid">
 
@@ -462,7 +488,7 @@
 
         <div class="infoRow">
 
-            <span>Balance</span>
+            <span>🪙 Balance</span>
 
             <span id="profileBalance">
 
@@ -474,7 +500,19 @@
 
         <div class="infoRow">
 
-            <span>Total Tap</span>
+            <span>⚡ Energy</span>
+
+            <span id="profileEnergy">
+
+                1000 / 1000
+
+            </span>
+
+        </div>
+
+        <div class="infoRow">
+
+            <span>👆 Total Taps</span>
 
             <span id="totalTap">
 
@@ -486,7 +524,7 @@
 
         <div class="infoRow">
 
-            <span>Referral</span>
+            <span>👥 Referrals</span>
 
             <span id="profileReferral">
 
@@ -498,7 +536,19 @@
 
         <div class="infoRow">
 
-            <span>Join Date</span>
+            <span>⭐ XP</span>
+
+            <span id="profileXP">
+
+                0
+
+            </span>
+
+        </div>
+
+        <div class="infoRow">
+
+            <span>📅 Join Date</span>
 
             <span id="joinDate">
 
@@ -511,6 +561,7 @@
     </div>
 
 </section>
+
 
 
 
