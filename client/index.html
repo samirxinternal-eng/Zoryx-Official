@@ -74,18 +74,25 @@
 
             <img
                 id="userPhoto"
-                alt="Profile">
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+                alt="Telegram Profile">
 
         </div>
 
         <div class="profileInfo">
 
             <h3 id="userName">
+
                 Loading...
+
             </h3>
 
             <span id="userLevel">
-                Level 1
+
+                🎖️ Level 1
+
             </span>
 
         </div>
@@ -96,7 +103,9 @@
 
         <button
             id="leaderboardButton"
-            class="iconButton">
+            class="iconButton"
+            title="Leaderboard"
+            aria-label="Leaderboard">
 
             🏆
 
@@ -104,7 +113,9 @@
 
         <button
             id="settingButton"
-            class="iconButton">
+            class="iconButton"
+            title="Settings"
+            aria-label="Settings">
 
             ⚙️
 
