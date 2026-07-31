@@ -1,8 +1,10 @@
 /* ==========================================
    Zoryx Telegram Mini App
    client/style.css
+   PART 1
 ========================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
 
 *{
     margin:0;
@@ -11,19 +13,34 @@
     -webkit-tap-highlight-color:transparent;
 }
 
-
 :root{
 
-    --bg:#0b0b0f;
-    --card:#16161d;
-    --primary:#ffc107;
-    --text:#ffffff;
-    --muted:#9b9b9b;
-    --border:#262631;
+    --bg:#050505;
+    --bg2:#0d0d0d;
+
+    --card:#121212;
+
+    --card2:#181818;
+
+    --gold:#ffc107;
+
+    --gold2:#ffda55;
+
+    --white:#ffffff;
+
+    --text:#f4f4f4;
+
+    --muted:#8c8c8c;
+
+    --border:#262626;
+
+    --success:#00d26a;
+
+    --danger:#ff4d4d;
+
+    --radius:22px;
 
 }
-
-
 
 html,
 body{
@@ -33,37 +50,90 @@ body{
 
 }
 
-
-
 body{
 
-    background:var(--bg);
+    font-family:'Outfit',sans-serif;
 
     color:var(--text);
 
-    font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+    background:
+    radial-gradient(circle at top,#202020 0%,#050505 55%);
 
     overflow-x:hidden;
 
     user-select:none;
 
+    position:relative;
+
 }
 
+/* Animated Background */
 
+body::before{
 
+    content:"";
 
+    position:fixed;
 
-/* ==========================
- Loading
-========================== */
+    inset:0;
 
+    background:
+
+    radial-gradient(circle,#ffc10718 0%,transparent 65%),
+
+    radial-gradient(circle,#ffffff08 0%,transparent 70%);
+
+    background-size:
+
+    350px 350px,
+
+    250px 250px;
+
+    animation:bgMove 18s linear infinite;
+
+    pointer-events:none;
+
+    z-index:-1;
+
+}
+
+@keyframes bgMove{
+
+    from{
+
+        background-position:
+        0 0,
+        0 0;
+
+    }
+
+    to{
+
+        background-position:
+        350px 350px,
+        -250px 250px;
+
+    }
+
+}
+
+/* Hidden */
+
+.hidden{
+
+    display:none !important;
+
+}
+
+/* ==========================================
+   Loading
+========================================== */
 
 #loading{
 
-    height:100vh;
+    position:fixed;
+
+    inset:0;
 
     display:flex;
 
@@ -73,58 +143,97 @@ body{
 
     align-items:center;
 
-    gap:15px;
+    gap:18px;
+
+    background:#050505;
+
+    z-index:99999;
 
 }
-
-
-
-#loading h2{
-
-    color:var(--primary);
-
-    font-size:30px;
-
-}
-
-
 
 .loader{
 
-    width:50px;
+    width:68px;
 
-    height:50px;
+    height:68px;
 
     border-radius:50%;
 
-    border:5px solid #333;
+    border:6px solid #2a2a2a;
 
-    border-top-color:var(--primary);
+    border-top-color:var(--gold);
 
-    animation:spin 1s linear infinite;
+    animation:spin .8s linear infinite;
 
 }
 
+#loading h2{
 
+    font-size:32px;
+
+    font-weight:800;
+
+    color:var(--gold);
+
+    letter-spacing:1px;
+
+}
+
+#loading p{
+
+    color:var(--muted);
+
+}
 
 @keyframes spin{
 
     to{
+
         transform:rotate(360deg);
+
     }
 
 }
 
+/* ==========================================
+ Toast
+========================================== */
 
+#toastContainer{
 
+    position:fixed;
 
+    top:20px;
 
+    left:50%;
 
+    transform:translateX(-50%);
 
-/* ==========================
+    z-index:5000;
+
+}
+
+/* ==========================================
+ Overlay
+========================================== */
+
+#overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.55);
+
+    backdrop-filter:blur(5px);
+
+    z-index:4000;
+
+}
+
+/* ==========================================
  App
-========================== */
-
+========================================== */
 
 #app{
 
@@ -134,22 +243,15 @@ body{
 
     margin:auto;
 
-    padding:15px;
+    padding:18px;
 
-    padding-bottom:100px;
+    padding-bottom:115px;
 
 }
 
-
-
-
-
-
-
-/* ==========================
+/* ==========================================
  Header
-========================== */
-
+========================================== */
 
 #header{
 
@@ -159,11 +261,9 @@ body{
 
     align-items:center;
 
-    margin-bottom:20px;
+    margin-bottom:18px;
 
 }
-
-
 
 .profile{
 
@@ -175,133 +275,247 @@ body{
 
 }
 
+.avatar{
 
+    width:58px;
 
-.profile img{
-
-    width:55px;
-
-    height:55px;
+    height:58px;
 
     border-radius:50%;
 
+    overflow:hidden;
+
+    background:linear-gradient(145deg,#222,#111);
+
+    border:2px solid var(--gold);
+
+    box-shadow:
+
+    0 0 18px rgba(255,193,7,.35);
+
+}
+
+.avatar img{
+
+    width:100%;
+
+    height:100%;
+
     object-fit:cover;
 
-    border:2px solid var(--primary);
+}
+
+.profileInfo h3{
+
+    font-size:19px;
+
+    font-weight:700;
 
 }
 
+.profileInfo span{
 
-
-#userName{
-
-    font-size:18px;
-
-    font-weight:bold;
-
-}
-
-
-
-#userLevel{
-
-    color:var(--primary);
+    color:var(--gold);
 
     font-size:13px;
 
 }
 
+.headerButtons{
 
+    display:flex;
 
-#settingButton{
+    gap:10px;
 
-    width:45px;
+}
 
-    height:45px;
+.iconButton{
 
-    border-radius:50%;
+    width:46px;
+
+    height:46px;
 
     border:none;
 
-    background:var(--card);
+    border-radius:16px;
 
-    color:white;
+    background:linear-gradient(180deg,#1b1b1b,#111);
 
-    font-size:22px;
+    color:#fff;
 
-}
+    font-size:20px;
 
+    cursor:pointer;
 
+    transition:.25s;
 
-
-
-
-
-/* ==========================
- Balance
-========================== */
-
-
-#balanceCard{
-
-    background:var(--card);
-
-    border-radius:22px;
-
-    padding:25px;
-
-    text-align:center;
-
-    margin-bottom:15px;
+    border:1px solid var(--border);
 
 }
 
+.iconButton:active{
 
-
-#balance{
-
-    font-size:42px;
-
-    font-weight:bold;
-
-    color:var(--primary);
+    transform:scale(.92);
 
 }
 
+/* ==========================================
+ Announcement
+========================================== */
 
+#announcement{
 
-#balanceCard p{
+    display:flex;
 
-    color:var(--muted);
+    align-items:center;
 
-    margin-top:8px;
+    gap:12px;
 
-}
+    background:linear-gradient(180deg,#181818,#111);
 
-
-
-
-
-
-
-/* ==========================
- Energy
-========================== */
-
-
-#energyCard{
-
-    background:var(--card);
+    border:1px solid var(--border);
 
     border-radius:18px;
 
-    padding:18px;
+    padding:12px 15px;
 
-    margin-bottom:20px;
+    margin-bottom:18px;
+
+    overflow:hidden;
 
 }
 
+.announceIcon{
 
+    font-size:20px;
+
+}
+
+.announceText{
+
+    flex:1;
+
+    overflow:hidden;
+
+}
+
+#announcementWrapper{
+
+    width:100%;
+
+    overflow:hidden;
+
+    white-space:nowrap;
+
+}
+
+#announcementScroll{
+
+    display:inline-flex;
+
+    gap:50px;
+
+    animation:news 18s linear infinite;
+
+}
+
+#announcementScroll span{
+
+    color:#ddd;
+
+    font-size:14px;
+
+}
+
+@keyframes news{
+
+    from{
+
+        transform:translateX(0);
+
+    }
+
+    to{
+
+        transform:translateX(-50%);
+
+    }
+
+}
+
+/* ==========================================
+ Balance Card
+========================================== */
+
+#balanceCard{
+
+    background:linear-gradient(180deg,#191919,#111);
+
+    border-radius:var(--radius);
+
+    border:1px solid var(--border);
+
+    padding:24px;
+
+    text-align:center;
+
+    margin-bottom:18px;
+
+    box-shadow:
+
+    0 10px 30px rgba(0,0,0,.35);
+
+}
+
+.cardTitle{
+
+    display:block;
+
+    color:var(--muted);
+
+    margin-bottom:8px;
+
+    font-size:14px;
+
+}
+
+#balance{
+
+    font-size:44px;
+
+    font-weight:800;
+
+    color:var(--gold);
+
+}
+
+.coinText{
+
+    display:block;
+
+    margin-top:8px;
+
+    color:var(--muted);
+
+}
+
+/* ==========================================
+ Energy Card
+========================================== */
+
+#energyCard{
+
+    background:linear-gradient(180deg,#191919,#111);
+
+    border-radius:20px;
+
+    border:1px solid var(--border);
+
+    padding:18px;
+
+    margin-bottom:22px;
+
+}
 
 .energyTop{
 
@@ -311,25 +525,21 @@ body{
 
     margin-bottom:12px;
 
+    font-size:14px;
+
 }
-
-
 
 .energyBar{
 
-    width:100%;
-
     height:12px;
 
-    background:#30303a;
-
-    border-radius:20px;
+    border-radius:30px;
 
     overflow:hidden;
 
+    background:#2b2b2b;
+
 }
-
-
 
 #energyFill{
 
@@ -337,27 +547,64 @@ body{
 
     height:100%;
 
-    background:var(--primary);
+    border-radius:30px;
 
-    transition:
-    width .3s ease;
+    background:linear-gradient(90deg,#ffd54a,#ffc107,#ffb300);
+
+    transition:width .3s;
+
+    box-shadow:
+
+    0 0 15px rgba(255,193,7,.5);
+
+   }
+
+
+/* ==========================================
+   HOME PAGE
+========================================== */
+
+.page{
+
+    display:none;
+
+    animation:pageFade .35s ease;
 
 }
 
+.page.active{
 
+    display:block;
 
+}
 
+@keyframes pageFade{
 
+    from{
 
+        opacity:0;
+        transform:translateY(18px);
 
-/* ==========================
- Coin Area
-========================== */
+    }
 
+    to{
+
+        opacity:1;
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================================
+   Coin Area
+========================================== */
 
 #coinArea{
 
     position:relative;
+
+    width:100%;
 
     display:flex;
 
@@ -365,15 +612,19 @@ body{
 
     align-items:center;
 
-    margin:40px 0;
+    padding:40px 0 50px;
+
+    overflow:visible;
 
 }
 
-
-
-
+/* ==========================================
+   Coin
+========================================== */
 
 #coin{
+
+    position:relative;
 
     width:220px;
 
@@ -381,16 +632,89 @@ body{
 
     border-radius:50%;
 
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    cursor:pointer;
+
+    transition:
+
+    transform .08s ease,
+
+    filter .2s ease;
+
+    touch-action:manipulation;
+
+}
+
+#coin:active{
+
+    transform:scale(.93);
+
+}
+
+/* ==========================================
+   Coin Layers
+========================================== */
+
+.coinOuter{
+
+    position:absolute;
+
+    inset:0;
+
+    border-radius:50%;
+
+    background:
+
+    linear-gradient(
+
+    145deg,
+
+    #fff3b0,
+
+    #ffd84d,
+
+    #ffb300,
+
+    #d48b00
+
+    );
+
+    box-shadow:
+
+    0 0 40px rgba(255,193,7,.45),
+
+    inset 0 6px 15px rgba(255,255,255,.35),
+
+    inset 0 -12px 18px rgba(0,0,0,.35);
+
+}
+
+.coinInner{
+
+    position:absolute;
+
+    inset:14px;
+
+    border-radius:50%;
 
     background:
 
     radial-gradient(
-        circle at 30% 30%,
-        #fff3b0,
-        #ffc107,
-        #d99500
-    );
 
+    circle at 30% 30%,
+
+    #fffdf0,
+
+    #ffd54a,
+
+    #ffb300
+
+    );
 
     display:flex;
 
@@ -398,93 +722,216 @@ body{
 
     align-items:center;
 
+    box-shadow:
 
-    color:white;
+    inset 0 0 20px rgba(255,255,255,.4);
+
+}
+
+.coinInner span{
 
     font-size:90px;
 
-    font-weight:bold;
+    font-weight:800;
 
-
-    box-shadow:
-
-    0 0 25px rgba(255,193,7,.5),
-
-    inset 0 0 20px rgba(255,255,255,.3);
-
-
-    cursor:pointer;
-
-
-    transition:
-    transform .08s ease;
-
-
-    touch-action:manipulation;
-
-}
-
-
-
-#coin:active{
-
-    transform:scale(.90);
-
-}
-
-
-
-
-
-
-
-/* ==========================
- Tap Effects
- Notcoin Style
-========================== */
-
-
-.tap-effect{
-
-    position:fixed;
-
-
-    color:#00ff66;
-
-
-    font-size:30px;
-
-
-    font-weight:900;
-
-
-    pointer-events:none;
-
-
-    z-index:9999;
-
+    color:#ffffff;
 
     text-shadow:
 
-    0 0 8px #00ff66,
-
-    0 0 15px #00ff66;
-
-
-    animation:
-
-    tapMove .45s ease-out forwards;
+    0 3px 8px rgba(0,0,0,.35);
 
 }
 
+/* ==========================================
+   Coin Glow
+========================================== */
 
+#coin::before{
 
+    content:"";
 
+    position:absolute;
 
+    width:250px;
 
+    height:250px;
 
-@keyframes tapMove{
+    border-radius:50%;
 
+    background:
+
+    radial-gradient(
+
+    circle,
+
+    rgba(255,193,7,.28),
+
+    transparent 70%
+
+    );
+
+    animation:coinGlow 2.5s ease-in-out infinite;
+
+    z-index:-1;
+
+}
+
+@keyframes coinGlow{
+
+    0%{
+
+        transform:scale(.9);
+        opacity:.55;
+
+    }
+
+    50%{
+
+        transform:scale(1.08);
+        opacity:1;
+
+    }
+
+    100%{
+
+        transform:scale(.9);
+        opacity:.55;
+
+    }
+
+}
+
+/* ==========================================
+   Shine Effect
+========================================== */
+
+#coin::after{
+
+    content:"";
+
+    position:absolute;
+
+    top:18px;
+
+    left:42px;
+
+    width:50px;
+
+    height:130px;
+
+    background:
+
+    rgba(255,255,255,.25);
+
+    border-radius:50px;
+
+    transform:rotate(-30deg);
+
+    filter:blur(2px);
+
+}
+
+/* ==========================================
+   Ripple Container
+========================================== */
+
+#rippleContainer{
+
+    position:absolute;
+
+    inset:0;
+
+    pointer-events:none;
+
+    overflow:visible;
+
+}
+
+/* ==========================================
+   Ripple
+========================================== */
+
+.ripple{
+
+    position:absolute;
+
+    width:25px;
+
+    height:25px;
+
+    border-radius:50%;
+
+    border:2px solid rgba(255,255,255,.8);
+
+    animation:ripple .55s ease-out forwards;
+
+}
+
+@keyframes ripple{
+
+    from{
+
+        opacity:.9;
+
+        transform:
+
+        translate(-50%,-50%)
+
+        scale(.2);
+
+    }
+
+    to{
+
+        opacity:0;
+
+        transform:
+
+        translate(-50%,-50%)
+
+        scale(5);
+
+    }
+
+}
+
+/* ==========================================
+   Tap Effect
+========================================== */
+
+#tapEffects{
+
+    position:absolute;
+
+    inset:0;
+
+    pointer-events:none;
+
+    overflow:visible;
+
+}
+
+.tap-effect{
+
+    position:absolute;
+
+    color:#ffffff;
+
+    font-size:30px;
+
+    font-weight:800;
+
+    text-shadow:
+
+    0 0 12px #ffffff;
+
+    animation:
+
+    tapFloat .55s ease-out forwards;
+
+}
+
+@keyframes tapFloat{
 
     0%{
 
@@ -492,159 +939,1001 @@ body{
 
         transform:
 
-        translateY(0)
+        translate(-50%,-50%)
 
-        scale(.8);
-
-    }
-
-
-
-    50%{
-
-        opacity:1;
+        scale(.7);
 
     }
-
-
 
     100%{
 
         opacity:0;
 
-
         transform:
 
-        translateY(-80px)
+        translate(-50%,-110px)
 
-        scale(1.4);
+        scale(1.35);
 
     }
 
+}
+
+/* ==========================================
+   Coin Bounce
+========================================== */
+
+.coinBounce{
+
+    animation:coinBounce .18s ease;
 
 }
 
+@keyframes coinBounce{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(.90);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+   }
 
 
+/* ==========================================
+   PAGE HEADER
+========================================== */
 
+.pageHeader{
 
-
-
-/* ==========================
- Prevent Effect Overflow
-========================== */
-
-
-#coinArea{
-
-    overflow:visible;
+    margin-bottom:20px;
 
 }
 
+.pageHeader h2{
 
+    font-size:26px;
 
+    font-weight:700;
 
+    color:var(--white);
 
+}
 
+.pageHeader p{
 
+    margin-top:6px;
 
-/* ==========================
- Bottom Navigation
-========================== */
+    color:var(--muted);
 
+    font-size:14px;
 
-nav{
+}
 
-    position:fixed;
+/* ==========================================
+   PREMIUM CARD
+========================================== */
 
-    bottom:0;
+.referralCard,
+.profileCard,
+.levelProgress{
 
-    left:0;
+    background:linear-gradient(180deg,#1a1a1a,#111);
+
+    border:1px solid var(--border);
+
+    border-radius:22px;
+
+    padding:20px;
+
+    margin-bottom:18px;
+
+    box-shadow:
+
+    0 8px 25px rgba(0,0,0,.35);
+
+}
+
+/* ==========================================
+   INPUT
+========================================== */
+
+input{
 
     width:100%;
 
+    height:52px;
 
-    background:#111118;
+    margin-top:15px;
+
+    margin-bottom:15px;
+
+    border:none;
+
+    outline:none;
+
+    border-radius:14px;
+
+    background:#202020;
+
+    color:#fff;
+
+    padding:0 15px;
+
+    font-size:15px;
+
+}
+
+/* ==========================================
+   BUTTON
+========================================== */
+
+button{
+
+    font-family:'Outfit',sans-serif;
+
+}
+
+.referralCard button{
+
+    width:100%;
+
+    height:52px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:
+
+    linear-gradient(
+
+    90deg,
+
+    #ffd54a,
+
+    #ffb300
+
+    );
+
+    color:#000;
+
+    font-size:16px;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   REFERRAL STATS
+========================================== */
+
+.referralStats{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:15px;
+
+    margin-bottom:20px;
+
+}
+
+.stat{
+
+    background:#171717;
+
+    border:1px solid var(--border);
+
+    border-radius:18px;
+
+    padding:18px;
+
+    text-align:center;
+
+}
+
+.stat span{
+
+    color:var(--muted);
+
+    font-size:13px;
+
+}
+
+.stat h2{
+
+    margin-top:8px;
+
+    color:var(--gold);
+
+    font-size:26px;
+
+}
+
+/* ==========================================
+   LEVEL PROGRESS
+========================================== */
+
+.levelProgress span{
+
+    display:block;
+
+    margin-bottom:12px;
+
+    font-size:16px;
+
+    font-weight:600;
+
+}
+
+.progressBar{
+
+    width:100%;
+
+    height:14px;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    background:#2a2a2a;
+
+}
+
+#levelFill{
+
+    width:0%;
+
+    height:100%;
+
+    border-radius:20px;
+
+    background:
+
+    linear-gradient(
+
+    90deg,
+
+    #ffd54a,
+
+    #ffb300
+
+    );
+
+    transition:.4s;
+
+}
+
+/* ==========================================
+   LEVEL REWARD LIST
+========================================== */
+
+#levelRewardList{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:16px;
+
+}
+
+.levelCard{
+
+    background:#171717;
+
+    border:1px solid var(--border);
+
+    border-radius:18px;
+
+    padding:18px;
+
+}
+
+.levelCard h3{
+
+    margin-bottom:10px;
+
+}
+
+.levelCard p{
+
+    color:var(--muted);
+
+    margin-bottom:15px;
+
+}
+
+.levelCard button{
+
+    width:100%;
+
+    height:48px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:var(--gold);
+
+    color:#000;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   PROFILE CARD
+========================================== */
+
+.profileCard{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    text-align:center;
+
+}
+
+.profileAvatar{
+
+    width:95px;
+
+    height:95px;
+
+    border-radius:50%;
+
+    overflow:hidden;
+
+    border:3px solid var(--gold);
+
+    margin-bottom:15px;
+
+    box-shadow:
+
+    0 0 25px rgba(255,193,7,.35);
+
+}
+
+.profileAvatar img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+
+}
+
+.profileCard h3{
+
+    font-size:24px;
+
+    margin-bottom:6px;
+
+}
+
+.profileCard span{
+
+    color:var(--muted);
+
+}
+
+.profileBadge{
+
+    margin-top:15px;
+
+    background:#202020;
+
+    padding:8px 18px;
+
+    border-radius:999px;
+
+    color:var(--gold);
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   PROFILE INFO
+========================================== */
+
+.profileInfo{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:14px;
+
+}
+
+.infoRow{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    background:#171717;
+
+    border:1px solid var(--border);
+
+    border-radius:16px;
+
+    padding:16px;
+
+}
+
+.infoRow span:first-child{
+
+    color:var(--muted);
+
+}
+
+.infoRow span:last-child{
+
+    color:#fff;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   TASK LIST
+========================================== */
+
+#taskList{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:16px;
+
+}
+
+.taskCard{
+
+    background:#171717;
+
+    border:1px solid var(--border);
+
+    border-radius:18px;
+
+    padding:18px;
+
+}
+
+.taskCard h3{
+
+    margin-bottom:8px;
+
+}
+
+.taskCard p{
+
+    color:var(--muted);
+
+    margin-bottom:15px;
+
+}
+
+.taskCard button{
+
+    width:100%;
+
+    height:48px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:var(--gold);
+
+    color:#000;
+
+    font-weight:700;
+
+   }
 
 
-    border-top:
+/* ==========================================
+   Lucky Spin Modal
+========================================== */
 
-    1px solid var(--border);
+.modal{
 
+    position:fixed;
+
+    inset:0;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:rgba(0,0,0,.65);
+
+    backdrop-filter:blur(10px);
+
+    z-index:9000;
+
+}
+
+.modalContent{
+
+    width:92%;
+
+    max-width:360px;
+
+    background:linear-gradient(180deg,#1b1b1b,#101010);
+
+    border:1px solid var(--border);
+
+    border-radius:24px;
+
+    padding:28px;
+
+    text-align:center;
+
+    animation:popupShow .25s ease;
+
+}
+
+.modalContent h2{
+
+    margin-bottom:20px;
+
+    color:var(--gold);
+
+}
+
+#spinWheel{
+
+    width:220px;
+
+    height:220px;
+
+    margin:0 auto 20px;
+
+    border-radius:50%;
+
+    border:8px solid var(--gold);
+
+    background:
+    radial-gradient(circle,#ffd54a,#ffb300);
+
+    box-shadow:
+    0 0 35px rgba(255,193,7,.35);
+
+}
+
+#spinButton,
+#claimDaily{
+
+    width:100%;
+
+    height:54px;
+
+    border:none;
+
+    border-radius:16px;
+
+    background:linear-gradient(90deg,#ffd54a,#ffb300);
+
+    color:#000;
+
+    font-size:17px;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   Premium Popup
+========================================== */
+
+#popup{
+
+    position:fixed;
+
+    inset:0;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:rgba(0,0,0,.65);
+
+    backdrop-filter:blur(8px);
+
+    z-index:9500;
+
+}
+
+.popupCard{
+
+    width:90%;
+
+    max-width:340px;
+
+    background:#161616;
+
+    border:1px solid var(--border);
+
+    border-radius:22px;
+
+    padding:26px;
+
+    text-align:center;
+
+    animation:popupShow .25s ease;
+
+}
+
+.popupCard h2{
+
+    color:var(--gold);
+
+    margin-bottom:12px;
+
+}
+
+.popupCard p{
+
+    color:#ddd;
+
+    margin-bottom:22px;
+
+    line-height:1.6;
+
+}
+
+#popupButton{
+
+    width:100%;
+
+    height:52px;
+
+    border:none;
+
+    border-radius:15px;
+
+    background:var(--gold);
+
+    color:#000;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   Bottom Sheet
+========================================== */
+
+.bottomSheet{
+
+    position:fixed;
+
+    left:0;
+
+    right:0;
+
+    bottom:0;
+
+    background:#121212;
+
+    border-radius:28px 28px 0 0;
+
+    padding:24px;
+
+    border-top:1px solid var(--border);
+
+    animation:sheetUp .25s ease;
+
+    z-index:9200;
+
+}
+
+.sheetHandle{
+
+    width:70px;
+
+    height:6px;
+
+    border-radius:10px;
+
+    background:#555;
+
+    margin:0 auto 20px;
+
+}
+
+.bottomSheet button{
+
+    width:100%;
+
+    height:52px;
+
+    margin-top:18px;
+
+    border:none;
+
+    border-radius:15px;
+
+    background:var(--gold);
+
+    color:#000;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   Bottom Navigation
+========================================== */
+
+#bottomNav{
+
+    position:fixed;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    bottom:14px;
+
+    width:95%;
+
+    max-width:500px;
+
+    background:rgba(20,20,20,.95);
+
+    backdrop-filter:blur(18px);
+
+    border:1px solid #2a2a2a;
+
+    border-radius:24px;
 
     display:flex;
 
     justify-content:space-around;
 
+    padding:12px 6px;
 
-    padding:12px 5px;
-
-
-    z-index:100;
+    z-index:500;
 
 }
-
-
-
-
 
 .nav{
 
-    background:none;
+    flex:1;
 
     border:none;
 
+    background:none;
 
-    color:var(--muted);
+    color:#888;
 
+    display:flex;
 
-    font-size:13px;
+    flex-direction:column;
 
+    align-items:center;
+
+    gap:6px;
+
+    transition:.25s;
 
 }
 
+.nav span{
 
+    font-size:24px;
+
+}
+
+.nav small{
+
+    font-size:12px;
+
+    font-weight:600;
+
+}
 
 .nav.active{
 
-    color:var(--primary);
+    color:var(--gold);
 
 }
 
+.nav.active span{
 
+    transform:translateY(-2px) scale(1.08);
 
+}
 
+.nav:active{
 
+    transform:scale(.92);
 
+}
 
-/* ==========================
- Mobile
-========================== */
+/* ==========================================
+   Toast
+========================================== */
 
+.toast{
+
+    background:#1a1a1a;
+
+    border:1px solid var(--border);
+
+    color:#fff;
+
+    padding:14px 20px;
+
+    border-radius:16px;
+
+    margin-bottom:12px;
+
+    animation:toastShow .35s ease;
+
+}
+
+/* ==========================================
+   Animations
+========================================== */
+
+@keyframes popupShow{
+
+    from{
+
+        opacity:0;
+
+        transform:scale(.85);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:scale(1);
+
+    }
+
+}
+
+@keyframes sheetUp{
+
+    from{
+
+        transform:translateY(100%);
+
+    }
+
+    to{
+
+        transform:translateY(0);
+
+    }
+
+}
+
+@keyframes toastShow{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(-20px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================================
+   Scrollbar
+========================================== */
+
+::-webkit-scrollbar{
+
+    width:0;
+
+    height:0;
+
+}
+
+/* ==========================================
+   Responsive
+========================================== */
 
 @media(max-width:500px){
 
+    #app{
+
+        padding:16px;
+
+        padding-bottom:110px;
+
+    }
 
     #coin{
 
+        width:185px;
 
-        width:180px;
-
-        height:180px;
-
-
-        font-size:75px;
-
+        height:185px;
 
     }
 
+    .coinInner span{
 
+        font-size:76px;
+
+    }
 
     #balance{
 
-        font-size:32px;
+        font-size:36px;
 
     }
 
+    .profileAvatar{
+
+        width:82px;
+
+        height:82px;
+
+    }
+
+    #bottomNav{
+
+        border-radius:20px;
+
+    }
 
 }
+
+@media(min-width:501px){
+
+    body{
+
+        display:flex;
+
+        justify-content:center;
+
+    }
+
+   }
