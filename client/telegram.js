@@ -318,3 +318,341 @@ TelegramApp.confirm = (text, callback) => {
 };
 
 
+// ==========================================
+// Toast
+// ==========================================
+
+TelegramApp.toast = (message, duration = 2500) => {
+
+    const container = document.getElementById("toastContainer");
+
+    if (!container) {
+
+        console.log(message);
+
+        return;
+
+    }
+
+    const toast = document.createElement("div");
+
+    toast.className = "toast";
+
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+
+        toast.classList.add("show");
+
+    });
+
+    setTimeout(() => {
+
+        toast.classList.remove("show");
+
+        setTimeout(() => {
+
+            toast.remove();
+
+        }, 300);
+
+    }, duration);
+
+};
+
+
+
+// ==========================================
+// Main Button
+// ==========================================
+
+TelegramApp.mainButton = {
+
+    show(text, callback) {
+
+        if (!tg.MainButton) return;
+
+        tg.MainButton.setText(text);
+
+        tg.MainButton.show();
+
+        tg.MainButton.offClick();
+
+        if (callback) {
+
+            tg.MainButton.onClick(callback);
+
+        }
+
+    },
+
+    hide() {
+
+        if (tg.MainButton) {
+
+            tg.MainButton.hide();
+
+        }
+
+    },
+
+    enable() {
+
+        if (tg.MainButton) {
+
+            tg.MainButton.enable();
+
+        }
+
+    },
+
+    disable() {
+
+        if (tg.MainButton) {
+
+            tg.MainButton.disable();
+
+        }
+
+    },
+
+    loading(show = true) {
+
+        if (!tg.MainButton) return;
+
+        if (show) {
+
+            tg.MainButton.showProgress();
+
+        } else {
+
+            tg.MainButton.hideProgress();
+
+        }
+
+    }
+
+};
+
+
+
+// ==========================================
+// Back Button
+// ==========================================
+
+TelegramApp.backButton = {
+
+    show(callback) {
+
+        if (!tg.BackButton) return;
+
+        tg.BackButton.show();
+
+        tg.BackButton.offClick();
+
+        if (callback) {
+
+            tg.BackButton.onClick(callback);
+
+        }
+
+    },
+
+    hide() {
+
+        if (tg.BackButton) {
+
+            tg.BackButton.hide();
+
+        }
+
+    }
+
+};
+
+
+
+// ==========================================
+// Loader
+// ==========================================
+
+TelegramApp.showLoader = () => {
+
+    const loading = document.getElementById("loading");
+
+    if (loading) {
+
+        loading.style.display = "flex";
+
+    }
+
+};
+
+TelegramApp.hideLoader = () => {
+
+    const loading = document.getElementById("loading");
+
+    if (loading) {
+
+        loading.style.display = "none";
+
+    }
+
+};
+
+
+
+// ==========================================
+// Close App
+// ==========================================
+
+TelegramApp.close = () => {
+
+    if (tg.close) {
+
+        tg.close();
+
+    }
+
+};
+
+
+
+// ==========================================
+// Open Telegram Link
+// ==========================================
+
+TelegramApp.openLink = (url) => {
+
+    if (tg.openLink) {
+
+        tg.openLink(url);
+
+    } else {
+
+        window.open(url, "_blank");
+
+    }
+
+};
+
+
+// ==========================================
+// Telegram Events
+// ==========================================
+
+TelegramApp.onThemeChanged = (callback) => {
+
+    if (tg.onEvent) {
+
+        tg.onEvent("themeChanged", callback);
+
+    }
+
+};
+
+TelegramApp.onViewportChanged = (callback) => {
+
+    if (tg.onEvent) {
+
+        tg.onEvent("viewportChanged", callback);
+
+    }
+
+};
+
+
+
+// ==========================================
+// App Information
+// ==========================================
+
+TelegramApp.getInfo = () => {
+
+    return {
+
+        version: TelegramApp.version,
+
+        platform: TelegramApp.platform,
+
+        colorScheme: TelegramApp.colorScheme,
+
+        user: TelegramApp.user,
+
+        initData: TelegramApp.initData
+
+    };
+
+};
+
+
+
+// ==========================================
+// Apply Theme
+// ==========================================
+
+document.documentElement.setAttribute(
+
+    "data-theme",
+
+    TelegramApp.colorScheme
+
+);
+
+
+
+// ==========================================
+// Auto Update User Photo
+// ==========================================
+
+window.addEventListener("DOMContentLoaded", () => {
+
+    const photo = document.getElementById("userPhoto");
+
+    if (photo && TelegramApp.getPhoto()) {
+
+        photo.src = TelegramApp.getPhoto();
+
+    }
+
+    const profilePhoto = document.getElementById("profilePhoto");
+
+    if (profilePhoto && TelegramApp.getPhoto()) {
+
+        profilePhoto.src = TelegramApp.getPhoto();
+
+    }
+
+});
+
+
+
+// ==========================================
+// Debug
+// ==========================================
+
+console.log("=================================");
+
+console.log("🚀 Zoryx Telegram Ready");
+
+console.log("User ID :", TelegramApp.getUserId());
+
+console.log("Name :", TelegramApp.getFullName());
+
+console.log("Username :", TelegramApp.getUsername());
+
+console.log("Platform :", TelegramApp.platform);
+
+console.log("Version :", TelegramApp.version);
+
+console.log("=================================");
+
+
+
+// ==========================================
+// Export
+// ==========================================
+
+window.TelegramApp = TelegramApp;
