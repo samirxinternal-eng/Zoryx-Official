@@ -1,14 +1,12 @@
 {
-  "name": "zoryx-server",
+  "name": "zoryx",
   "version": "1.0.0",
-  "description": "Zoryx Telegram Mini App Backend",
+  "description": "Zoryx Telegram Mini App",
   "type": "module",
-  "main": "server.js",
-  "author": "Samir",
-  "license": "MIT",
+  "main": "server/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -22,5 +20,7 @@
   },
   "engines": {
     "node": ">=20.0.0"
-  }
+  },
+  "author": "Samir",
+  "license": "MIT"
 }
