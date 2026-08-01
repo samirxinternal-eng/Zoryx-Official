@@ -1,71 +1,211 @@
+// ========================================
+// Zoryx Telegram WebApp
+// server/auth.js
+// ========================================
+
 import crypto from "crypto";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+
 
 // ========================================
-// Telegram Mini App Auth Verification
+// Create Telegram Secret
 // ========================================
 
-export function verifyTelegramAuth(body) {
+function createSecretKey(){
 
-    try {
+    return crypto
+        .createHmac(
+            "sha256",
+            "WebAppData"
+        )
+        .update(
+            process.env.BOT_TOKEN
+        )
+        .digest();
 
-        const { initData } = body;
+}
 
-        if (!initData) {
-            return {
-                success: false,
-                message: "InitData Missing"
+
+
+// ========================================
+// Verify Telegram WebApp Login
+// ========================================
+
+export function verifyTelegramAuth(data){
+
+    try{
+
+        if(
+            !data ||
+            !data.initData
+        ){
+
+            return{
+
+                success:false,
+
+                message:"InitData Missing"
+
             };
+
         }
 
-        const params = new URLSearchParams(initData);
 
-        const hash = params.get("hash");
 
-        if (!hash) {
-            return {
-                success: false,
-                message: "Invalid Hash"
+        const initData =
+        data.initData;
+
+
+
+        const params =
+        new URLSearchParams(
+            initData
+        );
+
+
+
+        const hash =
+        params.get("hash");
+
+
+
+        if(!hash){
+
+            return{
+
+                success:false,
+
+                message:"Hash Missing"
+
             };
+
         }
+
+
 
         params.delete("hash");
 
-        const dataCheckString = [...params.entries()]
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([key, value]) => `${key}=${value}`)
-            .join("\n");
 
-        const secretKey = crypto
-            .createHmac("sha256", "WebAppData")
-            .update(process.env.BOT_TOKEN)
-            .digest();
 
-        const calculatedHash = crypto
-            .createHmac("sha256", secretKey)
-            .update(dataCheckString)
-            .digest("hex");
+        const dataCheckString =
+        [...params.entries()]
+        .sort(
+            (a,b)=>
+            a[0].localeCompare(
+                b[0]
+            )
+        )
+        .map(
+            ([k,v])=>
+            `${k}=${v}`
+        )
+        .join("\n");
 
-        if (calculatedHash !== hash) {
-            return {
-                success: false,
-                message: "Unauthorized"
+
+
+        const secret =
+        createSecretKey();
+
+
+
+        const calculatedHash =
+        crypto
+        .createHmac(
+
+            "sha256",
+
+            secret
+
+        )
+        .update(
+            dataCheckString
+        )
+        .digest("hex");
+
+
+
+        if(
+            calculatedHash !== hash
+        ){
+
+            return{
+
+                success:false,
+
+                message:"Invalid Telegram Signature"
+
             };
+
         }
 
-        const user = JSON.parse(params.get("user"));
 
-        return {
-            success: true,
+
+        const authDate =
+        Number(
+            params.get(
+                "auth_date"
+            )
+        );
+
+
+
+        const now =
+        Math.floor(
+            Date.now()/1000
+        );
+
+
+
+        if(
+            now-authDate >
+            86400
+        ){
+
+            return{
+
+                success:false,
+
+                message:"Login Expired"
+
+            };
+
+        }
+
+
+
+        const user =
+        JSON.parse(
+
+            params.get("user")
+
+        );
+
+
+
+        return{
+
+            success:true,
+
             user
+
         };
 
-    } catch (error) {
 
-        return {
-            success: false,
-            message: error.message
+
+    }
+    catch(error){
+
+        return{
+
+            success:false,
+
+            message:error.message
+
         };
 
     }
-    
- }
+
+                }
