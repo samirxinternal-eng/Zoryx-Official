@@ -230,9 +230,9 @@ export function verifyTelegramInitData(initData) {
     const dataCheckString = buildDataCheckString(data);
 
     const secret = crypto
-        .createHash("sha256")
-        .update(BOT_TOKEN)
-        .digest();
+    .createHmac("sha256", "WebAppData")
+    .update(BOT_TOKEN)
+    .digest();
 
     const calculatedHash = crypto
         .createHmac("sha256", secret)
