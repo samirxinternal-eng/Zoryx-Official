@@ -1,87 +1,136 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 
-    <meta name="theme-color" content="#000000">
+<meta
+name="theme-color"
+content="#0b0b0f">
 
-    <meta name="apple-mobile-web-app-capable" content="yes">
+<meta
+name="apple-mobile-web-app-capable"
+content="yes">
 
-    <meta name="mobile-web-app-capable" content="yes">
+<meta
+name="mobile-web-app-capable"
+content="yes">
 
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Zoryx</title>
 
-    <meta name="description" content="Zoryx Telegram Mini App">
 
-    <title>Zoryx</title>
 
-    <link rel="manifest" href="manifest.json">
+<!-- Telegram Mini App -->
 
-    <link rel="stylesheet" href="style.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+
+<!-- Manifest -->
+
+<link
+rel="manifest"
+href="./manifest.json">
+
+
+
+<!-- Icons -->
+
+<link
+rel="icon"
+type="image/png"
+href="./assets/logo.png">
+
+
+
+<!-- CSS -->
+
+<link
+rel="stylesheet"
+href="./style.css">
 
 </head>
 
 <body>
 
-<!-- ==========================================
-     Loading Screen
-========================================== -->
 
-<div id="loading">
 
-    <div class="loader"></div>
+<!-- ===================================== -->
+<!-- Loading Screen -->
+<!-- ===================================== -->
 
-    <h2>Zoryx</h2>
+<div
+id="loading"
+class="loading">
 
-    <p>Loading...</p>
+    <div class="loading-box">
+
+        <img
+
+            src="./assets/logo.png"
+
+            class="loading-logo"
+
+            alt="Zoryx"
+
+        >
+
+        <h2>
+
+            Zoryx
+
+        </h2>
+
+        <p>
+
+            Loading...
+
+        </p>
+
+        <div class="loading-spinner"></div>
+
+    </div>
 
 </div>
 
-<!-- ==========================================
-     Premium Toast
-========================================== -->
 
-<div id="toastContainer"></div>
 
-<!-- ==========================================
-     Popup Overlay
-========================================== -->
+<!-- ===================================== -->
+<!-- Main App -->
+<!-- ===================================== -->
 
-<div id="overlay" class="hidden"></div>
+<div
+id="app"
+class="app hidden">
 
-<!-- ==========================================
-     Main App
-========================================== -->
 
-<div id="app" class="hidden">
+    <!-- ===================================== -->
+<!-- Header -->
+<!-- ===================================== -->
 
-<!-- ==========================================
-     Header
-========================================== -->
+<header class="header">
 
-<header id="header">
+    <div class="header-left">
 
-    <div class="profile">
+        <img
 
-        <div class="avatar">
+            id="userPhoto"
 
-            <img
-                id="userPhoto"
-                loading="lazy"
-                decoding="async"
-                draggable="false"
-                alt="Telegram Profile">
+            class="user-photo"
 
-        </div>
+            src="./assets/default-avatar.png"
 
-        <div class="profileInfo">
+            alt="Profile"
+
+        >
+
+        <div class="user-info">
 
             <h3 id="userName">
 
@@ -89,724 +138,787 @@
 
             </h3>
 
-            <span id="userLevel">
+            <span id="connectionStatus">
 
-                🎖️ Level 1
+                🟢 Online
 
             </span>
 
         </div>
-
-    </div>
-
-    <div class="headerButtons">
-
-        <button
-            id="leaderboardButton"
-            class="iconButton"
-            title="Leaderboard"
-            aria-label="Leaderboard">
-
-            🏆
-
-        </button>
-
-        <button
-            id="settingButton"
-            class="iconButton"
-            title="Settings"
-            aria-label="Settings">
-
-            ⚙️
-
-        </button>
 
     </div>
 
 </header>
 
-<!-- ==========================================
-     Announcement Banner
-========================================== -->
 
-<section id="announcement">
 
-    <div class="announceIcon">
+<!-- ===================================== -->
+<!-- Dashboard -->
+<!-- ===================================== -->
 
-        📢
+<div class="dashboard">
 
-    </div>
+    <!-- Balance -->
 
-    <div class="announceText">
+    <div class="card balance-card">
 
-        <div id="announcementWrapper">
+        <span class="card-title">
 
-            <div id="announcementScroll">
+            Balance
 
-                <span>
-                    🚀 Welcome to Zoryx • Complete Tasks • Invite Friends • Earn Rewards • Daily Reward Resets at 05:00 GMT •
-                </span>
+        </span>
 
-                <span>
-                    🚀 Welcome to Zoryx • Complete Tasks • Invite Friends • Earn Rewards • Daily Reward Resets at 05:00 GMT •
-                </span>
+        <h2 id="balance">
 
-            </div>
+            0
 
-        </div>
+        </h2>
 
     </div>
 
-</section>
 
-<!-- ==========================================
-     Balance Card
-========================================== -->
 
-<section id="balanceCard">
+    <!-- Level -->
 
-    <span class="cardTitle">
+    <div class="card level-card">
 
-        Balance
+        <span class="card-title">
 
-    </span>
+            Level
 
-    <h1 id="balance">
+        </span>
 
-        0
+        <h2 id="level">
 
-    </h1>
+            1
 
-    <span class="coinText">
+        </h2>
 
-        Zoryx Coin
+    </div>
 
-    </span>
 
-</section>
 
-<!-- ==========================================
-     Energy Card
-========================================== -->
+    <!-- Energy -->
 
-<section id="energyCard">
+    <div class="card energy-card">
 
-    <div class="energyTop">
-
-        <span>
+        <span class="card-title">
 
             Energy
 
         </span>
 
-        <span id="energyText">
+        <h2 id="energy">
 
-            1000 / 1000
+            0 / 1000
 
-        </span>
-
-    </div>
-
-    <div class="energyBar">
-
-        <div id="energyFill"></div>
+        </h2>
 
     </div>
 
-</section>
+</div>
 
-<!-- ==========================================
-     Home Section
-========================================== -->
 
-<section
-    id="homePage"
-    class="page active">
 
-    <!-- Tap Area -->
+<!-- ===================================== -->
+<!-- XP Progress -->
+<!-- ===================================== -->
 
-    <section id="coinArea">
+<div class="progress-box">
 
-        <div id="coin">
+    <div class="progress-title">
 
-            <div class="coinOuter"></div>
+        XP Progress
 
-            <div class="coinInner">
+    </div>
 
-                <span>
+    <div class="progress">
 
-                    Z
+        <div
 
-                </span>
+            id="xpFill"
+
+            class="progress-fill"
+
+        ></div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ===================================== -->
+<!-- Level Progress -->
+<!-- ===================================== -->
+
+<div class="progress-box">
+
+    <div class="progress-title">
+
+        Level Progress
+
+    </div>
+
+    <div class="progress">
+
+        <div
+
+            id="levelProgress"
+
+            class="progress-fill"
+
+        ></div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ===================================== -->
+<!-- Pages Container -->
+<!-- ===================================== -->
+
+<div id="home" class="page active">
+
+    <!-- Coin Section -->
+
+    <div class="coin-section">
+
+        <div class="coin-wrapper">
+
+            <img
+
+                id="coin"
+
+                class="coin"
+
+                src="./assets/coin.png"
+
+                alt="Coin"
+
+            >
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Energy Bar -->
+
+    <div class="energy-box">
+
+        <div class="energy-header">
+
+            <span>⚡ Energy</span>
+
+            <span id="energy">
+
+                0 / 1000
+
+            </span>
+
+        </div>
+
+        <div class="energy-progress">
+
+            <div
+
+                id="energyFill"
+
+                class="energy-fill"
+
+            ></div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Statistics -->
+
+    <div class="stats-grid">
+
+        <div class="stats-card">
+
+            <div class="stats-title">
+
+                Total Tap
+
+            </div>
+
+            <div
+
+                id="totalTap"
+
+                class="stats-value"
+
+            >
+
+                0
 
             </div>
 
         </div>
 
-        <!-- Floating +1 -->
-
-        <div id="tapEffects"></div>
-
-        <!-- Ripple -->
-
-        <div id="rippleContainer"></div>
-
-    </section>
-
-    </section>
 
 
-    <!-- ==========================================
-     Earn Page
-========================================== -->
+        <div class="stats-card">
 
-<section
-    id="earnPage"
-    class="page">
+            <div class="stats-title">
 
-    <div class="pageHeader">
+                Referrals
 
-        <h2>💰 Earn</h2>
+            </div>
 
-        <p>
-            Complete tasks and earn rewards.
-        </p>
+            <div
 
-    </div>
+                id="referralCount"
 
-    <div id="taskList">
+                class="stats-value"
 
-    </div>
+            >
 
-</section>
+                0
+
+            </div>
+
+        </div>
 
 
 
+        <div class="stats-card">
 
+            <div class="stats-title">
 
-<!-- ==========================================
-     Referral Page
-========================================== -->
+                XP
 
-<section
-    id="referralPage"
-    class="page">
+            </div>
 
-    <div class="pageHeader">
+            <div
 
-        <h2>👥 Referral</h2>
+                id="xpValue"
 
-        <p>
-            Invite friends and earn rewards.
-        </p>
+                class="stats-value"
+
+            >
+
+                0
+
+            </div>
+
+        </div>
 
     </div>
 
-    <div class="referralCard">
 
-        <h3>Your Invite Link</h3>
 
-        <input
-            id="referralLink"
-            readonly>
+    <!-- Action Buttons -->
 
-        <button id="copyReferral">
+    <div class="home-buttons">
 
-            Copy Link
+        <button
+
+            id="refreshButton"
+
+            class="primary-btn"
+
+        >
+
+            🔄 Refresh
+
+        </button>
+
+
+
+        <button
+
+            id="referralButton"
+
+            class="primary-btn"
+
+        >
+
+            👥 Invite Friends
 
         </button>
 
     </div>
 
-    <div class="referralStats">
-
-        <div class="stat">
-
-            <span>Total Friends</span>
-
-            <h2 id="friendCount">
-
-                0
-
-            </h2>
-
-        </div>
-
-        <div class="stat">
-
-            <span>Claimable</span>
-
-            <h2 id="claimReward">
-
-                0
-
-            </h2>
-
-        </div>
-
-    </div>
-
-    <div id="milestoneList">
-
-    </div>
-
-</section>
+</div>
 
 
+<!-- ===================================== -->
+<!-- Earn Page -->
+<!-- ===================================== -->
 
+<div id="earn" class="page">
 
+    <div class="page-header">
 
-<!-- ==========================================
-     Levels Page
-========================================== -->
-
-<section
-    id="levelsPage"
-    class="page">
-
-    <div class="pageHeader">
-
-        <h2>🎖️ Levels</h2>
+        <h2>💰 Earn Coins</h2>
 
         <p>
-            Unlock rewards by leveling up.
+
+            Complete tasks and earn free Zoryx Coins.
+
         </p>
 
     </div>
 
-    <div class="levelProgress">
+    <!-- Task List -->
 
-        <span id="currentLevel">
+    <div
 
-            Level 1
+        id="taskList"
 
-        </span>
+        class="task-list"
 
-        <div class="progressBar">
+    >
 
-            <div id="levelFill"></div>
-
-        </div>
+        <!-- Tasks will load here -->
 
     </div>
 
-    <div id="levelRewardList">
-
-    </div>
-
-</section>
+</div>
 
 
 
+<!-- ===================================== -->
+<!-- Leaderboard Page -->
+<!-- ===================================== -->
 
+<div id="leaderboard" class="page">
 
-<!-- ==========================================
-     Profile Page
-========================================== -->
+    <div class="page-header">
 
-<section
-    id="profilePage"
-    class="page">
-
-    <div class="pageHeader">
-
-        <h2>👤 Profile</h2>
+        <h2>🏆 Leaderboard</h2>
 
         <p>
-            Your Zoryx account information
+
+            Top Players
+
         </p>
 
     </div>
 
-    <!-- Profile Card -->
+    <div
 
-    <div class="profileCard">
+        id="leaderboardList"
 
-        <div class="profileAvatar">
+        class="leaderboard-list"
 
-            <img
-                id="profilePhoto"
-                loading="lazy"
-                decoding="async"
-                draggable="false"
-                alt="Telegram Profile">
+    >
 
-        </div>
+        <!-- Leaderboard -->
 
-        <h3 id="profileName">
+    </div>
 
-            Loading...
+</div>
+
+
+
+<!-- ===================================== -->
+<!-- Referral Page -->
+<!-- ===================================== -->
+
+<div id="referral" class="page">
+
+    <div class="page-header">
+
+        <h2>👥 Invite Friends</h2>
+
+        <p>
+
+            Invite your friends and earn rewards.
+
+        </p>
+
+    </div>
+
+    <div class="referral-card">
+
+        <h3>
+
+            Total Referrals
 
         </h3>
 
-        <span id="profileUsername">
+        <h1
+
+            id="referralCount"
+
+        >
+
+            0
+
+        </h1>
+
+        <button
+
+            id="referralButton"
+
+            class="primary-btn"
+
+        >
+
+            Share Referral Link
+
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<!-- ===================================== -->
+<!-- Profile Page -->
+<!-- ===================================== -->
+
+<div id="profile" class="page">
+
+    <div class="profile-box">
+
+        <img
+
+            id="profilePhoto"
+
+            class="profile-photo"
+
+            src="./assets/default-avatar.png"
+
+            alt="Profile"
+
+        >
+
+        <h2
+
+            id="profileName"
+
+        >
+
+            Loading...
+
+        </h2>
+
+        <p
+
+            id="profileUsername"
+
+        >
 
             @username
 
-        </span>
+        </p>
 
-        <div class="profileBadge">
+    </div>
 
-            🎖️ Level
-            <span id="profileLevel">
+
+
+    <div class="profile-stats">
+
+        <div class="stats-card">
+
+            <span>Level</span>
+
+            <h3 id="profileLevel">
 
                 1
 
-            </span>
+            </h3>
 
         </div>
 
-    </div>
+        <div class="stats-card">
 
-    <!-- Statistics -->
+            <span>Balance</span>
 
-    <div class="profileInfo">
-
-        <div class="infoRow">
-
-            <span>🆔 Telegram ID</span>
-
-            <span id="telegramId">
-
-                -
-
-            </span>
-
-        </div>
-
-        <div class="infoRow">
-
-            <span>🔐 UID</span>
-
-            <span id="uid">
-
-                -
-
-            </span>
-
-        </div>
-
-        <div class="infoRow">
-
-            <span>🪙 Balance</span>
-
-            <span id="profileBalance">
+            <h3 id="profileBalance">
 
                 0
 
-            </span>
+            </h3>
 
         </div>
 
-        <div class="infoRow">
+        <div class="stats-card">
 
-            <span>⚡ Energy</span>
+            <span>Total Tap</span>
 
-            <span id="profileEnergy">
-
-                1000 / 1000
-
-            </span>
-
-        </div>
-
-        <div class="infoRow">
-
-            <span>👆 Total Taps</span>
-
-            <span id="totalTap">
+            <h3 id="profileTap">
 
                 0
 
-            </span>
-
-        </div>
-
-        <div class="infoRow">
-
-            <span>👥 Referrals</span>
-
-            <span id="profileReferral">
-
-                0
-
-            </span>
-
-        </div>
-
-        <div class="infoRow">
-
-            <span>⭐ XP</span>
-
-            <span id="profileXP">
-
-                0
-
-            </span>
-
-        </div>
-
-        <div class="infoRow">
-
-            <span>📅 Join Date</span>
-
-            <span id="joinDate">
-
-                -
-
-            </span>
+            </h3>
 
         </div>
 
     </div>
 
-</section>
-
-
-
-
-
-
-<!-- ==========================================
-     Lucky Spin Modal
-========================================== -->
-
-<div
-    id="spinModal"
-    class="modal hidden">
-
-    <div class="modalContent">
-
-        <h2>
-
-            🎉 Lucky Spin
-
-        </h2>
-
-        <div id="spinWheel">
-
-        </div>
-
-        <button id="spinButton">
-
-            Spin
-
-        </button>
-
     </div>
 
-</div>
 
+    <!-- ===================================== -->
+<!-- Bottom Navigation -->
+<!-- ===================================== -->
 
+<nav class="bottom-nav">
 
+    <button
 
+        class="nav-item active"
 
-<!-- ==========================================
-     Daily Reward Modal
-========================================== -->
+        data-page="home"
 
-<div
-    id="dailyModal"
-    class="modal hidden">
+    >
 
-    <div class="modalContent">
+        <div class="nav-icon">🏠</div>
 
-        <h2>
-
-            🎁 Daily Reward
-
-        </h2>
-
-        <p id="dailyRewardText">
-
-            Claim your reward.
-
-        </p>
-
-        <button id="claimDaily">
-
-            Claim
-
-        </button>
-
-    </div>
-
-</div>
-
-
-
-
-
-<!-- ==========================================
-     Premium Popup
-========================================== -->
-
-<div
-    id="popup"
-    class="hidden">
-
-    <div class="popupCard">
-
-        <h2 id="popupTitle">
-
-            Success
-
-        </h2>
-
-        <p id="popupMessage">
-
-            Message
-
-        </p>
-
-        <button id="popupButton">
-
-            OK
-
-        </button>
-
-    </div>
-
-</div>
-
-
-
-
-
-<!-- ==========================================
-     Settings Bottom Sheet
-========================================== -->
-
-<div
-    id="settingsSheet"
-    class="bottomSheet hidden">
-
-    <div class="sheetHandle"></div>
-
-    <h2>
-
-        ⚙ Settings
-
-    </h2>
-
-    <button id="closeSettings">
-
-        Close
+        <span>Home</span>
 
     </button>
 
-</div>
 
-
-
-
-
-<!-- ==========================================
-     Bottom Navigation
-========================================== -->
-
-<nav id="bottomNav">
 
     <button
-        class="nav active"
-        data-page="home">
 
-        <span>
+        class="nav-item"
 
-            🏠
+        data-page="earn"
 
-        </span>
+    >
 
-        <small>
+        <div class="nav-icon">💰</div>
 
-            Home
-
-        </small>
+        <span>Earn</span>
 
     </button>
 
+
+
     <button
-        class="nav"
-        data-page="earn">
 
-        <span>
+        class="nav-item"
 
-            💰
+        data-page="leaderboard"
 
-        </span>
+    >
 
-        <small>
+        <div class="nav-icon">🏆</div>
 
-            Earn
-
-        </small>
+        <span>Rank</span>
 
     </button>
 
+
+
     <button
-        class="nav"
-        data-page="referral">
 
-        <span>
+        class="nav-item"
 
-            👥
+        data-page="referral"
 
-        </span>
+    >
 
-        <small>
+        <div class="nav-icon">👥</div>
 
-            Referral
-
-        </small>
+        <span>Invite</span>
 
     </button>
 
-    <button
-        class="nav"
-        data-page="levels">
 
-        <span>
-
-            🎖️
-
-        </span>
-
-        <small>
-
-            Levels
-
-        </small>
-
-    </button>
 
     <button
-        class="nav"
-        data-page="profile">
 
-        <span>
+        class="nav-item"
 
-            👤
+        data-page="profile"
 
-        </span>
+    >
 
-        <small>
+        <div class="nav-icon">👤</div>
 
-            Profile
-
-        </small>
+        <span>Profile</span>
 
     </button>
 
 </nav>
 
+
+
+<!-- ===================================== -->
+<!-- Popup -->
+<!-- ===================================== -->
+
+<div
+
+    id="overlay"
+
+    class="overlay hidden"
+
+></div>
+
+
+
+<div
+
+    id="popup"
+
+    class="popup hidden"
+
+>
+
+    <div class="popup-header">
+
+        <h2
+
+            id="popupTitle"
+
+        >
+
+            Zoryx
+
+        </h2>
+
+    </div>
+
+
+
+    <div
+
+        id="popupMessage"
+
+        class="popup-message"
+
+    >
+
+        Message
+
+    </div>
+
+
+
+    <button
+
+        id="popupClose"
+
+        class="popup-button"
+
+    >
+
+        OK
+
+    </button>
+
 </div>
 
-<script src="telegram.js"></script>
 
-<script src="api.js"></script>
 
-<script src="app.js"></script>
+<!-- ===================================== -->
+<!-- Toast Container -->
+<!-- ===================================== -->
+
+<div
+
+    id="toastContainer"
+
+    class="toast-container"
+
+></div>
+
+
+
+<!-- ===================================== -->
+<!-- Floating Coin Effect -->
+<!-- ===================================== -->
+
+<div
+
+    id="floatingContainer"
+
+    class="floating-container"
+
+></div>
+
+
+ <!-- ===================================== -->
+<!-- Scripts -->
+<!-- ===================================== -->
+
+<script src="./telegram.js"></script>
+
+<script src="./api.js"></script>
+
+<script src="./app.js"></script>
+
+
+
+<!-- ===================================== -->
+<!-- Popup Close Script -->
+<!-- ===================================== -->
+
+<script>
+
+document.addEventListener(
+
+    "DOMContentLoaded",
+
+    ()=>{
+
+        const popupClose =
+
+            document.getElementById(
+
+                "popupClose"
+
+            );
+
+        if(popupClose){
+
+            popupClose.addEventListener(
+
+                "click",
+
+                ()=>{
+
+                    if(
+
+                        window.TelegramApp &&
+
+                        TelegramApp.closePopup
+
+                    ){
+
+                        TelegramApp.closePopup();
+
+                    }
+
+                }
+
+            );
+
+        }
+
+    }
+
+);
+
+</script>
+
+
+
+<!-- ===================================== -->
+<!-- End Main App -->
+<!-- ===================================== -->
+
+</div>
+
+
 
 </body>
 
-    </html>
+</html>   
