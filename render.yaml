@@ -1,15 +1,30 @@
+# ==========================================
+# Zoryx Telegram Mini App
+# render.yaml
+# ==========================================
+
 services:
+
   - type: web
-    name: zoryx
+
+    name: zoryx-server
+
     runtime: node
+
     plan: free
 
+    rootDir: server
+
     buildCommand: npm install
-    startCommand: node server/server.js
+
+    startCommand: npm start
+
+    autoDeploy: true
 
     envVars:
+
       - key: NODE_VERSION
-        value: 22
+        value: 20
 
       - key: NODE_ENV
         value: production
@@ -17,14 +32,32 @@ services:
       - key: PORT
         value: 10000
 
-      - key: MONGODB_URI
-        sync: false
-
       - key: BOT_TOKEN
         sync: false
 
       - key: BOT_USERNAME
         sync: false
 
-      - key: JWT_SECRET
+      - key: MONGODB_URI
         sync: false
+
+      - key: DB_NAME
+        value: zoryx
+
+      - key: DEFAULT_ENERGY
+        value: "1000"
+
+      - key: MAX_ENERGY
+        value: "1000"
+
+      - key: ENERGY_RESTORE_TIME
+        value: "4000"
+
+      - key: DAILY_RESET_HOUR
+        value: "5"
+
+      - key: DAILY_RESET_MINUTE
+        value: "0"
+
+      - key: TIMEZONE
+        value: GMT
