@@ -6,21 +6,15 @@
 const API = {};
 
 
+
 // ==========================================
 // Config
 // ==========================================
 
 API.BASE_URL =
-window.location.hostname === "localhost"
-?
+window.location.origin + "/api";
 
-"http://localhost:3000"
-
-:
-
-window.location.origin;
-
-
+API.TIMEOUT = 15000;
 
 
 
@@ -28,312 +22,222 @@ window.location.origin;
 // Request Helper
 // ==========================================
 
-API.request = async(
+API.request = async (
 
-url,
+    endpoint,
 
-method="GET",
+    method = "GET",
 
-body=null
+    body = null
 
-)=>{
+) => {
 
-try{
+    try {
 
-const options={
+        const controller = new AbortController();
 
-method,
+        const timeout = setTimeout(() => {
 
-headers:{
+            controller.abort();
 
-"Content-Type":
-"application/json"
+        }, API.TIMEOUT);
 
-}
+        const options = {
 
-};
+            method,
 
-if(body){
+            headers: {
 
-options.body=
-JSON.stringify(body);
+                "Content-Type": "application/json"
 
-}
+            },
 
-const response=
-await fetch(
+            signal: controller.signal
 
-API.BASE_URL+url,
+        };
 
-options
+        if (body) {
 
-);
+            options.body = JSON.stringify(body);
 
-const json=
-await response.json();
+        }
 
-return json;
+        const response = await fetch(
 
-}
-catch(error){
+            API.BASE_URL + endpoint,
 
-console.error(
+            options
 
-"API Error:",
+        );
 
-error
+        clearTimeout(timeout);
 
-);
+        const data = await response.json();
 
-return{
+        if (!response.ok) {
 
-success:false,
+            return {
 
-message:
-"Network Error"
+                success: false,
 
-};
+                message:
 
-}
+                    data.message ||
 
-};
+                    "Server Error"
 
+            };
 
+        }
 
+        return data;
 
+    }
 
-// ==========================================
-// Login
-// ==========================================
+    catch (error) {
 
-API.login =
-async()=>{
+        console.error("API Error :", error);
 
-return await API.request(
+        return {
 
-"/auth/login",
+            success: false,
 
-"POST",
+            message: error.message ||
 
-TelegramApp.getInitData()
+            "Network Error"
 
-);
+        };
+
+    }
 
 };
 
 
 
-
-
 // ==========================================
-// Get Profile
+// Telegram Login
 // ==========================================
 
-API.getProfile =
-async(
+API.login = async () => {
 
-telegramId
+    return await API.request(
 
-)=>{
+        "/auth/login",
 
-return await API.request(
+        "POST",
 
-`/user/${telegramId}`
+        TelegramApp.getInitData()
 
-);
+    );
 
 };
 
 
 
-
-
 // ==========================================
-// Update Profile
+// Get User Profile
 // ==========================================
 
-API.updateProfile =
-async(
+API.getProfile = async (
 
-telegramId,
+    telegramId
 
-data
+) => {
 
-)=>{
+    return await API.request(
 
-return await API.request(
+        `/user/${telegramId}`
 
-`/user/${telegramId}`,
-
-"PUT",
-
-data
-
-);
+    );
 
 };
 
+
+
+// ==========================================
+// Update User Profile
+// ==========================================
+
+API.updateProfile = async (
+
+    telegramId,
+
+    data
+
+) => {
+
+    return await API.request(
+
+        `/user/${telegramId}`,
+
+        "PUT",
+
+        data
+
+    );
+
+};
 
 
 // ==========================================
 // Tap
 // ==========================================
 
-API.tap =
-async(
+API.tap = async (
 
-telegramId,
+    telegramId,
 
-tap=1
+    tap = 1
 
-)=>{
+) => {
 
-return await API.request(
+    return await API.request(
 
-"/tap",
+        "/tap",
 
-"POST",
+        "POST",
 
-{
+        {
 
-telegramId,
+            telegramId,
 
-tap
+            tap
 
-}
+        }
 
-);
-
-};
-
-
-
-
-
-// ==========================================
-// Get Tasks
-// ==========================================
-
-API.getTasks =
-async(
-
-telegramId
-
-)=>{
-
-return await API.request(
-
-`/tasks/${telegramId}`
-
-);
+    );
 
 };
 
 
 
-
-
 // ==========================================
-// Claim Task
+// Balance Add
 // ==========================================
 
-API.claimTask =
-async(
+API.addBalance = async (
 
-telegramId,
+    telegramId,
 
-taskId
+    amount
 
-)=>{
+) => {
 
-return await API.request(
+    return await API.request(
 
-"/task/claim",
+        "/balance/add",
 
-"POST",
+        "POST",
 
-{
+        {
 
-telegramId,
+            telegramId,
 
-taskId
+            amount
 
-}
+        }
 
-);
-
-};
-
-
-
-
-
-// ==========================================
-// Daily Status
-// ==========================================
-
-API.dailyStatus =
-async(
-
-telegramId
-
-)=>{
-
-return await API.request(
-
-`/daily/${telegramId}`
-
-);
-
-};
-
-
-
-
-
-// ==========================================
-// Claim Daily Reward
-// ==========================================
-
-API.claimDaily =
-async(
-
-telegramId
-
-)=>{
-
-return await API.request(
-
-"/daily/claim",
-
-"POST",
-
-{
-
-telegramId
-
-}
-
-);
-
-};
-
-
-
-
-
-// ==========================================
-// Leaderboard
-// ==========================================
-
-API.getLeaderboard =
-async()=>{
-
-return await API.request(
-
-"/leaderboard"
-
-);
+    );
 
 };
 
@@ -343,12 +247,15 @@ return await API.request(
 // Referral Info
 // ==========================================
 
-API.getReferral =
-async(telegramId)=>{
+API.getReferrals = async (
+
+    telegramId
+
+) => {
 
     return await API.request(
 
-        `/referral/${telegramId}`
+        `/referrals/${telegramId}`
 
     );
 
@@ -357,169 +264,169 @@ async(telegramId)=>{
 
 
 // ==========================================
-// Join Referral
+// Leaderboard
 // ==========================================
 
-API.joinReferral =
-async(
-
-telegramId,
-
-referralCode
-
-)=>{
+API.getLeaderboard = async () => {
 
     return await API.request(
 
-        "/referral/join",
+        "/leaderboard"
 
-        "POST",
+    );
 
-        {
+};
 
-            telegramId,
 
-            referralCode
+
+// ==========================================
+// Health Check
+// ==========================================
+
+API.getStatus = async () => {
+
+    return await API.request(
+
+        "/"
+
+    );
+
+};
+
+
+
+// ==========================================
+// Ping
+// ==========================================
+
+API.ping = async () => {
+
+    try {
+
+        const start = Date.now();
+
+        const result = await API.getStatus();
+
+        const end = Date.now();
+
+        return {
+
+            success: result.success,
+
+            ping: end - start
+
+        };
+
+    }
+
+    catch {
+
+        return {
+
+            success: false,
+
+            ping: -1
+
+        };
+
+    }
+
+};
+
+
+// ==========================================
+// Connection Check
+// ==========================================
+
+API.isOnline = async () => {
+
+    try {
+
+        const result = await API.getStatus();
+
+        return result.success === true;
+
+    }
+    catch {
+
+        return false;
+
+    }
+
+};
+
+
+
+// ==========================================
+// Retry Request
+// ==========================================
+
+API.retry = async (
+
+    callback,
+
+    retry = 3
+
+) => {
+
+    let lastError = null;
+
+    for (
+
+        let i = 0;
+
+        i < retry;
+
+        i++
+
+    ) {
+
+        try {
+
+            const result = await callback();
+
+            if (result.success) {
+
+                return result;
+
+            }
+
+            lastError = result;
+
+        }
+        catch (error) {
+
+            lastError = {
+
+                success: false,
+
+                message: error.message
+
+            };
 
         }
 
-    );
+    }
+
+    return lastError || {
+
+        success: false,
+
+        message: "Request Failed"
+
+    };
 
 };
 
 
 
 // ==========================================
-// Claim Referral Reward
+// API Information
 // ==========================================
 
-API.claimReferral =
-async(
+API.version = "1.0.0";
 
-telegramId
-
-)=>{
-
-    return await API.request(
-
-        "/referral/claim",
-
-        "POST",
-
-        {
-
-            telegramId
-
-        }
-
-    );
-
-};
-
-
-
-// ==========================================
-// Lucky Spin Status
-// ==========================================
-
-API.getSpin =
-async(
-
-telegramId
-
-)=>{
-
-    return await API.request(
-
-        `/spin/${telegramId}`
-
-    );
-
-};
-
-
-
-// ==========================================
-// Lucky Spin
-// ==========================================
-
-API.spin =
-async(
-
-telegramId
-
-)=>{
-
-    return await API.request(
-
-        "/spin",
-
-        "POST",
-
-        {
-
-            telegramId
-
-        }
-
-    );
-
-};
-
-
-
-// ==========================================
-// User Rank
-// ==========================================
-
-API.getRank =
-async(
-
-telegramId
-
-)=>{
-
-    return await API.request(
-
-        `/leaderboard/rank/${telegramId}`
-
-    );
-
-};
-
-
-
-// ==========================================
-// Top Referrals
-// ==========================================
-
-API.getTopReferrals =
-async()=>{
-
-    return await API.request(
-
-        "/leaderboard/referrals"
-
-    );
-
-};
-
-
-
-// ==========================================
-// Server Statistics
-// ==========================================
-
-API.getStats =
-async()=>{
-
-    return await API.request(
-
-        "/stats"
-
-    );
-
-};
+API.project = "Zoryx";
 
 
 
@@ -528,3 +435,13 @@ async()=>{
 // ==========================================
 
 window.API = API;
+
+console.log("=================================");
+
+console.log("🚀 Zoryx API Ready");
+
+console.log("Base URL :", API.BASE_URL);
+
+console.log("Version :", API.version);
+
+console.log("=================================");
