@@ -4,26 +4,26 @@
 // ========================================
 
 import crypto from "crypto";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 
 
 // ========================================
-// Create Telegram Secret
+// Config
 // ========================================
 
-function createSecretKey(){
+const BOT_TOKEN = process.env.BOT_TOKEN || "";
+
+
+
+// ========================================
+// SHA256 Helper
+// ========================================
+
+function sha256(data) {
 
     return crypto
-        .createHmac(
-            "sha256",
-            "WebAppData"
-        )
-        .update(
-            process.env.BOT_TOKEN
-        )
+        .createHash("sha256")
+        .update(data)
         .digest();
 
 }
@@ -31,181 +31,284 @@ function createSecretKey(){
 
 
 // ========================================
-// Verify Telegram WebApp Login
+// HMAC Helper
 // ========================================
 
-export function verifyTelegramAuth(data){
+function hmac(key, data) {
 
-    try{
-
-        if(
-            !data ||
-            !data.initData
-        ){
-
-            return{
-
-                success:false,
-
-                message:"InitData Missing"
-
-            };
-
-        }
-
-
-
-        const initData =
-        data.initData;
-
-
-
-        const params =
-        new URLSearchParams(
-            initData
-        );
-
-
-
-        const hash =
-        params.get("hash");
-
-
-
-        if(!hash){
-
-            return{
-
-                success:false,
-
-                message:"Hash Missing"
-
-            };
-
-        }
-
-
-
-        params.delete("hash");
-
-
-
-        const dataCheckString =
-        [...params.entries()]
-        .sort(
-            (a,b)=>
-            a[0].localeCompare(
-                b[0]
-            )
-        )
-        .map(
-            ([k,v])=>
-            `${k}=${v}`
-        )
-        .join("\n");
-
-
-
-        const secret =
-        createSecretKey();
-
-
-
-        const calculatedHash =
-        crypto
-        .createHmac(
-
-            "sha256",
-
-            secret
-
-        )
-        .update(
-            dataCheckString
-        )
+    return crypto
+        .createHmac("sha256", key)
+        .update(data)
         .digest("hex");
 
+}
 
 
-        if(
-            calculatedHash !== hash
-        ){
 
-            return{
+// ========================================
+// Parse Init Data
+// ========================================
 
-                success:false,
+function parseInitData(initData) {
 
-                message:"Invalid Telegram Signature"
+    const params = new URLSearchParams(initData);
+
+    const data = {};
+
+    for (const [key, value] of params.entries()) {
+
+        data[key] = value;
+
+    }
+
+    return data;
+
+}
+
+
+
+// ========================================
+// Build Data Check String
+// ========================================
+
+function buildDataCheckString(data) {
+
+    return Object.keys(data)
+
+        .filter(key => key !== "hash")
+
+        .sort()
+
+        .map(key => `${key}=${data[key]}`)
+
+        .join("\n");
+
+        }
+
+
+// ========================================
+// Verify Telegram Login
+// ========================================
+
+export function verifyTelegramAuth(body) {
+
+    try {
+
+        if (!body || !body.initData) {
+
+            return {
+
+                success: false,
+
+                message: "Telegram initData Missing"
 
             };
 
         }
 
+        const data = parseInitData(body.initData);
 
+        const receivedHash = data.hash;
 
-        const authDate =
-        Number(
-            params.get(
-                "auth_date"
-            )
-        );
+        if (!receivedHash) {
 
+            return {
 
+                success: false,
 
-        const now =
-        Math.floor(
-            Date.now()/1000
-        );
-
-
-
-        if(
-            now-authDate >
-            86400
-        ){
-
-            return{
-
-                success:false,
-
-                message:"Login Expired"
+                message: "Hash Missing"
 
             };
 
         }
 
+        const dataCheckString = buildDataCheckString(data);
 
+        const secretKey = sha256(BOT_TOKEN);
 
-        const user =
-        JSON.parse(
+        const calculatedHash = hmac(
 
-            params.get("user")
+            secretKey,
+
+            dataCheckString
 
         );
 
+        if (receivedHash !== calculatedHash) {
 
+            return {
 
-        return{
+                success: false,
 
-            success:true,
+                message: "Telegram Verification Failed"
+
+            };
+
+        }
+
+        let user = {};
+
+        try {
+
+            user = JSON.parse(data.user);
+
+        }
+
+        catch {
+
+            return {
+
+                success: false,
+
+                message: "Invalid Telegram User"
+
+            };
+
+        }
+
+        return {
+
+            success: true,
 
             user
 
         };
 
-
-
     }
-    catch(error){
 
-        return{
+    catch (error) {
 
-            success:false,
+        return {
 
-            message:error.message
+            success: false,
+
+            message: error.message
 
         };
 
     }
 
-                }
+    }
+
+
+// ========================================
+// Auth Date Validation
+// ========================================
+
+function validateAuthDate(data) {
+
+    if (!data.auth_date) {
+
+        return false;
+
+    }
+
+    const authTime = Number(data.auth_date);
+
+    const currentTime = Math.floor(Date.now() / 1000);
+
+    const maxAge = 86400;
+
+    return (currentTime - authTime) <= maxAge;
+
+}
+
+
+
+// ========================================
+// Verify Telegram Init Data
+// ========================================
+
+export function verifyTelegramInitData(initData) {
+
+    const data = parseInitData(initData);
+
+    const hash = data.hash;
+
+    delete data.hash;
+
+    const dataCheckString = buildDataCheckString(data);
+
+    const secret = crypto
+        .createHash("sha256")
+        .update(BOT_TOKEN)
+        .digest();
+
+    const calculatedHash = crypto
+        .createHmac("sha256", secret)
+        .update(dataCheckString)
+        .digest("hex");
+
+    return hash === calculatedHash;
+
+}
+
+
+
+// ========================================
+// Validate Request
+// ========================================
+
+export function validateTelegramRequest(body) {
+
+    if (!body || !body.initData) {
+
+        return {
+
+            success: false,
+
+            message: "Missing initData"
+
+        };
+
+    }
+
+    if (!verifyTelegramInitData(body.initData)) {
+
+        return {
+
+            success: false,
+
+            message: "Invalid Telegram Signature"
+
+        };
+
+    }
+
+    const data = parseInitData(body.initData);
+
+    if (!validateAuthDate(data)) {
+
+        return {
+
+            success: false,
+
+            message: "Telegram Login Expired"
+
+        };
+
+    }
+
+    return {
+
+        success: true
+
+    };
+
+}
+
+
+
+// ========================================
+// Default Export
+// ========================================
+
+export default {
+
+    verifyTelegramAuth,
+
+    verifyTelegramInitData,
+
+    validateTelegramRequest
+
+};
