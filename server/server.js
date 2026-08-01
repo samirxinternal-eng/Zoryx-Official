@@ -7,6 +7,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import morgan from "morgan";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import routes from "./routes.js";
 
@@ -19,8 +21,10 @@ dotenv.config();
 
 const app = express();
 
-const PORT =
-process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 
@@ -31,11 +35,11 @@ process.env.PORT || 3000;
 app.use(cors());
 
 app.use(express.json({
-    limit:"10mb"
+    limit: "10mb"
 }));
 
 app.use(express.urlencoded({
-    extended:true
+    extended: true
 }));
 
 app.use(morgan("dev"));
@@ -43,26 +47,58 @@ app.use(morgan("dev"));
 
 
 // ========================================
-// API Routes
+// Static Client
 // ========================================
 
-app.use("/", routes);
+app.use(
+    express.static(
+        path.join(__dirname, "../client")
+    )
+);
 
 
 
 // ========================================
-// 404
+// API
 // ========================================
 
-app.use((req,res)=>{
+app.use("/api", routes);
 
-    res.status(404).json({
 
-        success:false,
 
-        message:"API Not Found"
+// ========================================
+// Home
+// ========================================
 
-    });
+app.get("/", (req, res) => {
+
+    res.sendFile(
+
+        path.join(
+            __dirname,
+            "../client/index.html"
+        )
+
+    );
+
+});
+
+
+
+// ========================================
+// Any Route
+// ========================================
+
+app.get("*", (req, res) => {
+
+    res.sendFile(
+
+        path.join(
+            __dirname,
+            "../client/index.html"
+        )
+
+    );
 
 });
 
@@ -72,15 +108,15 @@ app.use((req,res)=>{
 // Error Handler
 // ========================================
 
-app.use((err,req,res,next)=>{
+app.use((err, req, res, next) => {
 
     console.error(err);
 
     res.status(500).json({
 
-        success:false,
+        success: false,
 
-        message:"Internal Server Error"
+        message: "Internal Server Error"
 
     });
 
@@ -92,59 +128,36 @@ app.use((err,req,res,next)=>{
 // Start Server
 // ========================================
 
-async function startServer(){
+async function startServer() {
 
-    try{
+    try {
 
         await connectDatabase();
 
         await initializeDatabase();
 
-        app.listen(
+        app.listen(PORT, () => {
 
-            PORT,
+            console.log("");
 
-            ()=>{
+            console.log("=================================");
 
-                console.log("");
+            console.log("🚀 Zoryx Server Started");
 
-                console.log(
-                "================================="
-                );
+            console.log(`🌐 Port : ${PORT}`);
 
-                console.log(
-                "🚀 Zoryx Server Started"
-                );
+            console.log(`📦 Environment : ${process.env.NODE_ENV || "development"}`);
 
-                console.log(
-                `🌐 Port : ${PORT}`
-                );
+            console.log("=================================");
 
-                console.log(
-                `📦 Environment : ${
-                    process.env.NODE_ENV ||
-                    "development"
-                }`
-                );
+            console.log("");
 
-                console.log(
-                "================================="
-                );
-
-                console.log("");
-
-            }
-
-        );
+        });
 
     }
-    catch(error){
+    catch (error) {
 
-        console.error(
-
-            "❌ Server Failed To Start"
-
-        );
+        console.error("❌ Server Failed To Start");
 
         console.error(error);
 
