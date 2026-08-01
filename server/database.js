@@ -1,46 +1,254 @@
+// ========================================
+// Zoryx Telegram WebApp
+// server/database.js
+// ========================================
+
 import { MongoClient } from "mongodb";
+import dotenv from "dotenv";
 
-const uri = process.env.MONGODB_URI;
+dotenv.config();
 
-let client;
-let database;
+let client = null;
+let database = null;
 
-export default async function connectDatabase() {
-    try {
+// ========================================
+// Connect MongoDB
+// ========================================
 
-        if (database) {
+export async function connectDatabase(){
+
+    try{
+
+        if(database){
+
             return database;
+
+        }
+
+        const uri = process.env.MONGODB_URI;
+
+        if(!uri){
+
+            throw new Error(
+                "MONGODB_URI not found in .env"
+            );
+
         }
 
         client = new MongoClient(uri);
 
         await client.connect();
 
-        database = client.db(process.env.DB_NAME);
+        database = client.db(
 
-        console.log("========================================");
-        console.log("✅ MongoDB Connected Successfully");
-        console.log(`📂 Database : ${process.env.DB_NAME}`);
-        console.log("========================================");
+            process.env.DB_NAME ||
+
+            "zoryx"
+
+        );
+
+        console.log(
+
+            "✅ MongoDB Connected"
+
+        );
 
         return database;
 
-    } catch (error) {
+    }
+    catch(error){
 
-        console.error("========================================");
-        console.error("❌ MongoDB Connection Failed");
-        console.error(error.message);
-        console.error("========================================");
+        console.error(
+
+            "❌ MongoDB Connection Failed"
+
+        );
+
+        console.error(error);
 
         process.exit(1);
+
     }
+
 }
 
-export function getDatabase() {
 
-    if (!database) {
-        throw new Error("Database is not connected.");
+
+// ========================================
+// Get Database
+// ========================================
+
+export function getDatabase(){
+
+    if(!database){
+
+        throw new Error(
+
+            "Database Not Connected"
+
+        );
+
     }
 
     return database;
+
+}
+
+
+
+// ========================================
+// Close Database
+// ========================================
+
+export async function closeDatabase(){
+
+    try{
+
+        if(client){
+
+            await client.close();
+
+            console.log(
+
+                "🔌 MongoDB Disconnected"
+
+            );
+
+        }
+
+    }
+    catch(error){
+
+        console.log(error);
+
+    }
+
+}
+
+
+
+// ========================================
+// Create Collections
+// ========================================
+
+export async function initializeDatabase(){
+
+    const db = getDatabase();
+
+    const collections = await db.listCollections().toArray();
+
+    const names = collections.map(
+
+        c=>c.name
+
+    );
+
+
+
+    if(
+
+        !names.includes("users")
+
+    ){
+
+        await db.createCollection(
+
+            "users"
+
+        );
+
+    }
+
+
+
+    if(
+
+        !names.includes("tasks")
+
+    ){
+
+        await db.createCollection(
+
+            "tasks"
+
+        );
+
+    }
+
+
+
+    if(
+
+        !names.includes("daily_rewards")
+
+    ){
+
+        await db.createCollection(
+
+            "daily_rewards"
+
+        );
+
+    }
+
+
+
+    if(
+
+        !names.includes("leaderboard")
+
+    ){
+
+        await db.createCollection(
+
+            "leaderboard"
+
+        );
+
+    }
+
+
+
+    await db.collection("users").createIndex(
+
+        {
+
+            telegramId:1
+
+        },
+
+        {
+
+            unique:true
+
+        }
+
+    );
+
+
+
+    await db.collection("users").createIndex(
+
+        {
+
+            uid:1
+
+        },
+
+        {
+
+            unique:true
+
+        }
+
+    );
+
+
+
+    console.log(
+
+        "✅ Database Initialized"
+
+    );
+
     }
