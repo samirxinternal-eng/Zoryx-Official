@@ -126,12 +126,13 @@ API.login = async () => {
 
         "POST",
 
-        TelegramApp.getInitData()
+        {
+            initData: TelegramApp.initData
+        }
 
     );
 
 };
-
 
 
 // ==========================================
