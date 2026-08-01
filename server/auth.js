@@ -124,7 +124,10 @@ export function verifyTelegramAuth(body) {
 
         const dataCheckString = buildDataCheckString(data);
 
-        const secretKey = sha256(BOT_TOKEN);
+        const secretKey = crypto
+            .createHmac("sha256", "WebAppData")
+            .update(BOT_TOKEN)
+            .digest();
 
         const calculatedHash = hmac(
 
