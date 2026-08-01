@@ -1,120 +1,157 @@
-// ==========================================
+// ========================================
 // Zoryx Telegram WebApp
 // server/server.js
-// ==========================================
+// ========================================
 
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import morgan from "morgan";
-import path from "path";
-import { fileURLToPath } from "url";
 
-import connectDatabase from "./database.js";
 import routes from "./routes.js";
 
-
-// ==========================================
-// Config
-// ==========================================
+import {
+    connectDatabase,
+    initializeDatabase
+} from "./database.js";
 
 dotenv.config();
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+const PORT =
+process.env.PORT || 3000;
 
 
-// ==========================================
-// Path Setup
-// ==========================================
 
-const __filename = fileURLToPath(import.meta.url);
-
-const __dirname = path.dirname(__filename);
-
-const clientPath = path.join(__dirname, "../client");
-
-
-// ==========================================
+// ========================================
 // Middleware
-// ==========================================
+// ========================================
 
 app.use(cors());
 
-app.use(express.json());
+app.use(express.json({
+    limit:"10mb"
+}));
 
 app.use(express.urlencoded({
-    extended: true
+    extended:true
 }));
 
 app.use(morgan("dev"));
 
 
-// ==========================================
-// Database
-// ==========================================
 
-connectDatabase();
-
-
-// ==========================================
+// ========================================
 // API Routes
-// ==========================================
+// ========================================
 
-app.use("/api", routes);
-
-
-// ==========================================
-// Static Client
-// ==========================================
-
-app.use(express.static(clientPath));
+app.use("/", routes);
 
 
-// ==========================================
-// Frontend Route
-// ==========================================
 
-app.get("/*splat", (req, res) => {
+// ========================================
+// 404
+// ========================================
 
-    res.sendFile(
-        path.join(clientPath, "index.html")
-    );
+app.use((req,res)=>{
 
-});
+    res.status(404).json({
 
+        success:false,
 
-// ==========================================
-// Error Handler
-// ==========================================
-
-app.use((err, req, res, next) => {
-
-    console.error(err);
-
-    res.status(500).json({
-
-        success: false,
-
-        message: "Internal Server Error"
+        message:"API Not Found"
 
     });
 
 });
 
 
-// ==========================================
-// Start Server
-// ==========================================
 
-app.listen(PORT, () => {
+// ========================================
+// Error Handler
+// ========================================
 
-    console.log(`
-========================================
-🚀 Zoryx Server Running
-🌐 Port : ${PORT}
-========================================
-`);
+app.use((err,req,res,next)=>{
+
+    console.error(err);
+
+    res.status(500).json({
+
+        success:false,
+
+        message:"Internal Server Error"
+
+    });
 
 });
+
+
+
+// ========================================
+// Start Server
+// ========================================
+
+async function startServer(){
+
+    try{
+
+        await connectDatabase();
+
+        await initializeDatabase();
+
+        app.listen(
+
+            PORT,
+
+            ()=>{
+
+                console.log("");
+
+                console.log(
+                "================================="
+                );
+
+                console.log(
+                "🚀 Zoryx Server Started"
+                );
+
+                console.log(
+                `🌐 Port : ${PORT}`
+                );
+
+                console.log(
+                `📦 Environment : ${
+                    process.env.NODE_ENV ||
+                    "development"
+                }`
+                );
+
+                console.log(
+                "================================="
+                );
+
+                console.log("");
+
+            }
+
+        );
+
+    }
+    catch(error){
+
+        console.error(
+
+            "❌ Server Failed To Start"
+
+        );
+
+        console.error(error);
+
+        process.exit(1);
+
+    }
+
+}
+
+startServer();
