@@ -1,214 +1,118 @@
-// ========================================
-// Zoryx Telegram WebApp
+// ==========================================
+// Zoryx Telegram Mini App
 // server/routes.js
-// ========================================
+// Part 1
+// ==========================================
+
+"use strict";
 
 import express from "express";
-import crypto from "crypto";
-
-import { getDatabase } from "./database.js";
-import { verifyTelegramAuth } from "./auth.js";
+import { User } from "./database.js";
 
 const router = express.Router();
 
 
-
-// ========================================
-// Config
-// ========================================
-
-const DEFAULT_ENERGY = 1000;
-const DEFAULT_LEVEL = 1;
-const ENERGY_RESTORE_TIME = 4000;
-
-
-
-// ========================================
-// Energy Calculator
-// ========================================
-
-function calculateEnergy(user) {
-
-    let energy = user.energy ?? DEFAULT_ENERGY;
-
-    let lastEnergyUpdate = user.lastEnergyUpdate
-        ? new Date(user.lastEnergyUpdate).getTime()
-        : Date.now();
-
-    const now = Date.now();
-
-    const restoreCount = Math.floor(
-
-        (now - lastEnergyUpdate) /
-
-        ENERGY_RESTORE_TIME
-
-    );
-
-    if (restoreCount > 0) {
-
-        energy += restoreCount;
-
-        if (energy > (user.maxEnergy || DEFAULT_ENERGY)) {
-
-            energy = user.maxEnergy || DEFAULT_ENERGY;
-
-        }
-
-        lastEnergyUpdate = now;
-
-    }
-
-    return {
-
-        energy,
-
-        lastEnergyUpdate: new Date(lastEnergyUpdate)
-
-    };
-
-}
-
-
-
-// ========================================
+// ==========================================
 // Health Check
-// ========================================
+// ==========================================
 
 router.get("/", (req, res) => {
 
-    res.json({
+    return res.json({
 
         success: true,
 
-        project: "Zoryx",
-
-        version: "1.0.0",
-
-        server: "Online",
-
-        database: "MongoDB"
+        message: "Zoryx API Running"
 
     });
 
 });
 
 
-// ========================================
-// Telegram Login
-// ========================================
+// ==========================================
+// Ping
+// ==========================================
+
+router.get("/ping", (req, res) => {
+
+    return res.json({
+
+        success: true,
+
+        pong: true,
+
+        timestamp: Date.now()
+
+    });
+
+});
+
+
+// ==========================================
+// Login
+// POST /auth/login
+// ==========================================
 
 router.post("/auth/login", async (req, res) => {
 
     try {
 
-        const auth = verifyTelegramAuth(req.body);
+        const data = req.body || {};
 
-        if (!auth.success) {
+        const telegramId = Number(
+            data.id ||
+            data.telegramId ||
+            data.user?.id
+        );
 
-            return res.status(401).json(auth);
+        if (!telegramId) {
+
+            return res.json({
+
+                success: false,
+
+                message: "Invalid Telegram User"
+
+            });
 
         }
 
-        const db = getDatabase();
+        let user = await User.findOne({
 
-        const users = db.collection("users");
-
-        const telegramUser = auth.user;
-
-        let user = await users.findOne({
-
-            telegramId: telegramUser.id
+            telegramId
 
         });
 
         if (!user) {
 
-            user = {
+            user = await User.create({
 
-                uid: crypto.randomUUID(),
+                telegramId,
 
-                telegramId: telegramUser.id,
+                firstName:
+                    data.first_name ||
+                    data.firstName ||
+                    data.user?.first_name ||
+                    "",
 
-                firstName: telegramUser.first_name || "User",
+                lastName:
+                    data.last_name ||
+                    data.lastName ||
+                    data.user?.last_name ||
+                    "",
 
-                lastName: telegramUser.last_name || "",
+                username:
+                    data.username ||
+                    data.user?.username ||
+                    "",
 
-                username: telegramUser.username || "",
+                photo:
+                    data.photo_url ||
+                    data.photo ||
+                    data.user?.photo_url ||
+                    ""
 
-                photo: telegramUser.photo_url || "",
-
-                balance: 0,
-
-                energy: DEFAULT_ENERGY,
-
-                maxEnergy: DEFAULT_ENERGY,
-
-                totalTap: 0,
-
-                level: DEFAULT_LEVEL,
-
-                referrals: 0,
-
-                createdAt: new Date(),
-
-                updatedAt: new Date(),
-
-                lastEnergyUpdate: new Date()
-
-            };
-
-            await users.insertOne(user);
-
-        } else {
-
-            const energyData = calculateEnergy(user);
-
-            user.energy = energyData.energy;
-
-            user.lastEnergyUpdate = energyData.lastEnergyUpdate;
-
-            user.firstName = telegramUser.first_name || user.firstName;
-
-            user.lastName = telegramUser.last_name || user.lastName;
-
-            user.username = telegramUser.username || user.username;
-
-            user.photo = telegramUser.photo_url || user.photo;
-
-            user.updatedAt = new Date();
-
-            await users.updateOne(
-
-                {
-
-                    telegramId: user.telegramId
-
-                },
-
-                {
-
-                    $set: {
-
-                        firstName: user.firstName,
-
-                        lastName: user.lastName,
-
-                        username: user.username,
-
-                        photo: user.photo,
-
-                        energy: user.energy,
-
-                        lastEnergyUpdate: user.lastEnergyUpdate,
-
-                        updatedAt: user.updatedAt
-
-                    }
-
-                }
-
-            );
+            });
 
         }
 
@@ -226,11 +130,11 @@ router.post("/auth/login", async (req, res) => {
 
         console.error(error);
 
-        return res.status(500).json({
+        return res.json({
 
             success: false,
 
-            message: error.message
+            message: "Login Failed"
 
         });
 
@@ -239,21 +143,22 @@ router.post("/auth/login", async (req, res) => {
 });
 
 
-// ========================================
+// ==========================================
 // Get User Profile
-// ========================================
+// GET /user/:telegramId
+// ==========================================
 
 router.get("/user/:telegramId", async (req, res) => {
 
     try {
 
-        const telegramId = Number(req.params.telegramId);
+        const telegramId = Number(
 
-        const db = getDatabase();
+            req.params.telegramId
 
-        const users = db.collection("users");
+        );
 
-        let user = await users.findOne({
+        const user = await User.findOne({
 
             telegramId
 
@@ -261,7 +166,7 @@ router.get("/user/:telegramId", async (req, res) => {
 
         if (!user) {
 
-            return res.status(404).json({
+            return res.json({
 
                 success: false,
 
@@ -271,34 +176,6 @@ router.get("/user/:telegramId", async (req, res) => {
 
         }
 
-        const energyData = calculateEnergy(user);
-
-        user.energy = energyData.energy;
-
-        user.lastEnergyUpdate = energyData.lastEnergyUpdate;
-
-        await users.updateOne(
-
-            {
-
-                telegramId
-
-            },
-
-            {
-
-                $set: {
-
-                    energy: user.energy,
-
-                    lastEnergyUpdate: user.lastEnergyUpdate
-
-                }
-
-            }
-
-        );
-
         return res.json({
 
             success: true,
@@ -313,11 +190,11 @@ router.get("/user/:telegramId", async (req, res) => {
 
         console.error(error);
 
-        return res.status(500).json({
+        return res.json({
 
             success: false,
 
-            message: error.message
+            message: "Profile Load Failed"
 
         });
 
@@ -326,22 +203,24 @@ router.get("/user/:telegramId", async (req, res) => {
 });
 
 
-
-// ========================================
+// ==========================================
 // Update User Profile
-// ========================================
+// PUT /user/:telegramId
+// ==========================================
 
 router.put("/user/:telegramId", async (req, res) => {
 
     try {
 
-        const telegramId = Number(req.params.telegramId);
+        const telegramId = Number(
 
-        const db = getDatabase();
+            req.params.telegramId
 
-        const users = db.collection("users");
+        );
 
-        await users.updateOne(
+        const update = req.body || {};
+
+        const user = await User.findOneAndUpdate(
 
             {
 
@@ -351,23 +230,29 @@ router.put("/user/:telegramId", async (req, res) => {
 
             {
 
-                $set: {
+                $set: update
 
-                    ...req.body,
+            },
 
-                    updatedAt: new Date()
+            {
 
-                }
+                new: true
 
             }
 
         );
 
-        const user = await users.findOne({
+        if (!user) {
 
-            telegramId
+            return res.json({
 
-        });
+                success: false,
+
+                message: "User Not Found"
+
+            });
+
+        }
 
         return res.json({
 
@@ -383,11 +268,11 @@ router.put("/user/:telegramId", async (req, res) => {
 
         console.error(error);
 
-        return res.status(500).json({
+        return res.json({
 
             success: false,
 
-            message: error.message
+            message: "Profile Update Failed"
 
         });
 
@@ -396,208 +281,67 @@ router.put("/user/:telegramId", async (req, res) => {
 });
 
 
-// ========================================
-// Tap
-// ========================================
+// ==========================================
+// Tap Coin
+// POST /tap
+// ==========================================
 
 router.post("/tap", async (req, res) => {
 
     try {
 
         const telegramId = Number(req.body.telegramId);
+        const tap = Number(req.body.tap || 1);
 
-        const tap = Math.max(
-            1,
-            Number(req.body.tap) || 1
-        );
-
-        const db = getDatabase();
-
-        const users = db.collection("users");
-
-        let user = await users.findOne({
-
-            telegramId
-
-        });
+        const user = await User.findOne({ telegramId });
 
         if (!user) {
 
-            return res.status(404).json({
-
+            return res.json({
                 success: false,
-
                 message: "User Not Found"
-
             });
 
         }
 
-        const energyData = calculateEnergy(user);
-
-        let energy = energyData.energy;
-
-        if (energy <= 0) {
+        if (user.energy < tap) {
 
             return res.json({
-
                 success: false,
-
-                message: "Energy Empty",
-
-                energy: 0
-
+                message: "Not Enough Energy"
             });
 
         }
 
-        const realTap = Math.min(
+        user.balance += tap;
+        user.energy -= tap;
+        user.totalTap += tap;
+        user.xp += tap;
 
-            tap,
+        const needXP = user.level * 100;
 
-            energy
+        if (user.xp >= needXP) {
 
-        );
+            user.xp = 0;
+            user.level += 1;
+            user.maxEnergy += 100;
+            user.energy = user.maxEnergy;
 
-        energy -= realTap;
+        }
 
-        await users.updateOne(
-
-            {
-
-                telegramId
-
-            },
-
-            {
-
-                $inc: {
-
-                    balance: realTap,
-
-                    totalTap: realTap
-
-                },
-
-                $set: {
-
-                    energy,
-
-                    lastEnergyUpdate: new Date(),
-
-                    updatedAt: new Date()
-
-                }
-
-            }
-
-        );
-
-        const updatedUser = await users.findOne({
-
-            telegramId
-
-        });
+        await user.save();
 
         return res.json({
 
             success: true,
 
-            balance: updatedUser.balance,
+            balance: user.balance,
 
-            energy: updatedUser.energy,
+            energy: user.energy,
 
-            totalTap: updatedUser.totalTap,
+            level: user.level,
 
-            level: updatedUser.level
-
-        });
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        return res.status(500).json({
-
-            success: false,
-
-            message: error.message
-
-        });
-
-    }
-
-});
-
-
-
-// ========================================
-// Balance Add
-// ========================================
-
-router.post("/balance/add", async (req, res) => {
-
-    try {
-
-        const telegramId = Number(req.body.telegramId);
-
-        const amount = Number(req.body.amount);
-
-        if (amount <= 0) {
-
-            return res.json({
-
-                success: false,
-
-                message: "Invalid Amount"
-
-            });
-
-        }
-
-        const db = getDatabase();
-
-        const users = db.collection("users");
-
-        await users.updateOne(
-
-            {
-
-                telegramId
-
-            },
-
-            {
-
-                $inc: {
-
-                    balance: amount
-
-                },
-
-                $set: {
-
-                    updatedAt: new Date()
-
-                }
-
-            }
-
-        );
-
-        const user = await users.findOne({
-
-            telegramId
-
-        });
-
-        res.json({
-
-            success: true,
-
-            balance: user.balance
+            xp: user.xp
 
         });
 
@@ -607,11 +351,11 @@ router.post("/balance/add", async (req, res) => {
 
         console.error(error);
 
-        res.status(500).json({
+        return res.json({
 
             success: false,
 
-            message: error.message
+            message: "Tap Failed"
 
         });
 
@@ -620,93 +364,28 @@ router.post("/balance/add", async (req, res) => {
 });
 
 
-
-// ========================================
-// Referrals
-// ========================================
-
-router.get("/referrals/:telegramId", async (req, res) => {
-
-    try {
-
-        const telegramId = Number(req.params.telegramId);
-
-        const db = getDatabase();
-
-        const user = await db.collection("users").findOne({
-
-            telegramId
-
-        });
-
-        res.json({
-
-            success: true,
-
-            referrals: user?.referrals || 0
-
-        });
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        res.status(500).json({
-
-            success: false,
-
-            message: error.message
-
-        });
-
-    }
-
-});
-
-
-
-// ========================================
+// ==========================================
 // Leaderboard
-// ========================================
+// GET /leaderboard
+// ==========================================
 
 router.get("/leaderboard", async (req, res) => {
 
     try {
 
-        const db = getDatabase();
+        const leaderboard = await User.find()
 
-        const leaderboard = await db
-            .collection("users")
-            .find(
-                {},
-                {
-                    projection: {
-
-                        firstName: 1,
-
-                        username: 1,
-
-                        photo: 1,
-
-                        balance: 1,
-
-                        level: 1
-
-                    }
-
-                }
-            )
             .sort({
 
                 balance: -1
 
             })
-            .limit(50)
-            .toArray();
 
-        res.json({
+            .limit(100)
+
+            .lean();
+
+        return res.json({
 
             success: true,
 
@@ -720,11 +399,492 @@ router.get("/leaderboard", async (req, res) => {
 
         console.error(error);
 
-        res.status(500).json({
+        return res.json({
 
             success: false,
 
-            message: error.message
+            leaderboard: []
+
+        });
+
+    }
+
+});
+
+
+// ==========================================
+// User Rank
+// GET /leaderboard/rank/:telegramId
+// ==========================================
+
+router.get("/leaderboard/rank/:telegramId", async (req, res) => {
+
+    try {
+
+        const telegramId = Number(
+
+            req.params.telegramId
+
+        );
+
+        const users = await User.find()
+
+            .sort({
+
+                balance: -1
+
+            })
+
+            .select("telegramId");
+
+        const rank =
+
+            users.findIndex(
+
+                user =>
+
+                    user.telegramId === telegramId
+
+            ) + 1;
+
+        return res.json({
+
+            success: true,
+
+            rank
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        return res.json({
+
+            success: false,
+
+            rank: 0
+
+        });
+
+    }
+
+});
+
+
+// ==========================================
+// Server Statistics
+// GET /stats
+// ==========================================
+
+router.get("/stats", async (req, res) => {
+
+    try {
+
+        const totalUsers =
+
+            await User.countDocuments();
+
+        const users =
+
+            await User.find();
+
+        let totalCoins = 0;
+        let totalTaps = 0;
+
+        users.forEach(user => {
+
+            totalCoins += user.balance;
+            totalTaps += user.totalTap;
+
+        });
+
+        return res.json({
+
+            success: true,
+
+            totalUsers,
+
+            totalCoins,
+
+            totalTaps
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        return res.json({
+
+            success: false
+
+        });
+
+    }
+
+});
+
+
+// ==========================================
+// Sync User
+// GET /sync/:telegramId
+// ==========================================
+
+router.get("/sync/:telegramId", async (req, res) => {
+
+    try {
+
+        const telegramId = Number(
+
+            req.params.telegramId
+
+        );
+
+        const user =
+
+            await User.findOne({
+
+                telegramId
+
+            });
+
+        if (!user) {
+
+            return res.json({
+
+                success: false,
+
+                message: "User Not Found"
+
+            });
+
+        }
+
+        return res.json({
+
+            success: true,
+
+            user
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        return res.json({
+
+            success: false,
+
+            message: "Sync Failed"
+
+        });
+
+    }
+
+});
+
+
+// ==========================================
+// Daily Reward Status
+// GET /daily/:telegramId
+// ==========================================
+
+router.get("/daily/:telegramId", async (req, res) => {
+
+    try {
+
+        const telegramId = Number(req.params.telegramId);
+
+        const user = await User.findOne({ telegramId });
+
+        if (!user) {
+
+            return res.json({
+
+                success: false,
+
+                message: "User Not Found"
+
+            });
+
+        }
+
+        const today = new Date().toDateString();
+
+        const claimed =
+
+            user.lastDailyReward &&
+
+            new Date(user.lastDailyReward).toDateString() === today;
+
+        return res.json({
+
+            success: true,
+
+            claimed
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        return res.json({
+
+            success: false
+
+        });
+
+    }
+
+});
+
+
+// ==========================================
+// Claim Daily Reward
+// POST /daily/claim
+// ==========================================
+
+router.post("/daily/claim", async (req, res) => {
+
+    try {
+
+        const telegramId = Number(req.body.telegramId);
+
+        const user = await User.findOne({ telegramId });
+
+        if (!user) {
+
+            return res.json({
+
+                success: false,
+
+                message: "User Not Found"
+
+            });
+
+        }
+
+        const today = new Date().toDateString();
+
+        if (
+
+            user.lastDailyReward &&
+
+            new Date(user.lastDailyReward).toDateString() === today
+
+        ) {
+
+            return res.json({
+
+                success: false,
+
+                message: "Already Claimed"
+
+            });
+
+        }
+
+        const reward = 500;
+
+        user.balance += reward;
+
+        user.lastDailyReward = new Date();
+
+        await user.save();
+
+        return res.json({
+
+            success: true,
+
+            reward,
+
+            balance: user.balance
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        return res.json({
+
+            success: false
+
+        });
+
+    }
+
+});
+
+
+// ==========================================
+// Tasks
+// GET /tasks/:telegramId
+// ==========================================
+
+router.get("/tasks/:telegramId", async (req, res) => {
+
+    return res.json({
+
+        success: true,
+
+        tasks: [
+
+            {
+
+                id: 1,
+
+                title: "Join Telegram Channel",
+
+                reward: 1000
+
+            },
+
+            {
+
+                id: 2,
+
+                title: "Join Telegram Group",
+
+                reward: 1500
+
+            },
+
+            {
+
+                id: 3,
+
+                title: "Invite 1 Friend",
+
+                reward: 2500
+
+            },
+
+            {
+
+                id: 4,
+
+                title: "Tap 100 Times",
+
+                reward: 500
+
+            }
+
+        ]
+
+    });
+
+});
+
+
+// ==========================================
+// Claim Task
+// POST /task/claim
+// ==========================================
+
+router.post("/task/claim", async (req, res) => {
+
+    try {
+
+        const telegramId = Number(req.body.telegramId);
+
+        const reward = 1000;
+
+        const user = await User.findOne({ telegramId });
+
+        if (!user) {
+
+            return res.json({
+
+                success: false,
+
+                message: "User Not Found"
+
+            });
+
+        }
+
+        user.balance += reward;
+
+        await user.save();
+
+        return res.json({
+
+            success: true,
+
+            reward,
+
+            balance: user.balance
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        return res.json({
+
+            success: false
+
+        });
+
+    }
+
+});
+
+
+// ==========================================
+// Referral
+// ==========================================
+
+router.get("/referral/:telegramId", async (req, res) => {
+
+    try {
+
+        const telegramId = Number(req.params.telegramId);
+
+        const user = await User.findOne({ telegramId });
+
+        if (!user) {
+
+            return res.json({
+
+                success: false
+
+            });
+
+        }
+
+        return res.json({
+
+            success: true,
+
+            referrals: user.referrals
+
+        });
+
+    }
+
+    catch {
+
+        return res.json({
+
+            success: false
 
         });
 
@@ -734,8 +894,181 @@ router.get("/leaderboard", async (req, res) => {
 
 
 
-// ========================================
+router.post("/referral/join", async (req, res) => {
+
+    return res.json({
+
+        success: true
+
+    });
+
+});
+
+
+
+router.post("/referral/claim", async (req, res) => {
+
+    return res.json({
+
+        success: true
+
+    });
+
+});
+
+
+// ==========================================
+// Lucky Spin
+// ==========================================
+
+router.get("/spin/:telegramId", async (req, res) => {
+
+    return res.json({
+
+        success: true,
+
+        available: true
+
+    });
+
+});
+
+
+
+router.post("/spin", async (req, res) => {
+
+    try {
+
+        const telegramId = Number(req.body.telegramId);
+
+        const rewards = [
+
+            100,
+
+            250,
+
+            500,
+
+            1000,
+
+            2500,
+
+            5000,
+
+            10000
+
+        ];
+
+        const reward =
+
+            rewards[
+
+                Math.floor(
+
+                    Math.random() *
+
+                    rewards.length
+
+                )
+
+            ];
+
+        const user = await User.findOne({
+
+            telegramId
+
+        });
+
+        if (!user) {
+
+            return res.json({
+
+                success: false,
+
+                message: "User Not Found"
+
+            });
+
+        }
+
+        user.balance += reward;
+
+        await user.save();
+
+        return res.json({
+
+            success: true,
+
+            reward,
+
+            balance: user.balance
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        return res.json({
+
+            success: false
+
+        });
+
+    }
+
+});
+
+
+// ==========================================
+// Top Referral Leaderboard
+// ==========================================
+
+router.get("/leaderboard/referrals", async (req, res) => {
+
+    try {
+
+        const leaderboard = await User.find()
+
+            .sort({
+
+                referrals: -1
+
+            })
+
+            .limit(100)
+
+            .lean();
+
+        return res.json({
+
+            success: true,
+
+            leaderboard
+
+        });
+
+    }
+
+    catch {
+
+        return res.json({
+
+            success: false,
+
+            leaderboard: []
+
+        });
+
+    }
+
+});
+
+
+// ==========================================
 // Export Router
-// ========================================
+// ==========================================
 
 export default router;
