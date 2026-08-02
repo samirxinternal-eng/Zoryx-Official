@@ -223,3 +223,706 @@
         id="app"
 
         class="app">
+
+
+        <!-- ==========================================
+             Header
+        ========================================== -->
+
+        <header class="header">
+
+            <div class="header-left">
+
+                <img
+
+                    id="userPhoto"
+
+                    class="user-photo"
+
+                    src="assets/avatar.png"
+
+                    alt="User">
+
+                <div class="user-info">
+
+                    <h3 id="userName">
+
+                        Loading...
+
+                    </h3>
+
+                    <p id="userUsername">
+
+                        @username
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div
+
+                id="connectionStatus"
+
+                class="connection-status">
+
+                🟢 Online
+
+            </div>
+
+        </header>
+
+
+
+        <!-- ==========================================
+             Home Page
+        ========================================== -->
+
+        <section
+
+            id="home"
+
+            class="page active">
+
+
+
+            <!-- Balance -->
+
+            <div class="balance-card">
+
+                <span class="balance-title">
+
+                    Balance
+
+                </span>
+
+                <h1
+
+                    id="balance"
+
+                    class="balance-value">
+
+                    0
+
+                </h1>
+
+            </div>
+
+
+
+            <!-- Level -->
+
+            <div class="level-card">
+
+                <div class="level-top">
+
+                    <span>
+
+                        Level
+
+                    </span>
+
+                    <span id="level">
+
+                        1
+
+                    </span>
+
+                </div>
+
+                <div class="progress">
+
+                    <div
+
+                        id="levelProgress"
+
+                        class="progress-fill">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- XP -->
+
+            <div class="xp-card">
+
+                <div class="xp-top">
+
+                    <span>
+
+                        XP
+
+                    </span>
+
+                </div>
+
+                <div class="progress">
+
+                    <div
+
+                        id="xpFill"
+
+                        class="progress-fill xp-fill">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Coin -->
+
+            <div class="coin-area">
+
+                <img
+
+                    id="coin"
+
+                    class="coin"
+
+                    src="assets/coin.png"
+
+                    alt="Coin">
+
+            </div>
+
+
+
+            <!-- Energy -->
+
+            <div class="energy-card">
+
+                <div class="energy-top">
+
+                    <span>
+
+                        Energy
+
+                    </span>
+
+                    <span id="energy">
+
+                        1000 / 1000
+
+                    </span>
+
+                </div>
+
+                <div class="progress">
+
+                    <div
+
+                        id="energyFill"
+
+                        class="progress-fill energy-fill">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Statistics -->
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+
+                    <span>
+
+                        Total Tap
+
+                    </span>
+
+                    <h3 id="totalTap">
+
+                        0
+
+                    </h3>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <span>
+
+                        Referrals
+
+                    </span>
+
+                    <h3 id="referralCount">
+
+                        0
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Home Actions -->
+
+            <div class="action-buttons">
+
+                <button
+
+                    id="refreshButton"
+
+                    class="primary-button">
+
+                    Refresh
+
+                </button>
+
+                <button
+
+                    id="spinButton"
+
+                    class="secondary-button">
+
+                    🎰 Lucky Spin
+
+                </button>
+
+            </div>
+
+
+    <!-- ==========================================
+                 Leaderboard Preview
+            ========================================== -->
+
+            <div class="section">
+
+                <div class="section-header">
+
+                    <h2>
+
+                        🏆 Leaderboard
+
+                    </h2>
+
+                </div>
+
+                <div
+
+                    id="leaderboardList"
+
+                    class="leaderboard-list">
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ==========================================
+                 Global Statistics
+            ========================================== -->
+
+            <div class="section">
+
+                <div class="section-header">
+
+                    <h2>
+
+                        📊 Statistics
+
+                    </h2>
+
+                </div>
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+
+                        <span>
+
+                            Total Users
+
+                        </span>
+
+                        <h3 id="totalUsers">
+
+                            0
+
+                        </h3>
+
+                    </div>
+
+                    <div class="stat-card">
+
+                        <span>
+
+                            Online Users
+
+                        </span>
+
+                        <h3 id="onlineUsers">
+
+                            0
+
+                        </h3>
+
+                    </div>
+
+                    <div class="stat-card">
+
+                        <span>
+
+                            Total Coins
+
+                        </span>
+
+                        <h3 id="totalCoins">
+
+                            0
+
+                        </h3>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ==========================================
+             Earn Page
+        ========================================== -->
+
+        <section
+
+            id="earn"
+
+            class="page">
+
+            <div class="page-header">
+
+                <h2>
+
+                    💰 Earn Coins
+
+                </h2>
+
+                <button
+
+                    id="earnRefreshButton"
+
+                    class="icon-button">
+
+                    ↻
+
+                </button>
+
+            </div>
+
+            <div
+
+                id="taskList"
+
+                class="task-list">
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ==========================================
+             Leaderboard Page
+        ========================================== -->
+
+        <section
+
+            id="leaderboard"
+
+            class="page">
+
+            <div class="page-header">
+
+                <h2>
+
+                    🏆 Top Players
+
+                </h2>
+
+            </div>
+
+            <div
+
+                id="leaderboardPageList"
+
+                class="leaderboard-list">
+
+            </div>
+
+    </section>
+
+
+        <!-- ==========================================
+             Referral Page
+        ========================================== -->
+
+        <section
+
+            id="referral"
+
+            class="page">
+
+            <div class="page-header">
+
+                <h2>
+
+                    👥 Referral
+
+                </h2>
+
+            </div>
+
+            <div class="referral-card">
+
+                <h3>
+
+                    Your Referrals
+
+                </h3>
+
+                <h1
+
+                    id="referralCount">
+
+                    0
+
+                </h1>
+
+                <p>
+
+                    Invite your friends and earn bonus coins.
+
+                </p>
+
+            </div>
+
+            <div class="button-group">
+
+                <button
+
+                    id="inviteButton"
+
+                    class="primary-button">
+
+                    📋 Copy Invite Link
+
+                </button>
+
+                <button
+
+                    id="claimReferralButton"
+
+                    class="secondary-button">
+
+                    🎁 Claim Reward
+
+                </button>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ==========================================
+             Settings Page
+        ========================================== -->
+
+        <section
+
+            id="settings"
+
+            class="page">
+
+            <div class="page-header">
+
+                <h2>
+
+                    ⚙️ Settings
+
+                </h2>
+
+            </div>
+
+            <div class="settings-list">
+
+                <button
+
+                    id="soundToggle"
+
+                    class="settings-item">
+
+                    🔊 Sound
+
+                </button>
+
+                <button
+
+                    id="vibrationToggle"
+
+                    class="settings-item">
+
+                    📳 Vibration
+
+                </button>
+
+            </div>
+
+    </section>
+
+
+        <!-- ==========================================
+             Bottom Navigation
+        ========================================== -->
+
+        <nav
+
+            class="bottom-nav">
+
+            <button
+
+                class="nav-item active"
+
+                data-page="home">
+
+                <span class="nav-icon">
+
+                    🏠
+
+                </span>
+
+                <span class="nav-text">
+
+                    Home
+
+                </span>
+
+            </button>
+
+
+
+            <button
+
+                class="nav-item"
+
+                data-page="earn">
+
+                <span class="nav-icon">
+
+                    💰
+
+                </span>
+
+                <span class="nav-text">
+
+                    Earn
+
+                </span>
+
+            </button>
+
+
+
+            <button
+
+                class="nav-item"
+
+                data-page="leaderboard">
+
+                <span class="nav-icon">
+
+                    🏆
+
+                </span>
+
+                <span class="nav-text">
+
+                    Leaderboard
+
+                </span>
+
+            </button>
+
+
+
+            <button
+
+                class="nav-item"
+
+                data-page="referral">
+
+                <span class="nav-icon">
+
+                    👥
+
+                </span>
+
+                <span class="nav-text">
+
+                    Referral
+
+                </span>
+
+            </button>
+
+
+
+            <button
+
+                class="nav-item"
+
+                data-page="settings">
+
+                <span class="nav-icon">
+
+                    ⚙️
+
+                </span>
+
+                <span class="nav-text">
+
+                    Settings
+
+                </span>
+
+            </button>
+
+        </nav>
+
+
+        <!-- ==========================================
+             JavaScript
+        ========================================== -->
+
+        <script src="telegram.js"></script>
+
+        <script src="api.js"></script>
+
+        <script src="app.js"></script>
+
+    </div>
+
+</body>
+
+</html>
