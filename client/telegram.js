@@ -1,117 +1,97 @@
 // ==========================================
-// Zoryx Telegram WebApp
+// Zoryx Telegram Mini App
 // client/telegram.js
+// Production Version 2.0
+// Part 1
+// ==========================================
+
+"use strict";
+
+
+
+// ==========================================
+// Telegram WebApp
 // ==========================================
 
 const tg = window.Telegram?.WebApp;
 
 if (!tg) {
 
-    alert("Telegram WebApp SDK Not Found");
+    throw new Error(
 
-    throw new Error("Telegram WebApp SDK Not Found");
+        "Telegram WebApp SDK Not Found"
+
+    );
 
 }
+
+
+
+// ==========================================
+// Initialize Telegram
+// ==========================================
 
 tg.ready();
 
 tg.expand();
 
-if (typeof tg.enableClosingConfirmation === "function") {
+tg.enableClosingConfirmation();
 
-    tg.enableClosingConfirmation();
 
-}
+
+// ==========================================
+// Telegram Application
+// ==========================================
 
 const TelegramApp = {};
 
 
 
 // ==========================================
-// App Info
+// Basic Information
 // ==========================================
 
-TelegramApp.webApp = tg;
+TelegramApp.version =
 
-TelegramApp.version = tg.version || "Unknown";
+    tg.version || "1.0";
 
-TelegramApp.platform = tg.platform || "Unknown";
+TelegramApp.platform =
 
-TelegramApp.colorScheme = tg.colorScheme || "dark";
+    tg.platform || "unknown";
 
-TelegramApp.themeParams = tg.themeParams || {};
+TelegramApp.colorScheme =
 
-TelegramApp.initData = tg.initData || "";
+    tg.colorScheme || "dark";
 
-TelegramApp.initDataUnsafe = tg.initDataUnsafe || {};
+TelegramApp.language =
 
+    tg.initDataUnsafe?.user?.language_code ||
 
-
-// ==========================================
-// Telegram User
-// ==========================================
-
-TelegramApp.user = tg.initDataUnsafe?.user || {
-
-    id: 0,
-
-    is_bot: false,
-
-    first_name: "Guest",
-
-    last_name: "",
-
-    username: "",
-
-    language_code: "en",
-
-    photo_url: ""
-
-};
+    "en";
 
 
 
 // ==========================================
-// User Helper
+// User Object
 // ==========================================
 
-TelegramApp.getUser = () => TelegramApp.user;
+TelegramApp.user =
 
-TelegramApp.getUserId = () => TelegramApp.user.id || 0;
-
-TelegramApp.getFirstName = () => TelegramApp.user.first_name || "Guest";
-
-TelegramApp.getLastName = () => TelegramApp.user.last_name || "";
-
-TelegramApp.getFullName = () => {
-
-    return (
-        (TelegramApp.user.first_name || "") +
-        " " +
-        (TelegramApp.user.last_name || "")
-    ).trim();
-
-};
-
-TelegramApp.getUsername = () => TelegramApp.user.username || "";
-
-TelegramApp.getPhoto = () => TelegramApp.user.photo_url || "";
-
-TelegramApp.getLanguage = () => TelegramApp.user.language_code || "en";
+    tg.initDataUnsafe?.user || {};
 
 
 
 // ==========================================
-// Login Payload
+// Telegram InitData
 // ==========================================
 
 TelegramApp.getInitData = () => {
 
     return {
 
-        ...tg.initDataUnsafe,
+        initData: tg.initData,
 
-        initData: tg.initData
+        ...tg.initDataUnsafe
 
     };
 
@@ -120,58 +100,250 @@ TelegramApp.getInitData = () => {
 
 
 // ==========================================
-// Console Log
+// Telegram ID
 // ==========================================
 
-console.log("Telegram WebApp Loaded");
+TelegramApp.getTelegramId = () => {
 
-console.log("Telegram User :", TelegramApp.user);
+    return Number(
 
-console.log("Telegram Version :", TelegramApp.version);
+        TelegramApp.user.id || 0
 
-console.log("Telegram Platform :", TelegramApp.platform);
+    );
+
+};
+
+
+
+// ==========================================
+// First Name
+// ==========================================
+
+TelegramApp.getFirstName = () => {
+
+    return (
+
+        TelegramApp.user.first_name ||
+
+        "Guest"
+
+    );
+
+};
+
+
+
+// ==========================================
+// Last Name
+// ==========================================
+
+TelegramApp.getLastName = () => {
+
+    return (
+
+        TelegramApp.user.last_name ||
+
+        ""
+
+    );
+
+};
+
+
+
+// ==========================================
+// Full Name
+// ==========================================
+
+TelegramApp.getFullName = () => {
+
+    return (
+
+        (
+
+            TelegramApp.getFirstName() +
+
+            " " +
+
+            TelegramApp.getLastName()
+
+        ).trim()
+
+    );
+
+};
+
+
+
+// ==========================================
+// Username
+// ==========================================
+
+TelegramApp.getUsername = () => {
+
+    return (
+
+        TelegramApp.user.username ||
+
+        ""
+
+    );
+
+};
+
+
+
+// ==========================================
+// Photo
+// ==========================================
+
+TelegramApp.getPhoto = () => {
+
+    return (
+
+        TelegramApp.user.photo_url ||
+
+        "assets/images/avatar.png"
+
+    );
+
+};
+
+
+
+// ==========================================
+// Premium User
+// ==========================================
+
+TelegramApp.isPremium = () => {
+
+    return Boolean(
+
+        TelegramApp.user.is_premium
+
+    );
+
+};
+
+
+
+// ==========================================
+// Is Bot
+// ==========================================
+
+TelegramApp.isBot = () => {
+
+    return Boolean(
+
+        TelegramApp.user.is_bot
+
+    );
+
+};
+
 
 
 // ==========================================
 // Theme
 // ==========================================
 
-TelegramApp.setHeaderColor = (color) => {
+TelegramApp.getTheme = () => {
 
-    try {
-
-        if (tg.setHeaderColor) {
-
-            tg.setHeaderColor(color);
-
-        }
-
-    } catch (e) {
-
-        console.log(e);
-
-    }
+    return tg.colorScheme;
 
 };
 
-TelegramApp.setBackgroundColor = (color) => {
 
-    try {
 
-        if (tg.setBackgroundColor) {
+// ==========================================
+// Theme Colors
+// ==========================================
 
-            tg.setBackgroundColor(color);
+TelegramApp.getThemeParams = () => {
 
-        }
-
-    } catch (e) {
-
-        console.log(e);
-
-    }
+    return tg.themeParams || {};
 
 };
 
+
+
+// ==========================================
+// Apply Theme
+// ==========================================
+
+TelegramApp.applyTheme = () => {
+
+    document.body.setAttribute(
+
+        "data-theme",
+
+        TelegramApp.getTheme()
+
+    );
+
+};
+
+
+
+// ==========================================
+// Application Ready
+// ==========================================
+
+TelegramApp.initialize = () => {
+
+    TelegramApp.applyTheme();
+
+    console.log("");
+
+    console.log("================================");
+
+    console.log("Telegram Ready");
+
+    console.log(
+
+        "User :",
+
+        TelegramApp.getFullName()
+
+    );
+
+    console.log(
+
+        "Username :",
+
+        TelegramApp.getUsername()
+
+    );
+
+    console.log(
+
+        "Platform :",
+
+        TelegramApp.platform
+
+    );
+
+    console.log(
+
+        "Version :",
+
+        TelegramApp.version
+
+    );
+
+    console.log("================================");
+
+    console.log("");
+
+};
+
+
+
+// ==========================================
+// Initialize
+// ==========================================
+
+TelegramApp.initialize();
 
 
 // ==========================================
@@ -215,9 +387,71 @@ TelegramApp.haptic = (type = "light") => {
 
         }
 
-    } catch (e) {
+    }
 
-        console.log(e);
+    catch (error) {
+
+        console.error(error);
+
+    }
+
+};
+
+
+
+// ==========================================
+// Alert
+// ==========================================
+
+TelegramApp.alert = (message = "") => {
+
+    if (tg.showAlert) {
+
+        tg.showAlert(message);
+
+    }
+
+    else {
+
+        window.alert(message);
+
+    }
+
+};
+
+
+
+// ==========================================
+// Confirm
+// ==========================================
+
+TelegramApp.confirm = (
+
+    message,
+
+    callback
+
+) => {
+
+    if (tg.showConfirm) {
+
+        tg.showConfirm(
+
+            message,
+
+            callback
+
+        );
+
+    }
+
+    else {
+
+        callback(
+
+            window.confirm(message)
+
+        );
 
     }
 
@@ -229,23 +463,85 @@ TelegramApp.haptic = (type = "light") => {
 // Popup
 // ==========================================
 
-TelegramApp.popup = (title, message) => {
+TelegramApp.popup = (
 
-    const popup = document.getElementById("popup");
+    title,
 
-    const overlay = document.getElementById("overlay");
+    message
 
-    if (!popup) return;
+) => {
 
-    document.getElementById("popupTitle").textContent = title;
+    if (tg.showPopup) {
 
-    document.getElementById("popupMessage").textContent = message;
+        tg.showPopup({
 
-    popup.classList.remove("hidden");
+            title,
 
-    if (overlay) {
+            message,
+
+            buttons: [
+
+                {
+
+                    type: "ok"
+
+                }
+
+            ]
+
+        });
+
+        return;
+
+    }
+
+    const overlay =
+
+        document.getElementById(
+
+            "overlay"
+
+        );
+
+    const popup =
+
+        document.getElementById(
+
+            "popup"
+
+        );
+
+    const popupTitle =
+
+        document.getElementById(
+
+            "popupTitle"
+
+        );
+
+    const popupMessage =
+
+        document.getElementById(
+
+            "popupMessage"
+
+        );
+
+    if (
+
+        overlay &&
+
+        popup
+
+    ) {
+
+        popupTitle.textContent = title;
+
+        popupMessage.textContent = message;
 
         overlay.classList.remove("hidden");
+
+        popup.classList.remove("hidden");
 
     }
 
@@ -259,72 +555,65 @@ TelegramApp.popup = (title, message) => {
 
 TelegramApp.closePopup = () => {
 
-    const popup = document.getElementById("popup");
+    const overlay =
 
-    const overlay = document.getElementById("overlay");
+        document.getElementById(
 
-    if (popup) {
+            "overlay"
 
-        popup.classList.add("hidden");
+        );
 
-    }
+    const popup =
+
+        document.getElementById(
+
+            "popup"
+
+        );
 
     if (overlay) {
 
-        overlay.classList.add("hidden");
+        overlay.classList.add(
+
+            "hidden"
+
+        );
+
+    }
+
+    if (popup) {
+
+        popup.classList.add(
+
+            "hidden"
+
+        );
 
     }
 
 };
 
-
-
-// ==========================================
-// Alert
-// ==========================================
-
-TelegramApp.alert = (text) => {
-
-    if (tg.showAlert) {
-
-        tg.showAlert(text);
-
-    } else {
-
-        alert(text);
-
-    }
-
-};
-
-
-
-// ==========================================
-// Confirm
-// ==========================================
-
-TelegramApp.confirm = (text, callback) => {
-
-    if (tg.showConfirm) {
-
-        tg.showConfirm(text, callback);
-
-    } else {
-
-        callback(confirm(text));
-
-    }
-
-};
 
 
 // ==========================================
 // Toast
 // ==========================================
 
-TelegramApp.toast = (message, duration = 2500) => {
+TelegramApp.toast = (
 
-    const container = document.getElementById("toastContainer");
+    message,
+
+    duration = 2500
+
+) => {
+
+    const container =
+
+        document.getElementById(
+
+            "toastContainer"
+
+        );
 
     if (!container) {
 
@@ -334,7 +623,9 @@ TelegramApp.toast = (message, duration = 2500) => {
 
     }
 
-    const toast = document.createElement("div");
+    const toast =
+
+        document.createElement("div");
 
     toast.className = "toast";
 
@@ -365,6 +656,49 @@ TelegramApp.toast = (message, duration = 2500) => {
 
 
 // ==========================================
+// Loading
+// ==========================================
+
+TelegramApp.showLoading = () => {
+
+    const loading =
+
+        document.getElementById(
+
+            "loading"
+
+        );
+
+    if (loading) {
+
+        loading.style.display = "flex";
+
+    }
+
+};
+
+
+
+TelegramApp.hideLoading = () => {
+
+    const loading =
+
+        document.getElementById(
+
+            "loading"
+
+        );
+
+    if (loading) {
+
+        loading.style.display = "none";
+
+    }
+
+};
+
+
+// ==========================================
 // Main Button
 // ==========================================
 
@@ -372,15 +706,13 @@ TelegramApp.mainButton = {
 
     show(text, callback) {
 
-        if (!tg.MainButton) return;
-
         tg.MainButton.setText(text);
 
         tg.MainButton.show();
 
         tg.MainButton.offClick();
 
-        if (callback) {
+        if (typeof callback === "function") {
 
             tg.MainButton.onClick(callback);
 
@@ -390,39 +722,27 @@ TelegramApp.mainButton = {
 
     hide() {
 
-        if (tg.MainButton) {
+        tg.MainButton.hide();
 
-            tg.MainButton.hide();
-
-        }
+        tg.MainButton.offClick();
 
     },
 
     enable() {
 
-        if (tg.MainButton) {
-
-            tg.MainButton.enable();
-
-        }
+        tg.MainButton.enable();
 
     },
 
     disable() {
 
-        if (tg.MainButton) {
-
-            tg.MainButton.disable();
-
-        }
+        tg.MainButton.disable();
 
     },
 
-    loading(show = true) {
+    loading(status = true) {
 
-        if (!tg.MainButton) return;
-
-        if (show) {
+        if (status) {
 
             tg.MainButton.showProgress();
 
@@ -446,13 +766,11 @@ TelegramApp.backButton = {
 
     show(callback) {
 
-        if (!tg.BackButton) return;
-
         tg.BackButton.show();
 
         tg.BackButton.offClick();
 
-        if (callback) {
+        if (typeof callback === "function") {
 
             tg.BackButton.onClick(callback);
 
@@ -462,41 +780,89 @@ TelegramApp.backButton = {
 
     hide() {
 
-        if (tg.BackButton) {
+        tg.BackButton.hide();
 
-            tg.BackButton.hide();
+        tg.BackButton.offClick();
+
+    }
+
+};
+
+
+
+// ==========================================
+// Clipboard Copy
+// ==========================================
+
+TelegramApp.copy = async (text) => {
+
+    try {
+
+        await navigator.clipboard.writeText(text);
+
+        TelegramApp.toast("Copied");
+
+        return true;
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        TelegramApp.toast("Copy Failed");
+
+        return false;
+
+    }
+
+};
+
+
+
+// ==========================================
+// Share Link
+// ==========================================
+
+TelegramApp.share = async (
+
+    title,
+
+    text,
+
+    url
+
+) => {
+
+    try {
+
+        if (navigator.share) {
+
+            await navigator.share({
+
+                title,
+
+                text,
+
+                url
+
+            });
+
+            return true;
 
         }
 
-    }
+        await TelegramApp.copy(url);
 
-};
-
-
-
-// ==========================================
-// Loader
-// ==========================================
-
-TelegramApp.showLoader = () => {
-
-    const loading = document.getElementById("loading");
-
-    if (loading) {
-
-        loading.style.display = "flex";
+        return true;
 
     }
 
-};
+    catch (error) {
 
-TelegramApp.hideLoader = () => {
+        console.error(error);
 
-    const loading = document.getElementById("loading");
-
-    if (loading) {
-
-        loading.style.display = "none";
+        return false;
 
     }
 
@@ -505,14 +871,44 @@ TelegramApp.hideLoader = () => {
 
 
 // ==========================================
-// Close App
+// Open Link
 // ==========================================
 
-TelegramApp.close = () => {
+TelegramApp.openLink = (
 
-    if (tg.close) {
+    url,
 
-        tg.close();
+    instantView = false
+
+) => {
+
+    try {
+
+        tg.openLink(
+
+            url,
+
+            {
+
+                tryInstantView:
+
+                    instantView
+
+            }
+
+        );
+
+    }
+
+    catch {
+
+        window.open(
+
+            url,
+
+            "_blank"
+
+        );
 
     }
 
@@ -524,40 +920,31 @@ TelegramApp.close = () => {
 // Open Telegram Link
 // ==========================================
 
-TelegramApp.openLink = (url) => {
+TelegramApp.openTelegramLink = (
 
-    if (tg.openLink) {
+    url
 
-        tg.openLink(url);
+) => {
 
-    } else {
+    try {
 
-        window.open(url, "_blank");
+        tg.openTelegramLink(
 
-    }
+            url
 
-};
-
-
-// ==========================================
-// Telegram Events
-// ==========================================
-
-TelegramApp.onThemeChanged = (callback) => {
-
-    if (tg.onEvent) {
-
-        tg.onEvent("themeChanged", callback);
+        );
 
     }
 
-};
+    catch {
 
-TelegramApp.onViewportChanged = (callback) => {
+        window.open(
 
-    if (tg.onEvent) {
+            url,
 
-        tg.onEvent("viewportChanged", callback);
+            "_blank"
+
+        );
 
     }
 
@@ -566,88 +953,84 @@ TelegramApp.onViewportChanged = (callback) => {
 
 
 // ==========================================
-// App Information
+// Close Mini App
 // ==========================================
 
-TelegramApp.getInfo = () => {
+TelegramApp.close = () => {
 
-    return {
-
-        version: TelegramApp.version,
-
-        platform: TelegramApp.platform,
-
-        colorScheme: TelegramApp.colorScheme,
-
-        user: TelegramApp.user,
-
-        initData: TelegramApp.initData
-
-    };
+    tg.close();
 
 };
 
 
 
 // ==========================================
-// Apply Theme
+// Viewport Height
 // ==========================================
 
-document.documentElement.setAttribute(
+TelegramApp.viewportHeight = () => {
 
-    "data-theme",
+    return tg.viewportHeight;
 
-    TelegramApp.colorScheme
+};
+
+
+
+// ==========================================
+// Theme Event
+// ==========================================
+
+tg.onEvent(
+
+    "themeChanged",
+
+    () => {
+
+        TelegramApp.applyTheme();
+
+    }
 
 );
 
 
 
 // ==========================================
-// Auto Update User Photo
+// Viewport Event
 // ==========================================
 
-window.addEventListener("DOMContentLoaded", () => {
+tg.onEvent(
 
-    const photo = document.getElementById("userPhoto");
+    "viewportChanged",
 
-    if (photo && TelegramApp.getPhoto()) {
+    () => {
 
-        photo.src = TelegramApp.getPhoto();
+        document.documentElement.style.setProperty(
+
+            "--tg-height",
+
+            tg.viewportHeight + "px"
+
+        );
 
     }
 
-    const profilePhoto = document.getElementById("profilePhoto");
-
-    if (profilePhoto && TelegramApp.getPhoto()) {
-
-        profilePhoto.src = TelegramApp.getPhoto();
-
-    }
-
-});
+);
 
 
 
 // ==========================================
-// Debug
+// Ready Event
 // ==========================================
 
-console.log("=================================");
+TelegramApp.ready = () => {
 
-console.log("🚀 Zoryx Telegram Ready");
+    tg.ready();
 
-console.log("User ID :", TelegramApp.getUserId());
+    tg.expand();
 
-console.log("Name :", TelegramApp.getFullName());
+    TelegramApp.applyTheme();
 
-console.log("Username :", TelegramApp.getUsername());
-
-console.log("Platform :", TelegramApp.platform);
-
-console.log("Version :", TelegramApp.version);
-
-console.log("=================================");
+};
 
 
 
