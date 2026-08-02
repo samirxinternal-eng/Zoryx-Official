@@ -1,7 +1,11 @@
-// ========================================
-// Zoryx Telegram WebApp
+// ==========================================
+// Zoryx Telegram Mini App
 // server/server.js
-// ========================================
+// Production Version 2.0
+// Part 1
+// ==========================================
+
+"use strict";
 
 import express from "express";
 import cors from "cors";
@@ -10,92 +14,168 @@ import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import routes from "./routes.js";
-
+import router from "./routes.js";
 import {
     connectDatabase,
     initializeDatabase
 } from "./database.js";
 
+// ==========================================
+// Environment
+// ==========================================
+
 dotenv.config();
+
+// ==========================================
+// Paths
+// ==========================================
+
+const __filename = fileURLToPath(import.meta.url);
+
+const __dirname = path.dirname(__filename);
+
+const CLIENT_DIR = path.join(
+    __dirname,
+    "..",
+    "client"
+);
+
+// ==========================================
+// Express App
+// ==========================================
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+// ==========================================
+// Configuration
+// ==========================================
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const PORT = Number(
+    process.env.PORT || 10000
+);
 
+const NODE_ENV =
+    process.env.NODE_ENV ||
+    "development";
 
+// ==========================================
+// Trust Proxy
+// ==========================================
 
-// ========================================
-// Middleware
-// ========================================
+app.set(
+    "trust proxy",
+    true
+);
 
-app.use(cors());
+// ==========================================
+// Middlewares
+// ==========================================
+
+app.use(cors({
+
+    origin: true,
+
+    credentials: true
+
+}));
 
 app.use(express.json({
+
     limit: "10mb"
+
 }));
 
 app.use(express.urlencoded({
-    extended: true
+
+    extended: true,
+
+    limit: "10mb"
+
 }));
 
 app.use(morgan("dev"));
 
-
-
-// ========================================
-// Static Client
-// ========================================
+// ==========================================
+// Static Files
+// ==========================================
 
 app.use(
-    express.static(
-        path.join(__dirname, "../client")
-    )
+
+    express.static(CLIENT_DIR, {
+
+        extensions: [
+
+            "html"
+
+        ],
+
+        maxAge: "1d",
+
+        etag: true
+
+    })
+
 );
 
+// ==========================================
+// Basic Health Check
+// ==========================================
 
+app.get("/health", (req, res) => {
 
-// ========================================
-// API
-// ========================================
+    return res.json({
 
-app.use("/api", routes);
+        success: true,
 
+        status: "OK",
 
+        environment: NODE_ENV,
 
-// ========================================
-// Home
-// ========================================
+        uptime: process.uptime(),
 
-app.get("/", (req, res) => {
+        timestamp: Date.now()
 
-    res.sendFile(
-
-        path.join(
-            __dirname,
-            "../client/index.html"
-        )
-
-    );
+    });
 
 });
 
 
+// ==========================================
+// Initialize Database
+// ==========================================
 
-// ========================================
-// Any Route
-// ========================================
+await initializeDatabase();
+
+await connectDatabase();
+
+
+// ==========================================
+// API Routes
+// ==========================================
+
+app.use(
+
+    "/",
+
+    router
+
+);
+
+
+// ==========================================
+// SPA Fallback
+// ==========================================
 
 app.get("*", (req, res) => {
 
     res.sendFile(
 
         path.join(
-            __dirname,
-            "../client/index.html"
+
+            CLIENT_DIR,
+
+            "index.html"
+
         )
 
     );
@@ -103,16 +183,38 @@ app.get("*", (req, res) => {
 });
 
 
+// ==========================================
+// 404 Handler
+// ==========================================
 
-// ========================================
-// Error Handler
-// ========================================
+app.use((req, res) => {
+
+    return res.status(404).json({
+
+        success: false,
+
+        message: "Route Not Found"
+
+    });
+
+});
+
+
+// ==========================================
+// Global Error Handler
+// ==========================================
 
 app.use((err, req, res, next) => {
 
-    console.error(err);
+    console.error(
 
-    res.status(500).json({
+        "Server Error:",
+
+        err
+
+    );
+
+    return res.status(500).json({
 
         success: false,
 
@@ -121,50 +223,3 @@ app.use((err, req, res, next) => {
     });
 
 });
-
-
-
-// ========================================
-// Start Server
-// ========================================
-
-async function startServer() {
-
-    try {
-
-        await connectDatabase();
-
-        await initializeDatabase();
-
-        app.listen(PORT, () => {
-
-            console.log("");
-
-            console.log("=================================");
-
-            console.log("🚀 Zoryx Server Started");
-
-            console.log(`🌐 Port : ${PORT}`);
-
-            console.log(`📦 Environment : ${process.env.NODE_ENV || "development"}`);
-
-            console.log("=================================");
-
-            console.log("");
-
-        });
-
-    }
-    catch (error) {
-
-        console.error("❌ Server Failed To Start");
-
-        console.error(error);
-
-        process.exit(1);
-
-    }
-
-}
-
-startServer();
