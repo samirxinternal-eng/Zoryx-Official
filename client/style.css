@@ -1,123 +1,218 @@
 /* ==========================================
    Zoryx Telegram Mini App
    client/style.css
-   PART 1
+   Production Version 2.0
 ========================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+
+
+/* ==========================================
+   Reset
+========================================== */
 
 *{
+
     margin:0;
+
     padding:0;
+
     box-sizing:border-box;
+
     -webkit-tap-highlight-color:transparent;
+
 }
+
+
+
+*::before,
+
+*::after{
+
+    box-sizing:border-box;
+
+}
+
+
+
+/* ==========================================
+   Root
+========================================== */
 
 :root{
 
-    --bg:#050505;
-    --bg2:#0d0d0d;
+    --bg:#0b0b0f;
 
-    --card:#121212;
+    --card:#17171f;
 
-    --card2:#181818;
+    --card2:#1f1f29;
 
-    --gold:#ffc107;
+    --primary:#ffc107;
 
-    --gold2:#ffda55;
+    --primary-dark:#ffb300;
+
+    --green:#00d26a;
+
+    --red:#ff4d4f;
+
+    --blue:#2196f3;
 
     --white:#ffffff;
 
-    --text:#f4f4f4;
+    --text:#ffffff;
 
-    --muted:#8c8c8c;
+    --text2:#b7b7c5;
 
-    --border:#262626;
+    --border:rgba(255,255,255,.08);
 
-    --success:#00d26a;
+    --shadow:0 8px 25px rgba(0,0,0,.35);
 
-    --danger:#ff4d4d;
+    --radius:18px;
 
-    --radius:22px;
+    --transition:.25s ease;
 
-}
+    --header-height:72px;
 
-html,
-body{
-
-    width:100%;
-    min-height:100%;
+    --nav-height:82px;
 
 }
 
+
+
+/* ==========================================
+   HTML
+========================================== */
+
+html{
+
+    scroll-behavior:smooth;
+
+}
+
+
+
+/* ==========================================
+   Body
+========================================== */
+
 body{
 
-    font-family:'Outfit',sans-serif;
+    background:var(--bg);
 
     color:var(--text);
 
-    background:
-    radial-gradient(circle at top,#202020 0%,#050505 55%);
+    font-family:
+
+        Inter,
+
+        "Segoe UI",
+
+        Roboto,
+
+        Arial,
+
+        sans-serif;
 
     overflow-x:hidden;
 
     user-select:none;
 
+    -webkit-user-select:none;
+
+    min-height:100vh;
+
+}
+
+
+
+/* ==========================================
+   Images
+========================================== */
+
+img{
+
+    display:block;
+
+    max-width:100%;
+
+}
+
+
+
+/* ==========================================
+   Button
+========================================== */
+
+button{
+
+    border:none;
+
+    outline:none;
+
+    cursor:pointer;
+
+    background:none;
+
+    font:inherit;
+
+}
+
+
+
+/* ==========================================
+   Link
+========================================== */
+
+a{
+
+    color:inherit;
+
+    text-decoration:none;
+
+}
+
+
+
+/* ==========================================
+   List
+========================================== */
+
+ul,
+
+ol{
+
+    list-style:none;
+
+}
+
+
+
+/* ==========================================
+   Main App
+========================================== */
+
+.app{
+
     position:relative;
 
-}
+    width:100%;
 
-/* Animated Background */
+    min-height:100vh;
 
-body::before{
+    padding:
 
-    content:"";
+        var(--header-height)
 
-    position:fixed;
+        16px
 
-    inset:0;
-
-    background:
-
-    radial-gradient(circle,#ffc10718 0%,transparent 65%),
-
-    radial-gradient(circle,#ffffff08 0%,transparent 70%);
-
-    background-size:
-
-    350px 350px,
-
-    250px 250px;
-
-    animation:bgMove 18s linear infinite;
-
-    pointer-events:none;
-
-    z-index:-1;
+        calc(var(--nav-height) + 20px);
 
 }
 
-@keyframes bgMove{
 
-    from{
 
-        background-position:
-        0 0,
-        0 0;
-
-    }
-
-    to{
-
-        background-position:
-        350px 350px,
-        -250px 250px;
-
-    }
-
-}
-
-/* Hidden */
+/* ==========================================
+   Hidden
+========================================== */
 
 .hidden{
 
@@ -126,10 +221,10 @@ body::before{
 }
 
 /* ==========================================
-   Loading
+   Loading Screen
 ========================================== */
 
-#loading{
+.loading{
 
     position:fixed;
 
@@ -137,55 +232,309 @@ body::before{
 
     display:flex;
 
-    flex-direction:column;
+    align-items:center;
 
     justify-content:center;
 
-    align-items:center;
-
-    gap:18px;
-
-    background:#050505;
+    background:var(--bg);
 
     z-index:99999;
 
 }
 
+
+
+.loading-content{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
+
+
+.loading-logo{
+
+    width:90px;
+
+    height:90px;
+
+    object-fit:contain;
+
+    margin-bottom:20px;
+
+    animation:logoFloat 2s ease-in-out infinite;
+
+}
+
+
+
+.loading h2{
+
+    font-size:28px;
+
+    font-weight:700;
+
+    color:var(--primary);
+
+}
+
+
+
+.loading p{
+
+    margin-top:8px;
+
+    color:var(--text2);
+
+    font-size:15px;
+
+}
+
+
+
+/* ==========================================
+   Loader
+========================================== */
+
 .loader{
 
-    width:68px;
+    width:42px;
 
-    height:68px;
+    height:42px;
+
+    margin-top:24px;
+
+    border:4px solid rgba(255,255,255,.12);
+
+    border-top-color:var(--primary);
 
     border-radius:50%;
 
-    border:6px solid #2a2a2a;
-
-    border-top-color:var(--gold);
-
-    animation:spin .8s linear infinite;
+    animation:loaderSpin .9s linear infinite;
 
 }
 
-#loading h2{
 
-    font-size:32px;
 
-    font-weight:800;
+/* ==========================================
+   Overlay
+========================================== */
 
-    color:var(--gold);
+.overlay{
 
-    letter-spacing:1px;
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.55);
+
+    opacity:0;
+
+    visibility:hidden;
+
+    transition:var(--transition);
+
+    z-index:900;
 
 }
 
-#loading p{
 
-    color:var(--muted);
+
+.overlay.active{
+
+    opacity:1;
+
+    visibility:visible;
 
 }
 
-@keyframes spin{
+
+
+/* ==========================================
+   Popup
+========================================== */
+
+.popup{
+
+    position:fixed;
+
+    left:50%;
+
+    top:50%;
+
+    transform:translate(-50%,-50%) scale(.9);
+
+    width:calc(100% - 32px);
+
+    max-width:380px;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:var(--radius);
+
+    box-shadow:var(--shadow);
+
+    opacity:0;
+
+    visibility:hidden;
+
+    transition:var(--transition);
+
+    z-index:1000;
+
+}
+
+
+
+.popup.active{
+
+    opacity:1;
+
+    visibility:visible;
+
+    transform:translate(-50%,-50%) scale(1);
+
+}
+
+
+
+.popup-card{
+
+    width:100%;
+
+}
+
+
+
+.popup-header{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:18px;
+
+    border-bottom:1px solid var(--border);
+
+}
+
+
+
+.popup-header h3{
+
+    font-size:18px;
+
+    color:var(--white);
+
+}
+
+
+
+.popup-close{
+
+    width:36px;
+
+    height:36px;
+
+    border-radius:50%;
+
+    color:var(--white);
+
+    background:rgba(255,255,255,.08);
+
+    transition:var(--transition);
+
+}
+
+
+
+.popup-close:active{
+
+    transform:scale(.94);
+
+}
+
+
+
+.popup-body{
+
+    padding:20px;
+
+    color:var(--text2);
+
+    line-height:1.6;
+
+}
+
+
+
+/* ==========================================
+   Toast
+========================================== */
+
+.toast-container{
+
+    position:fixed;
+
+    left:50%;
+
+    bottom:100px;
+
+    transform:translateX(-50%);
+
+    width:calc(100% - 40px);
+
+    max-width:340px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+
+    z-index:1200;
+
+}
+
+
+
+.toast{
+
+    padding:14px 18px;
+
+    background:var(--card2);
+
+    border:1px solid var(--border);
+
+    border-radius:14px;
+
+    color:var(--white);
+
+    text-align:center;
+
+    box-shadow:var(--shadow);
+
+    animation:toastUp .25s ease;
+
+}
+
+
+
+/* ==========================================
+   Animations
+========================================== */
+
+@keyframes loaderSpin{
 
     to{
 
@@ -195,382 +544,206 @@ body::before{
 
 }
 
-/* ==========================================
- Toast
-========================================== */
 
-#toastContainer{
 
-    position:fixed;
+@keyframes logoFloat{
 
-    top:20px;
+    0%,100%{
 
-    left:50%;
+        transform:translateY(0);
 
-    transform:translateX(-50%);
+    }
 
-    z-index:5000;
+    50%{
 
-}
+        transform:translateY(-8px);
 
-/* ==========================================
- Overlay
-========================================== */
-
-#overlay{
-
-    position:fixed;
-
-    inset:0;
-
-    background:rgba(0,0,0,.55);
-
-    backdrop-filter:blur(5px);
-
-    z-index:4000;
+    }
 
 }
 
-/* ==========================================
- App
-========================================== */
 
-#app{
 
-    width:100%;
-
-    max-width:500px;
-
-    margin:auto;
-
-    padding:18px;
-
-    padding-bottom:115px;
-
-}
-
-/* ==========================================
- Header
-========================================== */
-
-#header{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    margin-bottom:18px;
-
-}
-
-.profile{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:12px;
-
-}
-
-.avatar{
-
-    width:58px;
-
-    height:58px;
-
-    border-radius:50%;
-
-    overflow:hidden;
-
-    background:linear-gradient(145deg,#222,#111);
-
-    border:2px solid var(--gold);
-
-    box-shadow:
-
-    0 0 18px rgba(255,193,7,.35);
-
-}
-
-.avatar img{
-
-    width:100%;
-
-    height:100%;
-
-    object-fit:cover;
-
-}
-
-.profileInfo h3{
-
-    font-size:19px;
-
-    font-weight:700;
-
-}
-
-.profileInfo span{
-
-    color:var(--gold);
-
-    font-size:13px;
-
-}
-
-.headerButtons{
-
-    display:flex;
-
-    gap:10px;
-
-}
-
-.iconButton{
-
-    width:46px;
-
-    height:46px;
-
-    border:none;
-
-    border-radius:16px;
-
-    background:linear-gradient(180deg,#1b1b1b,#111);
-
-    color:#fff;
-
-    font-size:20px;
-
-    cursor:pointer;
-
-    transition:.25s;
-
-    border:1px solid var(--border);
-
-}
-
-.iconButton:active{
-
-    transform:scale(.92);
-
-}
-
-/* ==========================================
- Announcement
-========================================== */
-
-#announcement{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:12px;
-
-    background:linear-gradient(180deg,#181818,#111);
-
-    border:1px solid var(--border);
-
-    border-radius:18px;
-
-    padding:12px 15px;
-
-    margin-bottom:18px;
-
-    overflow:hidden;
-
-}
-
-.announceIcon{
-
-    font-size:20px;
-
-}
-
-.announceText{
-
-    flex:1;
-
-    overflow:hidden;
-
-}
-
-#announcementWrapper{
-
-    width:100%;
-
-    overflow:hidden;
-
-    white-space:nowrap;
-
-}
-
-#announcementScroll{
-
-    display:inline-flex;
-
-    gap:50px;
-
-    animation:news 18s linear infinite;
-
-}
-
-#announcementScroll span{
-
-    color:#ddd;
-
-    font-size:14px;
-
-}
-
-@keyframes news{
+@keyframes toastUp{
 
     from{
 
-        transform:translateX(0);
+        opacity:0;
+
+        transform:translateY(20px);
 
     }
 
     to{
 
-        transform:translateX(-50%);
+        opacity:1;
+
+        transform:translateY(0);
 
     }
-
-}
-
-/* ==========================================
- Balance Card
-========================================== */
-
-#balanceCard{
-
-    background:linear-gradient(180deg,#191919,#111);
-
-    border-radius:var(--radius);
-
-    border:1px solid var(--border);
-
-    padding:24px;
-
-    text-align:center;
-
-    margin-bottom:18px;
-
-    box-shadow:
-
-    0 10px 30px rgba(0,0,0,.35);
-
-}
-
-.cardTitle{
-
-    display:block;
-
-    color:var(--muted);
-
-    margin-bottom:8px;
-
-    font-size:14px;
-
-}
-
-#balance{
-
-    font-size:44px;
-
-    font-weight:800;
-
-    color:var(--gold);
-
-}
-
-.coinText{
-
-    display:block;
-
-    margin-top:8px;
-
-    color:var(--muted);
-
-}
-
-/* ==========================================
- Energy Card
-========================================== */
-
-#energyCard{
-
-    background:linear-gradient(180deg,#191919,#111);
-
-    border-radius:20px;
-
-    border:1px solid var(--border);
-
-    padding:18px;
-
-    margin-bottom:22px;
-
-}
-
-.energyTop{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    margin-bottom:12px;
-
-    font-size:14px;
-
-}
-
-.energyBar{
-
-    height:12px;
-
-    border-radius:30px;
-
-    overflow:hidden;
-
-    background:#2b2b2b;
-
-}
-
-#energyFill{
-
-    width:100%;
-
-    height:100%;
-
-    border-radius:30px;
-
-    background:linear-gradient(90deg,#ffd54a,#ffc107,#ffb300);
-
-    transition:width .3s;
-
-    box-shadow:
-
-    0 0 15px rgba(255,193,7,.5);
 
    }
 
 
 /* ==========================================
-   HOME PAGE
+   Header
+========================================== */
+
+.header{
+
+    position:fixed;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:var(--header-height);
+
+    padding:0 16px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    background:rgba(11,11,15,.96);
+
+    backdrop-filter:blur(16px);
+
+    border-bottom:1px solid var(--border);
+
+    z-index:500;
+
+}
+
+
+
+.header-left{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+
+
+.user-photo{
+
+    width:48px;
+
+    height:48px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+    border:2px solid var(--primary);
+
+    background:var(--card);
+
+}
+
+
+
+.user-info{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:3px;
+
+}
+
+
+
+.user-info h3{
+
+    font-size:16px;
+
+    font-weight:700;
+
+    color:var(--white);
+
+    max-width:150px;
+
+    overflow:hidden;
+
+    white-space:nowrap;
+
+    text-overflow:ellipsis;
+
+}
+
+
+
+.user-info p{
+
+    font-size:13px;
+
+    color:var(--text2);
+
+    max-width:150px;
+
+    overflow:hidden;
+
+    white-space:nowrap;
+
+    text-overflow:ellipsis;
+
+}
+
+
+
+.connection-status{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-width:82px;
+
+    height:34px;
+
+    padding:0 12px;
+
+    border-radius:999px;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    color:var(--green);
+
+    font-size:12px;
+
+    font-weight:600;
+
+}
+
+
+
+/* ==========================================
+   Page
 ========================================== */
 
 .page{
 
     display:none;
 
-    animation:pageFade .35s ease;
+    animation:pageFade .25s ease;
 
 }
+
+
 
 .page.active{
 
@@ -578,398 +751,535 @@ body::before{
 
 }
 
+
+
+.page-header{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    margin-bottom:18px;
+
+}
+
+
+
+.page-header h2{
+
+    font-size:22px;
+
+    font-weight:700;
+
+    color:var(--white);
+
+}
+
+
+
+/* ==========================================
+   Sections
+========================================== */
+
+.section{
+
+    margin-top:20px;
+
+}
+
+
+
+.section-header{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    margin-bottom:14px;
+
+}
+
+
+
+.section-header h2{
+
+    font-size:18px;
+
+    font-weight:700;
+
+    color:var(--white);
+
+}
+
+
+
+/* ==========================================
+   Animation
+========================================== */
+
 @keyframes pageFade{
 
     from{
 
         opacity:0;
-        transform:translateY(18px);
+
+        transform:translateY(12px);
 
     }
 
     to{
 
         opacity:1;
+
         transform:translateY(0);
 
     }
 
 }
 
+
 /* ==========================================
-   Coin Area
+   Profile Card
 ========================================== */
 
-#coinArea{
-
-    position:relative;
-
-    width:100%;
+.profile-card{
 
     display:flex;
 
-    justify-content:center;
-
     align-items:center;
 
-    padding:40px 0 50px;
+    justify-content:space-between;
 
-    overflow:visible;
+    gap:16px;
+
+    padding:18px;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:var(--radius);
+
+    box-shadow:var(--shadow);
 
 }
 
+
+
+.profile-left{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+}
+
+
+
+.profile-avatar{
+
+    width:64px;
+
+    height:64px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+    border:2px solid var(--primary);
+
+}
+
+
+
+.profile-details{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:4px;
+
+}
+
+
+
+.profile-details h3{
+
+    font-size:18px;
+
+    font-weight:700;
+
+    color:var(--white);
+
+}
+
+
+
+.profile-details p{
+
+    font-size:13px;
+
+    color:var(--text2);
+
+}
+
+
+
 /* ==========================================
-   Coin
+   Balance Card
 ========================================== */
 
-#coin{
+.balance-card{
+
+    margin-top:20px;
+
+    padding:22px;
+
+    text-align:center;
+
+    background:linear-gradient(
+
+        135deg,
+
+        #23232f,
+
+        #17171f
+
+    );
+
+    border:1px solid var(--border);
+
+    border-radius:var(--radius);
+
+    box-shadow:var(--shadow);
+
+}
+
+
+
+.balance-card span{
+
+    display:block;
+
+    font-size:14px;
+
+    color:var(--text2);
+
+}
+
+
+
+.balance-card h1{
+
+    margin-top:10px;
+
+    font-size:34px;
+
+    font-weight:800;
+
+    color:var(--primary);
+
+}
+
+
+
+/* ==========================================
+   Info Grid
+========================================== */
+
+.info-grid{
+
+    display:grid;
+
+    grid-template-columns:
+
+        repeat(2,1fr);
+
+    gap:14px;
+
+    margin-top:20px;
+
+}
+
+
+
+.info-card{
+
+    padding:18px;
+
+    text-align:center;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:16px;
+
+}
+
+
+
+.info-card span{
+
+    display:block;
+
+    font-size:13px;
+
+    color:var(--text2);
+
+}
+
+
+
+.info-card h3{
+
+    margin-top:8px;
+
+    font-size:20px;
+
+    font-weight:700;
+
+    color:var(--white);
+
+}
+
+
+
+/* ==========================================
+   Progress
+========================================== */
+
+.progress{
+
+    width:100%;
+
+    height:10px;
+
+    margin-top:10px;
+
+    overflow:hidden;
+
+    background:#2b2b36;
+
+    border-radius:999px;
+
+}
+
+
+
+.progress-fill{
+
+    width:0;
+
+    height:100%;
+
+    border-radius:999px;
+
+    background:linear-gradient(
+
+        90deg,
+
+        var(--primary),
+
+        #ffd54f
+
+    );
+
+    transition:width .3s ease;
+
+}
+
+
+/* ==========================================
+   Coin Section
+========================================== */
+
+.coin-section{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    margin-top:30px;
+
+}
+
+
+
+.coin-wrapper{
 
     position:relative;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
+
+
+.coin{
 
     width:220px;
 
     height:220px;
 
-    border-radius:50%;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
+    object-fit:contain;
 
     cursor:pointer;
 
-    transition:
+    user-select:none;
 
-    transform .08s ease,
-
-    filter .2s ease;
-
-    touch-action:manipulation;
+    transition:transform .12s ease;
 
 }
 
-#coin:active{
 
-    transform:scale(.93);
+
+.coin:active{
+
+    transform:scale(.92);
 
 }
+
+
+
+.coin.tap{
+
+    animation:coinTap .18s ease;
+
+}
+
+
 
 /* ==========================================
-   Coin Layers
+   Floating Coin Text
 ========================================== */
 
-.coinOuter{
+.floating-coin{
 
-    position:absolute;
+    position:fixed;
 
-    inset:0;
+    font-size:22px;
 
-    border-radius:50%;
+    font-weight:700;
 
-    background:
+    color:var(--primary);
 
-    linear-gradient(
+    pointer-events:none;
 
-    145deg,
+    z-index:999;
 
-    #fff3b0,
-
-    #ffd84d,
-
-    #ffb300,
-
-    #d48b00
-
-    );
-
-    box-shadow:
-
-    0 0 40px rgba(255,193,7,.45),
-
-    inset 0 6px 15px rgba(255,255,255,.35),
-
-    inset 0 -12px 18px rgba(0,0,0,.35);
+    animation:floatingCoin .9s ease forwards;
 
 }
 
-.coinInner{
 
-    position:absolute;
 
-    inset:14px;
+/* ==========================================
+   Energy
+========================================== */
 
-    border-radius:50%;
+.energy-card{
 
-    background:
+    width:100%;
 
-    radial-gradient(
+    margin-top:28px;
 
-    circle at 30% 30%,
+    padding:18px;
 
-    #fffdf0,
+    background:var(--card);
 
-    #ffd54a,
+    border:1px solid var(--border);
 
-    #ffb300
+    border-radius:var(--radius);
 
-    );
+}
+
+
+
+.energy-header{
 
     display:flex;
 
-    justify-content:center;
-
     align-items:center;
 
-    box-shadow:
+    justify-content:space-between;
 
-    inset 0 0 20px rgba(255,255,255,.4);
-
-}
-
-.coinInner span{
-
-    font-size:90px;
-
-    font-weight:800;
-
-    color:#ffffff;
-
-    text-shadow:
-
-    0 3px 8px rgba(0,0,0,.35);
+    margin-bottom:12px;
 
 }
 
-/* ==========================================
-   Coin Glow
-========================================== */
 
-#coin::before{
 
-    content:"";
+.energy-header span{
 
-    position:absolute;
+    font-size:14px;
 
-    width:250px;
+    color:var(--text2);
 
-    height:250px;
+}
 
-    border-radius:50%;
 
-    background:
 
-    radial-gradient(
+.energy-bar{
 
-    circle,
+    width:100%;
 
-    rgba(255,193,7,.28),
+    height:12px;
 
-    transparent 70%
+    overflow:hidden;
+
+    border-radius:999px;
+
+    background:#2a2a34;
+
+}
+
+
+
+.energy-fill{
+
+    width:100%;
+
+    height:100%;
+
+    border-radius:999px;
+
+    background:linear-gradient(
+
+        90deg,
+
+        #00d26a,
+
+        #66ff99
 
     );
 
-    animation:coinGlow 2.5s ease-in-out infinite;
-
-    z-index:-1;
+    transition:width .3s ease;
 
 }
 
-@keyframes coinGlow{
 
-    0%{
-
-        transform:scale(.9);
-        opacity:.55;
-
-    }
-
-    50%{
-
-        transform:scale(1.08);
-        opacity:1;
-
-    }
-
-    100%{
-
-        transform:scale(.9);
-        opacity:.55;
-
-    }
-
-}
 
 /* ==========================================
-   Shine Effect
+   Coin Animation
 ========================================== */
 
-#coin::after{
-
-    content:"";
-
-    position:absolute;
-
-    top:18px;
-
-    left:42px;
-
-    width:50px;
-
-    height:130px;
-
-    background:
-
-    rgba(255,255,255,.25);
-
-    border-radius:50px;
-
-    transform:rotate(-30deg);
-
-    filter:blur(2px);
-
-}
-
-/* ==========================================
-   Ripple Container
-========================================== */
-
-#rippleContainer{
-
-    position:absolute;
-
-    inset:0;
-
-    pointer-events:none;
-
-    overflow:visible;
-
-}
-
-/* ==========================================
-   Ripple
-========================================== */
-
-.ripple{
-
-    position:absolute;
-
-    width:25px;
-
-    height:25px;
-
-    border-radius:50%;
-
-    border:2px solid rgba(255,255,255,.8);
-
-    animation:ripple .55s ease-out forwards;
-
-}
-
-@keyframes ripple{
-
-    from{
-
-        opacity:.9;
-
-        transform:
-
-        translate(-50%,-50%)
-
-        scale(.2);
-
-    }
-
-    to{
-
-        opacity:0;
-
-        transform:
-
-        translate(-50%,-50%)
-
-        scale(5);
-
-    }
-
-}
-
-/* ==========================================
-   Tap Effect
-========================================== */
-
-#tapEffects{
-
-    position:absolute;
-
-    inset:0;
-
-    pointer-events:none;
-
-    overflow:visible;
-
-}
-
-.tap-effect{
-
-    position:absolute;
-
-    color:#ffffff;
-
-    font-size:30px;
-
-    font-weight:800;
-
-    text-shadow:
-
-    0 0 12px #ffffff;
-
-    animation:
-
-    tapFloat .55s ease-out forwards;
-
-}
-
-@keyframes tapFloat{
-
-    0%{
-
-        opacity:1;
-
-        transform:
-
-        translate(-50%,-50%)
-
-        scale(.7);
-
-    }
-
-    100%{
-
-        opacity:0;
-
-        transform:
-
-        translate(-50%,-110px)
-
-        scale(1.35);
-
-    }
-
-}
-
-/* ==========================================
-   Coin Bounce
-========================================== */
-
-.coinBounce{
-
-    animation:coinBounce .18s ease;
-
-}
-
-@keyframes coinBounce{
+@keyframes coinTap{
 
     0%{
 
@@ -989,22 +1299,86 @@ body::before{
 
     }
 
-   }
+}
 
 
-/* ==========================================
-   PAGE HEADER
-========================================== */
 
-.pageHeader{
+@keyframes floatingCoin{
 
-    margin-bottom:20px;
+    0%{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+    100%{
+
+        opacity:0;
+
+        transform:translateY(-70px);
+
+    }
 
 }
 
-.pageHeader h2{
 
-    font-size:26px;
+/* ==========================================
+   Task List
+========================================== */
+
+.task-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:16px;
+
+    margin-top:20px;
+
+}
+
+
+
+.task-card{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:18px;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:var(--radius);
+
+    box-shadow:var(--shadow);
+
+}
+
+
+
+.task-left{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:6px;
+
+}
+
+
+
+.task-title{
+
+    font-size:16px;
 
     font-weight:700;
 
@@ -1012,351 +1386,51 @@ body::before{
 
 }
 
-.pageHeader p{
 
-    margin-top:6px;
 
-    color:var(--muted);
+.task-reward{
 
     font-size:14px;
 
-}
-
-/* ==========================================
-   PREMIUM CARD
-========================================== */
-
-.referralCard,
-.profileCard,
-.levelProgress{
-
-    background:linear-gradient(180deg,#1a1a1a,#111);
-
-    border:1px solid var(--border);
-
-    border-radius:22px;
-
-    padding:20px;
-
-    margin-bottom:18px;
-
-    box-shadow:
-
-    0 8px 25px rgba(0,0,0,.35);
+    color:var(--primary);
 
 }
 
-/* ==========================================
-   INPUT
-========================================== */
 
-input{
 
-    width:100%;
+.task-button{
 
-    height:52px;
+    min-width:100px;
 
-    margin-top:15px;
+    height:42px;
 
-    margin-bottom:15px;
+    border-radius:12px;
 
-    border:none;
+    background:var(--primary);
 
-    outline:none;
-
-    border-radius:14px;
-
-    background:#202020;
-
-    color:#fff;
-
-    padding:0 15px;
-
-    font-size:15px;
-
-}
-
-/* ==========================================
-   BUTTON
-========================================== */
-
-button{
-
-    font-family:'Outfit',sans-serif;
-
-}
-
-.referralCard button{
-
-    width:100%;
-
-    height:52px;
-
-    border:none;
-
-    border-radius:14px;
-
-    background:
-
-    linear-gradient(
-
-    90deg,
-
-    #ffd54a,
-
-    #ffb300
-
-    );
-
-    color:#000;
-
-    font-size:16px;
+    color:#111;
 
     font-weight:700;
 
+    transition:var(--transition);
+
 }
+
+
+
+.task-button:active{
+
+    transform:scale(.96);
+
+}
+
+
 
 /* ==========================================
-   REFERRAL STATS
+   Leaderboard
 ========================================== */
 
-.referralStats{
-
-    display:grid;
-
-    grid-template-columns:1fr 1fr;
-
-    gap:15px;
-
-    margin-bottom:20px;
-
-}
-
-.stat{
-
-    background:#171717;
-
-    border:1px solid var(--border);
-
-    border-radius:18px;
-
-    padding:18px;
-
-    text-align:center;
-
-}
-
-.stat span{
-
-    color:var(--muted);
-
-    font-size:13px;
-
-}
-
-.stat h2{
-
-    margin-top:8px;
-
-    color:var(--gold);
-
-    font-size:26px;
-
-}
-
-/* ==========================================
-   LEVEL PROGRESS
-========================================== */
-
-.levelProgress span{
-
-    display:block;
-
-    margin-bottom:12px;
-
-    font-size:16px;
-
-    font-weight:600;
-
-}
-
-.progressBar{
-
-    width:100%;
-
-    height:14px;
-
-    border-radius:20px;
-
-    overflow:hidden;
-
-    background:#2a2a2a;
-
-}
-
-#levelFill{
-
-    width:0%;
-
-    height:100%;
-
-    border-radius:20px;
-
-    background:
-
-    linear-gradient(
-
-    90deg,
-
-    #ffd54a,
-
-    #ffb300
-
-    );
-
-    transition:.4s;
-
-}
-
-/* ==========================================
-   LEVEL REWARD LIST
-========================================== */
-
-#levelRewardList{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:16px;
-
-}
-
-.levelCard{
-
-    background:#171717;
-
-    border:1px solid var(--border);
-
-    border-radius:18px;
-
-    padding:18px;
-
-}
-
-.levelCard h3{
-
-    margin-bottom:10px;
-
-}
-
-.levelCard p{
-
-    color:var(--muted);
-
-    margin-bottom:15px;
-
-}
-
-.levelCard button{
-
-    width:100%;
-
-    height:48px;
-
-    border:none;
-
-    border-radius:14px;
-
-    background:var(--gold);
-
-    color:#000;
-
-    font-weight:700;
-
-}
-
-/* ==========================================
-   PROFILE CARD
-========================================== */
-
-.profileCard{
-
-    display:flex;
-
-    flex-direction:column;
-
-    align-items:center;
-
-    text-align:center;
-
-}
-
-.profileAvatar{
-
-    width:95px;
-
-    height:95px;
-
-    border-radius:50%;
-
-    overflow:hidden;
-
-    border:3px solid var(--gold);
-
-    margin-bottom:15px;
-
-    box-shadow:
-
-    0 0 25px rgba(255,193,7,.35);
-
-}
-
-.profileAvatar img{
-
-    width:100%;
-
-    height:100%;
-
-    object-fit:cover;
-
-}
-
-.profileCard h3{
-
-    font-size:24px;
-
-    margin-bottom:6px;
-
-}
-
-.profileCard span{
-
-    color:var(--muted);
-
-}
-
-.profileBadge{
-
-    margin-top:15px;
-
-    background:#202020;
-
-    padding:8px 18px;
-
-    border-radius:999px;
-
-    color:var(--gold);
-
-    font-weight:700;
-
-}
-
-/* ==========================================
-   PROFILE INFO
-========================================== */
-
-.profileInfo{
+.leaderboard-list{
 
     display:flex;
 
@@ -1364,277 +1438,307 @@ button{
 
     gap:14px;
 
+    margin-top:20px;
+
 }
 
-.infoRow{
+
+
+.leaderboard-item{
 
     display:flex;
+
+    align-items:center;
 
     justify-content:space-between;
 
-    align-items:center;
+    padding:16px;
 
-    background:#171717;
+    background:var(--card);
 
     border:1px solid var(--border);
 
     border-radius:16px;
 
-    padding:16px;
-
 }
 
-.infoRow span:first-child{
-
-    color:var(--muted);
-
-}
-
-.infoRow span:last-child{
-
-    color:#fff;
-
-    font-weight:700;
-
-}
-
-/* ==========================================
-   TASK LIST
-========================================== */
-
-#taskList{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:16px;
-
-}
-
-.taskCard{
-
-    background:#171717;
-
-    border:1px solid var(--border);
-
-    border-radius:18px;
-
-    padding:18px;
-
-}
-
-.taskCard h3{
-
-    margin-bottom:8px;
-
-}
-
-.taskCard p{
-
-    color:var(--muted);
-
-    margin-bottom:15px;
-
-}
-
-.taskCard button{
-
-    width:100%;
-
-    height:48px;
-
-    border:none;
-
-    border-radius:14px;
-
-    background:var(--gold);
-
-    color:#000;
-
-    font-weight:700;
-
-   }
 
 
-/* ==========================================
-   Lucky Spin Modal
-========================================== */
+.leaderboard-rank{
 
-.modal{
-
-    position:fixed;
-
-    inset:0;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    background:rgba(0,0,0,.65);
-
-    backdrop-filter:blur(10px);
-
-    z-index:9000;
-
-}
-
-.modalContent{
-
-    width:92%;
-
-    max-width:360px;
-
-    background:linear-gradient(180deg,#1b1b1b,#101010);
-
-    border:1px solid var(--border);
-
-    border-radius:24px;
-
-    padding:28px;
+    width:42px;
 
     text-align:center;
 
-    animation:popupShow .25s ease;
+    font-size:18px;
+
+    font-weight:700;
+
+    color:var(--primary);
 
 }
 
-.modalContent h2{
 
-    margin-bottom:20px;
 
-    color:var(--gold);
+.leaderboard-user{
+
+    flex:1;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    margin-left:12px;
 
 }
 
-#spinWheel{
 
-    width:220px;
 
-    height:220px;
+.leader-avatar{
 
-    margin:0 auto 20px;
+    width:46px;
+
+    height:46px;
 
     border-radius:50%;
 
-    border:8px solid var(--gold);
-
-    background:
-    radial-gradient(circle,#ffd54a,#ffb300);
-
-    box-shadow:
-    0 0 35px rgba(255,193,7,.35);
+    object-fit:cover;
 
 }
 
-#spinButton,
-#claimDaily{
 
-    width:100%;
 
-    height:54px;
+.leader-name{
 
-    border:none;
+    font-size:15px;
 
-    border-radius:16px;
+    font-weight:700;
 
-    background:linear-gradient(90deg,#ffd54a,#ffb300);
+    color:var(--white);
 
-    color:#000;
+}
 
-    font-size:17px;
+
+
+.leader-level{
+
+    margin-top:3px;
+
+    font-size:12px;
+
+    color:var(--text2);
+
+}
+
+
+
+.leader-balance{
+
+    font-size:15px;
+
+    font-weight:700;
+
+    color:var(--primary);
+
+}
+
+
+/* ==========================================
+   Referral
+========================================== */
+
+.referral-card{
+
+    margin-top:20px;
+
+    padding:24px;
+
+    text-align:center;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:var(--radius);
+
+    box-shadow:var(--shadow);
+
+}
+
+
+
+.referral-card h3{
+
+    font-size:18px;
+
+    color:var(--white);
 
     font-weight:700;
 
 }
 
-/* ==========================================
-   Premium Popup
-========================================== */
 
-#popup{
 
-    position:fixed;
+.referral-card h1{
 
-    inset:0;
+    margin:14px 0;
 
-    display:flex;
+    font-size:38px;
 
-    justify-content:center;
+    color:var(--primary);
 
-    align-items:center;
-
-    background:rgba(0,0,0,.65);
-
-    backdrop-filter:blur(8px);
-
-    z-index:9500;
+    font-weight:800;
 
 }
 
-.popupCard{
 
-    width:90%;
 
-    max-width:340px;
+.referral-card p{
 
-    background:#161616;
+    color:var(--text2);
 
-    border:1px solid var(--border);
-
-    border-radius:22px;
-
-    padding:26px;
-
-    text-align:center;
-
-    animation:popupShow .25s ease;
-
-}
-
-.popupCard h2{
-
-    color:var(--gold);
-
-    margin-bottom:12px;
-
-}
-
-.popupCard p{
-
-    color:#ddd;
-
-    margin-bottom:22px;
+    font-size:14px;
 
     line-height:1.6;
 
 }
 
-#popupButton{
+
+
+/* ==========================================
+   Button Group
+========================================== */
+
+.button-group{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:14px;
+
+    margin-top:22px;
+
+}
+
+
+
+.primary-button,
+
+.secondary-button{
 
     width:100%;
 
     height:52px;
 
-    border:none;
+    border-radius:14px;
 
-    border-radius:15px;
-
-    background:var(--gold);
-
-    color:#000;
+    font-size:15px;
 
     font-weight:700;
 
+    transition:var(--transition);
+
 }
 
+
+
+.primary-button{
+
+    background:var(--primary);
+
+    color:#111;
+
+}
+
+
+
+.secondary-button{
+
+    background:var(--card);
+
+    color:var(--white);
+
+    border:1px solid var(--border);
+
+}
+
+
+
+.primary-button:active,
+
+.secondary-button:active{
+
+    transform:scale(.97);
+
+}
+
+
+
 /* ==========================================
-   Bottom Sheet
+   Settings
 ========================================== */
 
-.bottomSheet{
+.settings-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:14px;
+
+    margin-top:20px;
+
+}
+
+
+
+.settings-item{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    width:100%;
+
+    min-height:56px;
+
+    padding:0 18px;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:16px;
+
+    color:var(--white);
+
+    font-size:15px;
+
+    font-weight:600;
+
+    transition:var(--transition);
+
+}
+
+
+
+.settings-item:active{
+
+    transform:scale(.98);
+
+}
+
+
+/* ==========================================
+   Bottom Navigation
+========================================== */
+
+.bottom-nav{
 
     position:fixed;
 
@@ -1644,99 +1748,31 @@ button{
 
     bottom:0;
 
-    background:#121212;
-
-    border-radius:28px 28px 0 0;
-
-    padding:24px;
-
-    border-top:1px solid var(--border);
-
-    animation:sheetUp .25s ease;
-
-    z-index:9200;
-
-}
-
-.sheetHandle{
-
-    width:70px;
-
-    height:6px;
-
-    border-radius:10px;
-
-    background:#555;
-
-    margin:0 auto 20px;
-
-}
-
-.bottomSheet button{
-
-    width:100%;
-
-    height:52px;
-
-    margin-top:18px;
-
-    border:none;
-
-    border-radius:15px;
-
-    background:var(--gold);
-
-    color:#000;
-
-    font-weight:700;
-
-}
-
-/* ==========================================
-   Bottom Navigation
-========================================== */
-
-#bottomNav{
-
-    position:fixed;
-
-    left:50%;
-
-    transform:translateX(-50%);
-
-    bottom:14px;
-
-    width:95%;
-
-    max-width:500px;
-
-    background:rgba(20,20,20,.95);
-
-    backdrop-filter:blur(18px);
-
-    border:1px solid #2a2a2a;
-
-    border-radius:24px;
+    height:var(--nav-height);
 
     display:flex;
 
+    align-items:center;
+
     justify-content:space-around;
 
-    padding:12px 6px;
+    padding:0 10px;
 
-    z-index:500;
+    background:rgba(17,17,24,.96);
+
+    backdrop-filter:blur(18px);
+
+    border-top:1px solid var(--border);
+
+    z-index:1000;
 
 }
 
-.nav{
+
+
+.nav-item{
 
     flex:1;
-
-    border:none;
-
-    background:none;
-
-    color:#888;
 
     display:flex;
 
@@ -1744,125 +1780,99 @@ button{
 
     align-items:center;
 
-    gap:6px;
+    justify-content:center;
 
-    transition:.25s;
+    gap:5px;
+
+    height:100%;
+
+    color:var(--text2);
+
+    transition:var(--transition);
 
 }
 
-.nav span{
 
-    font-size:24px;
+
+.nav-item.active{
+
+    color:var(--primary);
 
 }
 
-.nav small{
 
-    font-size:12px;
+
+.nav-item:active{
+
+    transform:scale(.95);
+
+}
+
+
+
+.nav-icon{
+
+    font-size:22px;
+
+    line-height:1;
+
+}
+
+
+
+.nav-text{
+
+    font-size:11px;
 
     font-weight:600;
 
 }
 
-.nav.active{
 
-    color:var(--gold);
-
-}
-
-.nav.active span{
-
-    transform:translateY(-2px) scale(1.08);
-
-}
-
-.nav:active{
-
-    transform:scale(.92);
-
-}
 
 /* ==========================================
-   Toast
+   Responsive
 ========================================== */
 
-.toast{
+@media (max-width:480px){
 
-    background:#1a1a1a;
+    .coin{
 
-    border:1px solid var(--border);
+        width:180px;
 
-    color:#fff;
-
-    padding:14px 20px;
-
-    border-radius:16px;
-
-    margin-bottom:12px;
-
-    animation:toastShow .35s ease;
-
-}
-
-/* ==========================================
-   Animations
-========================================== */
-
-@keyframes popupShow{
-
-    from{
-
-        opacity:0;
-
-        transform:scale(.85);
+        height:180px;
 
     }
 
-    to{
+    .balance-card h1{
 
-        opacity:1;
+        font-size:30px;
 
-        transform:scale(1);
+    }
+
+    .header{
+
+        padding:0 12px;
 
     }
 
 }
 
-@keyframes sheetUp{
 
-    from{
 
-        transform:translateY(100%);
+@media (min-width:768px){
 
-    }
+    .app{
 
-    to{
+        max-width:480px;
 
-        transform:translateY(0);
+        margin:0 auto;
 
     }
 
 }
 
-@keyframes toastShow{
 
-    from{
-
-        opacity:0;
-
-        transform:translateY(-20px);
-
-    }
-
-    to{
-
-        opacity:1;
-
-        transform:translateY(0);
-
-    }
-
-}
 
 /* ==========================================
    Scrollbar
@@ -1877,63 +1887,348 @@ button{
 }
 
 /* ==========================================
-   Responsive
+   Empty State
 ========================================== */
 
-@media(max-width:500px){
+.empty-state{
 
-    #app{
+    display:flex;
 
-        padding:16px;
+    flex-direction:column;
 
-        padding-bottom:110px;
+    align-items:center;
+
+    justify-content:center;
+
+    text-align:center;
+
+    padding:40px 20px;
+
+}
+
+
+
+.empty-state img{
+
+    width:110px;
+
+    height:110px;
+
+    object-fit:contain;
+
+    opacity:.85;
+
+    margin-bottom:18px;
+
+}
+
+
+
+.empty-state h3{
+
+    font-size:20px;
+
+    font-weight:700;
+
+    color:var(--white);
+
+    margin-bottom:8px;
+
+}
+
+
+
+.empty-state p{
+
+    max-width:280px;
+
+    color:var(--text2);
+
+    font-size:14px;
+
+    line-height:1.6;
+
+}
+
+
+
+/* ==========================================
+   Icon Button
+========================================== */
+
+.icon-button{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:12px;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    color:var(--white);
+
+    transition:var(--transition);
+
+}
+
+
+
+.icon-button:active{
+
+    transform:scale(.95);
+
+}
+
+
+
+/* ==========================================
+   Badge
+========================================== */
+
+.badge{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-width:24px;
+
+    height:24px;
+
+    padding:0 10px;
+
+    border-radius:999px;
+
+    background:var(--primary);
+
+    color:#111;
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+
+
+
+/* ==========================================
+   Divider
+========================================== */
+
+.divider{
+
+    width:100%;
+
+    height:1px;
+
+    margin:18px 0;
+
+    background:var(--border);
+
+}
+
+
+
+/* ==========================================
+   Fade Animation
+========================================== */
+
+.fade-in{
+
+    animation:fadeIn .3s ease;
+
+}
+
+
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
 
     }
 
-    #coin{
+    to{
 
-        width:185px;
-
-        height:185px;
-
-    }
-
-    .coinInner span{
-
-        font-size:76px;
-
-    }
-
-    #balance{
-
-        font-size:36px;
-
-    }
-
-    .profileAvatar{
-
-        width:82px;
-
-        height:82px;
-
-    }
-
-    #bottomNav{
-
-        border-radius:20px;
+        opacity:1;
 
     }
 
 }
 
-@media(min-width:501px){
 
-    body{
+/* ==========================================
+   Utility Classes
+========================================== */
 
-        display:flex;
+.mt-10{
 
-        justify-content:center;
+    margin-top:10px;
 
-    }
+}
 
-   }
+.mt-20{
+
+    margin-top:20px;
+
+}
+
+.mt-30{
+
+    margin-top:30px;
+
+}
+
+.mb-10{
+
+    margin-bottom:10px;
+
+}
+
+.mb-20{
+
+    margin-bottom:20px;
+
+}
+
+.text-center{
+
+    text-align:center;
+
+}
+
+.text-left{
+
+    text-align:left;
+
+}
+
+.text-right{
+
+    text-align:right;
+
+}
+
+
+
+/* ==========================================
+   Flex Utilities
+========================================== */
+
+.flex{
+
+    display:flex;
+
+}
+
+.flex-center{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
+.flex-between{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+}
+
+.flex-column{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+
+
+/* ==========================================
+   Width Utilities
+========================================== */
+
+.w-100{
+
+    width:100%;
+
+}
+
+.h-100{
+
+    height:100%;
+
+}
+
+
+
+/* ==========================================
+   Selection
+========================================== */
+
+::selection{
+
+    background:var(--primary);
+
+    color:#111;
+
+}
+
+
+
+/* ==========================================
+   Focus
+========================================== */
+
+button:focus-visible,
+
+input:focus-visible,
+
+textarea:focus-visible{
+
+    outline:2px solid var(--primary);
+
+    outline-offset:2px;
+
+}
+
+
+
+/* ==========================================
+   Disabled
+========================================== */
+
+button:disabled{
+
+    opacity:.6;
+
+    cursor:not-allowed;
+
+    pointer-events:none;
+
+}
+
+
+
+/* ==========================================
+   End of File
+========================================== */
