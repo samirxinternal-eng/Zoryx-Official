@@ -13,8 +13,6 @@ services:
 
     plan: free
 
-    rootDir: server
-
     buildCommand: npm install
 
     startCommand: npm start
@@ -23,14 +21,14 @@ services:
 
     envVars:
 
-      - key: NODE_VERSION
-        value: 20
-
       - key: NODE_ENV
         value: production
 
+      - key: NODE_VERSION
+        value: "20"
+
       - key: PORT
-        value: 10000
+        value: "10000"
 
       - key: BOT_TOKEN
         sync: false
@@ -60,4 +58,7 @@ services:
         value: "0"
 
       - key: TIMEZONE
-        value: GMT
+        value: "GMT"
+
+      - key: WEB_CONCURRENCY
+        value: "1"
