@@ -1,67 +1,64 @@
-// ========================================
-// Zoryx Telegram WebApp
+// ==========================================
+// Zoryx Telegram Mini App
 // server/database.js
-// ========================================
+// ==========================================
 
-import { MongoClient } from "mongodb";
-import dotenv from "dotenv";
+"use strict";
 
-dotenv.config();
+import mongoose from "mongoose";
 
-let client = null;
-let database = null;
+let connected = false;
 
-// ========================================
-// Connect MongoDB
-// ========================================
+// ==========================================
+// Connect Database
+// ==========================================
 
-export async function connectDatabase(){
+export async function connectDatabase() {
 
-    try{
+    if (connected) {
 
-        if(database){
+        return mongoose.connection;
 
-            return database;
+    }
 
-        }
+    try {
 
         const uri = process.env.MONGODB_URI;
 
-        if(!uri){
+        if (!uri) {
 
             throw new Error(
-                "MONGODB_URI not found in .env"
+                "MONGODB_URI is missing in .env"
             );
 
         }
 
-        client = new MongoClient(uri);
+        await mongoose.connect(uri, {
 
-        await client.connect();
+            autoIndex: true,
 
-        database = client.db(
+            maxPoolSize: 10,
 
-            process.env.DB_NAME ||
+            serverSelectionTimeoutMS: 5000,
 
-            "zoryx"
+            socketTimeoutMS: 45000
 
-        );
+        });
 
-        console.log(
+        connected = true;
 
-            "✅ MongoDB Connected"
+        console.log("✅ MongoDB Connected");
 
-        );
-
-        return database;
+        return mongoose.connection;
 
     }
-    catch(error){
+
+    catch (error) {
+
+        connected = false;
 
         console.error(
-
             "❌ MongoDB Connection Failed"
-
         );
 
         console.error(error);
@@ -72,178 +69,157 @@ export async function connectDatabase(){
 
 }
 
+// ==========================================
+// User Schema
+// ==========================================
 
+const UserSchema = new mongoose.Schema({
 
-// ========================================
-// Get Database
-// ========================================
+    telegramId: {
 
-export function getDatabase(){
+        type: Number,
 
-    if(!database){
+        required: true,
 
-        throw new Error(
+        unique: true,
 
-            "Database Not Connected"
+        index: true
 
-        );
+    },
+
+    firstName: {
+
+        type: String,
+
+        default: ""
+
+    },
+
+    lastName: {
+
+        type: String,
+
+        default: ""
+
+    },
+
+    username: {
+
+        type: String,
+
+        default: ""
+
+    },
+
+    photo: {
+
+        type: String,
+
+        default: ""
+
+    },
+
+    balance: {
+
+        type: Number,
+
+        default: 0
+
+    },
+
+    energy: {
+
+        type: Number,
+
+        default: 1000
+
+    },
+
+    maxEnergy: {
+
+        type: Number,
+
+        default: 1000
+
+    },
+
+    totalTap: {
+
+        type: Number,
+
+        default: 0
+
+    },
+
+    level: {
+
+        type: Number,
+
+        default: 1
+
+    },
+
+    xp: {
+
+        type: Number,
+
+        default: 0
+
+    },
+
+    referrals: {
+
+        type: Number,
+
+        default: 0
+
+    },
+
+    referredBy: {
+
+        type: Number,
+
+        default: 0
+
+    },
+
+    lastDailyReward: {
+
+        type: Date,
+
+        default: null
 
     }
 
-    return database;
+}, {
 
-}
+    timestamps: true
 
+});
 
+// ==========================================
+// Models
+// ==========================================
 
-// ========================================
-// Close Database
-// ========================================
+export const User =
 
-export async function closeDatabase(){
+    mongoose.models.User ||
 
-    try{
+    mongoose.model(
 
-        if(client){
+        "User",
 
-            await client.close();
-
-            console.log(
-
-                "🔌 MongoDB Disconnected"
-
-            );
-
-        }
-
-    }
-    catch(error){
-
-        console.log(error);
-
-    }
-
-}
-
-
-
-// ========================================
-// Create Collections
-// ========================================
-
-export async function initializeDatabase(){
-
-    const db = getDatabase();
-
-    const collections = await db.listCollections().toArray();
-
-    const names = collections.map(
-
-        c=>c.name
+        UserSchema
 
     );
 
+// ==========================================
+// Initialize
+// ==========================================
 
+export async function initializeDatabase() {
 
-    if(
-
-        !names.includes("users")
-
-    ){
-
-        await db.createCollection(
-
-            "users"
-
-        );
-
-    }
-
-
-
-    if(
-
-        !names.includes("tasks")
-
-    ){
-
-        await db.createCollection(
-
-            "tasks"
-
-        );
-
-    }
-
-
-
-    if(
-
-        !names.includes("daily_rewards")
-
-    ){
-
-        await db.createCollection(
-
-            "daily_rewards"
-
-        );
-
-    }
-
-
-
-    if(
-
-        !names.includes("leaderboard")
-
-    ){
-
-        await db.createCollection(
-
-            "leaderboard"
-
-        );
-
-    }
-
-
-
-    await db.collection("users").createIndex(
-
-        {
-
-            telegramId:1
-
-        },
-
-        {
-
-            unique:true
-
-        }
-
-    );
-
-
-
-    await db.collection("users").createIndex(
-
-        {
-
-            uid:1
-
-        },
-
-        {
-
-            unique:true
-
-        }
-
-    );
-
-
+    await connectDatabase();
 
     console.log(
 
@@ -251,4 +227,18 @@ export async function initializeDatabase(){
 
     );
 
-    }
+}
+
+// ==========================================
+// Export Default
+// ==========================================
+
+export default {
+
+    connectDatabase,
+
+    initializeDatabase,
+
+    User
+
+};
