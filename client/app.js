@@ -1,7 +1,6 @@
 import { initTelegramWebApp, getTelegramUserData, renderUserProfile } from './telegram.js';
-import { loginUser, syncUserData, sendTapData, getLeaderboard, getDailyStatus, claimDailyReward, getReferralInfo, joinReferral, getTasks, claimTask, getSpinInfo, processSpin } from './api.js';
+import { loginUser, syncUserData, sendTapData, getLeaderboard, joinReferral } from './api.js';
 
-// গেম স্টেট ভেরিয়েবল
 let state = {
     telegramId: null,
     balance: 0,
@@ -14,17 +13,13 @@ let state = {
     isSaving: false
 };
 
-// গেম ইনিশিয়ালাইজেশন
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // ১. Telegram WebApp ইনিশিয়েট করা
         const tg = initTelegramWebApp();
         const tgUser = getTelegramUserData();
 
-        // ২. UI-তে ইউজারের প্রোফাইল রেন্ডার করা
         renderUserProfile(tgUser);
 
-        // ৩. ব্যাকএন্ডে লগইন বা সাইনআপ করা
         const startParam = tg?.initDataUnsafe?.start_param || null;
         const loginResponse = await loginUser({
             telegramId: tgUser.id.toString(),
@@ -39,7 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateStateFromData(loginResponse.data);
         }
 
-        // ৪. রেফারেল জয়েনিং হ্যান্ডেল করা (যদি স্টার্ট প্যারামিটার থাকে)
         if (startParam && startParam !== tgUser.id.toString()) {
             try {
                 await joinReferral(tgUser.id.toString(), startParam);
@@ -48,7 +42,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // ৫. ইভেন্ট লিসেনার ও ইন্টারভ্যাল সেটআপ করা
         setupEventListeners();
         startAutoRefreshAndSync();
 
@@ -57,7 +50,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// ডেটা দিয়ে গেম স্টেট আপডেট এবং UI রিফ্রেশ করা
 function updateStateFromData(data) {
     state.telegramId = data.telegramId;
     state.balance = data.balance ?? state.balance;
@@ -70,15 +62,19 @@ function updateStateFromData(data) {
     updateUI();
 }
 
-// UI আপডেট করার ফাংশন
 function updateUI() {
-    document.getElementById('coin-balance').textContent = state.balance.toLocaleString();
-    document.getElementById('current-energy').textContent = Math.floor(state.energy);
-    document.getElementById('max-energy').textContent = state.maxEnergy;
-    document.getElementById('header-xp').textContent = `${state.xp} XP`;
-    document.getElementById('user-level').textContent = `Level ${state.level}`;
+    const balanceEl = document.getElementById('coin-balance');
+    const energyEl = document.getElementById('current-energy');
+    const maxEnergyEl = document.getElementById('max-energy');
+    const xpEl = document.getElementById('header-xp');
+    const levelEl = document.getElementById('user-level');
 
-    // এনার্জি বার প্রোগ্রেস আপডেট
+    if (balanceEl) balanceEl.textContent = state.balance.toLocaleString();
+    if (energyEl) energyEl.textContent = Math.floor(state.energy);
+    if (maxEnergyEl) maxEnergyEl.textContent = state.maxEnergy;
+    if (xpEl) xpEl.textContent = `${state.xp} XP`;
+    if (levelEl) levelEl.textContent = `⭐ Level ${state.level}`;
+
     const energyBar = document.getElementById('energy-bar');
     if (energyBar) {
         const percentage = Math.max(0, Math.min(100, (state.energy / state.maxEnergy) * 100));
@@ -86,12 +82,10 @@ function updateUI() {
     }
 }
 
-// ইভেন্ট লিসেনার সেটআপ
 function setupEventListeners() {
     const tapCoin = document.getElementById('tap-coin');
     
     if (tapCoin) {
-        // ট্যাপ মেকানিক (Multi-touch বা দ্রুত ক্লিকের জন্য অপ্টিমাইজড)
         tapCoin.addEventListener('click', (e) => {
             if (state.energy <= 0) return;
 
@@ -107,7 +101,7 @@ function setupEventListeners() {
         });
     }
 
-    // টপ নাবিগেশন ট্যাব সুইচিং
+    // Tab Navigation Switching Logic
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -115,12 +109,52 @@ function setupEventListeners() {
             item.classList.add('active');
             
             const tabName = item.getAttribute('data-tab');
-            handleTabSwitch(tabName);
+            switchTab(tabName);
         });
     });
 }
 
-// ট্যাপ করার সময় ছোট ফ্লোটিং অ্যানিমেশন এফেক্ট
+function switchTab(tabName) {
+    const views = document.querySelectorAll('.view-section');
+    views.forEach(view => {
+        view.style.display = 'none';
+    });
+
+    const activeView = document.getElementById(`view-${tabName}`);
+    if (activeView) {
+        activeView.style.display = 'flex';
+    }
+
+    if (tabName === 'leaderboard') {
+        fetchLeaderboardData();
+    }
+}
+
+async function fetchLeaderboardData() {
+    const listContainer = document.getElementById('leaderboard-list');
+    if (!listContainer) return;
+
+    try {
+        listContainer.innerHTML = 'Loading elite rankings...';
+        const res = await getLeaderboard();
+        if (res && res.success && res.data) {
+            let html = '<ul style="list-style: none; padding: 0;">';
+            res.data.forEach((user, index) => {
+                html += `<li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 700;">#${index + 1} ${user.username || user.firstName || 'VIP Player'}</span>
+                    <span style="color: #fbbf24; font-weight: 800;">🪙 ${user.balance.toLocaleString()}</span>
+                </li>`;
+            });
+            html += '</ul>';
+            listContainer.innerHTML = html;
+        } else {
+            listContainer.innerHTML = 'No rankings available.';
+        }
+    } catch (err) {
+        listContainer.innerHTML = 'Failed to load leaderboard.';
+    }
+}
+
 function triggerTapAnimation(event, container) {
     const rect = container.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -131,16 +165,16 @@ function triggerTapAnimation(event, container) {
     floatText.style.position = 'absolute';
     floatText.style.left = `${x}px`;
     floatText.style.top = `${y}px`;
-    floatText.style.color = '#38bdf8';
-    floatText.style.fontWeight = '800';
-    floatText.style.fontSize = '20px';
+    floatText.style.color = '#fbbf24';
+    floatText.style.fontWeight = '900';
+    floatText.style.fontSize = '22px';
     floatText.style.pointerEvents = 'none';
     floatText.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
     
     container.appendChild(floatText);
 
     setTimeout(() => {
-        floatText.style.transform = 'translateY(-50px)';
+        floatText.style.transform = 'translateY(-60px)';
         floatText.style.opacity = '0';
     }, 20);
 
@@ -149,9 +183,7 @@ function triggerTapAnimation(event, container) {
     }, 600);
 }
 
-// অটো সেভ (Auto Save) এবং অটো রিফ্রেশ (Auto Refresh) সিস্টেম
 function startAutoRefreshAndSync() {
-    // প্রতি ৩ সেকেন্ড পর পর পেন্ডিং ট্যাপগুলো ব্যাকএন্ডে সেভ করা (Auto Save)
     setInterval(async () => {
         if (state.pendingTaps > 0 && state.telegramId && !state.isSaving) {
             state.isSaving = true;
@@ -165,7 +197,6 @@ function startAutoRefreshAndSync() {
                 }
             } catch (error) {
                 console.error("Auto-save tap error:", error);
-                // ফেইল করলে ট্যাপগুলো আবার ব্যাকআপে ফিরিয়ে দেওয়া
                 state.pendingTaps += tapsToSend;
             } finally {
                 state.isSaving = false;
@@ -173,7 +204,6 @@ function startAutoRefreshAndSync() {
         }
     }, 3000);
 
-    // প্রতি ১০ সেকেন্ড পর পর সার্ভার থেকে লেটেস্ট এনার্জি ও ব্যালেন্স সিঙ্ক করা (Auto Refresh)
     setInterval(async () => {
         if (state.telegramId && state.pendingTaps === 0) {
             try {
@@ -187,9 +217,3 @@ function startAutoRefreshAndSync() {
         }
     }, 10000);
 }
-
-// ট্যাব সুইচ হ্যান্ডেলার (ভবিষ্যত এক্সটেনশনের জন্য প্রস্তুত)
-function handleTabSwitch(tabName) {
-    console.log(`Switched to tab: ${tabName}`);
-    // এখানে অন্যান্য পেজ বা সেকশন রেন্ডার করার লজিক যুক্ত করা যাবে।
-                    }
