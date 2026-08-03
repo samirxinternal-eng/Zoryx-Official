@@ -18,6 +18,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Lightweight Background Particle Effect Container -->
+    <div id="particle-container" class="particle-container"></div>
+
     <div id="app" class="app-container">
         <!-- Top VIP Profile, Stats & Rank Button Bar -->
         <header class="vip-header">
@@ -40,14 +43,14 @@
 
         <!-- Main Dynamic Views -->
         <main class="main-content">
-            <!-- Home View (Tap To Earn) -->
+            <!-- 1. Home View (Tap To Earn & Boost Button) -->
             <div id="view-home" class="view-section active">
                 <div class="balance-section">
                     <h1>🪙 <span id="coin-balance">0</span></h1>
                     <p class="vip-subtitle">ZORYX COINS</p>
                 </div>
 
-                <!-- Tap Coin Container -->
+                <!-- Big Golden Tap Coin Container -->
                 <div class="tap-container">
                     <div id="tap-coin" class="tap-coin">
                         <div class="coin-inner">Z</div>
@@ -64,32 +67,75 @@
                         <div id="energy-bar" class="energy-bar"></div>
                     </div>
                 </div>
+
+                <!-- Boost Quick Button on Home -->
+                <button class="boost-quick-btn" data-tab="boost">🚀 Open Boost Menu</button>
             </div>
 
-            <!-- Tasks View -->
-            <div id="view-earn" class="view-section" style="display: none;">
+            <!-- 2. Tasks View (Ad Links & Telegram Channel Join) -->
+            <div id="view-earn" class="view-section">
                 <h2 class="vip-page-title">🎯 VIP TASKS</h2>
-                <p class="placeholder-text">Complete exclusive tasks to earn massive coin rewards!</p>
+                <div class="tasks-container">
+                    <div class="task-card">
+                        <div class="task-info">
+                            <h4>📢 Join Telegram Channel</h4>
+                            <p>+5,000 Zoryx Coins</p>
+                        </div>
+                        <button class="task-action-btn" onclick="window.open('https://t.me/', '_blank')">Start</button>
+                    </div>
+                    <div class="task-card">
+                        <div class="task-info">
+                            <h4>🌐 Visit Sponsor Ad</h4>
+                            <p>+2,000 Zoryx Coins</p>
+                        </div>
+                        <button class="task-action-btn" onclick="window.open('https://google.com', '_blank')">Visit</button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Level View (Replaced Spin) -->
-            <div id="view-level" class="view-section" style="display: none;">
+            <!-- 3. Level View (Level Rewards & Status) -->
+            <div id="view-level" class="view-section">
                 <h2 class="vip-page-title">⭐ VIP LEVEL STATUS</h2>
                 <div class="level-info-card">
                     <p>Current Level: <span id="info-level" style="color: #fbbf24; font-weight: 800;">1</span></p>
                     <p>Total XP: <span id="info-xp" style="color: #6366f1; font-weight: 800;">0</span></p>
-                    <p class="placeholder-text" style="margin-top: 15px;">Earn 1 XP per tap to level up! Every 1000 XP unlocks a new VIP Level.</p>
+                    <p class="placeholder-text" style="margin-top: 15px;">Earn 1 XP per tap to level up! Every 1000 XP unlocks a new VIP Level and special rewards.</p>
                 </div>
             </div>
 
-            <!-- Frens View -->
-            <div id="view-frens" class="view-section" style="display: none;">
+            <!-- 4. Frens View (Referral Stats & Link) -->
+            <div id="view-frens" class="view-section">
                 <h2 class="vip-page-title">👥 REFERRAL FRENS</h2>
-                <p class="placeholder-text">Invite your friends and earn high-tier commissions & lucky spin boxes!</p>
+                <div class="frens-card">
+                    <p>Total Invited: <span id="frens-count" style="color: #fbbf24; font-weight: 800;">0</span> Frens</p>
+                    <p>Total Earned: <span id="frens-earned" style="color: #34d399; font-weight: 800;">0</span> Coins</p>
+                    <button id="invite-btn" class="task-action-btn" style="margin-top: 15px; width: 100%;">🔗 Copy Referral Link</button>
+                </div>
             </div>
 
-            <!-- Rank View -->
-            <div id="view-leaderboard" class="view-section" style="display: none;">
+            <!-- 5. Boost View (Multitap & Energy Boosters) -->
+            <div id="view-boost" class="view-section">
+                <h2 class="vip-page-title">🚀 BOOSTERS</h2>
+                <div class="boost-container">
+                    <div class="task-card">
+                        <div class="task-info">
+                            <h4>⚡ Multi-Tap Booster</h4>
+                            <p>Increase coins per tap</p>
+                        </div>
+                        <button class="task-action-btn" onclick="alert('Booster activated!')">Upgrade</button>
+                    </div>
+                    <div class="task-card">
+                        <div class="task-info">
+                            <h4>🔋 Energy Limit Refill</h4>
+                            <p>Max out your energy bar</p>
+                        </div>
+                        <button class="task-action-btn" onclick="alert('Energy refilled!')">Refill</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Rank View (Global Leaderboard) -->
+            <div id="view-leaderboard" class="view-section">
                 <h2 class="vip-page-title">🏆 GLOBAL RANKING</h2>
                 <div id="leaderboard-list" class="leaderboard-list">Loading elite rankings...</div>
             </div>
@@ -121,4 +167,4 @@
     <script type="module" src="api.js"></script>
     <script type="module" src="app.js"></script>
 </body>
-                                                       </html>
+    </html>
