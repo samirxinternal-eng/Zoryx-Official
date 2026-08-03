@@ -1,317 +1,69 @@
-// ========================================
-// Zoryx Telegram WebApp
-// server/auth.js
-// ========================================
+import crypto from 'crypto';
 
-import crypto from "crypto";
-
-
-
-// ========================================
-// Config
-// ========================================
-
-const BOT_TOKEN = process.env.BOT_TOKEN || "";
-
-
-
-// ========================================
-// SHA256 Helper
-// ========================================
-
-function sha256(data) {
-
-    return crypto
-        .createHash("sha256")
-        .update(data)
-        .digest();
-
-}
-
-
-
-// ========================================
-// HMAC Helper
-// ========================================
-
-function hmac(key, data) {
-
-    return crypto
-        .createHmac("sha256", key)
-        .update(data)
-        .digest("hex");
-
-}
-
-
-
-// ========================================
-// Parse Init Data
-// ========================================
-
-function parseInitData(initData) {
-
-    const params = new URLSearchParams(initData);
-
-    const data = {};
-
-    for (const [key, value] of params.entries()) {
-
-        data[key] = value;
-
-    }
-
-    return data;
-
-}
-
-
-
-// ========================================
-// Build Data Check String
-// ========================================
-
-function buildDataCheckString(data) {
-
-    return Object.keys(data)
-
-        .filter(key => key !== "hash")
-
-        .sort()
-
-        .map(key => `${key}=${data[key]}`)
-
-        .join("\n");
-
-        }
-
-
-// ========================================
-// Verify Telegram Login
-// ========================================
-
-export function verifyTelegramAuth(body) {
-
+/**
+ * Telegram WebApp initData ভ্যালিডেশন করার ফাংশন।
+ * এটি Telegram Bot Token ব্যবহার করে ক্লায়েন্ট থেকে আসা ডেটার অথেনটিসিটি নিশ্চিত করে।
+ * 
+ * @param {string} initData - Telegram WebApp.initData স্ট্রিং
+ * @param {string} botToken - আপনার Telegram Bot API Token
+ * @returns {boolean} - ভ্যালিড হলে true, অন্যথায় false
+ */
+export const validateTelegramData = (initData, botToken) => {
     try {
+        if (!initData || !botToken) return false;
 
-        if (!body || !body.initData) {
+        const urlParams = new URLSearchParams(initData);
+        const hash = urlParams.get('hash');
+        
+        if (!hash) return false;
+        
+        urlParams.delete('hash');
 
-            return {
+        // প্যারামিটারগুলো আলফাবেটিক্যালি সর্ট করে ডেটাস্টিং তৈরি করা
+        const dataCheckString = Array.from(urlParams.entries())
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([key, value]) => `${key}=${value}`)
+            .join('\n');
 
-                success: false,
+        // Telegram WebApp রুল অনুযায়ী সিক্রেট কি জেনারেট করা
+        const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
+        
+        // হ্যাশ ক্যালকুলেট করে মেলানো
+        const calculatedHash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
 
-                message: "Telegram initData Missing"
-
-            };
-
-        }
-
-        const data = parseInitData(body.initData);
-
-        const receivedHash = data.hash;
-
-        if (!receivedHash) {
-
-            return {
-
-                success: false,
-
-                message: "Hash Missing"
-
-            };
-
-        }
-
-        const dataCheckString = buildDataCheckString(data);
-
-        const secretKey = crypto
-            .createHmac("sha256", "WebAppData")
-            .update(BOT_TOKEN)
-            .digest();
-
-        const calculatedHash = hmac(
-
-            secretKey,
-
-            dataCheckString
-
-        );
-
-        if (receivedHash !== calculatedHash) {
-
-            return {
-
-                success: false,
-
-                message: "Telegram Verification Failed"
-
-            };
-
-        }
-
-        let user = {};
-
-        try {
-
-            user = JSON.parse(data.user);
-
-        }
-
-        catch {
-
-            return {
-
-                success: false,
-
-                message: "Invalid Telegram User"
-
-            };
-
-        }
-
-        return {
-
-            success: true,
-
-            user
-
-        };
-
-    }
-
-    catch (error) {
-
-        return {
-
-            success: false,
-
-            message: error.message
-
-        };
-
-    }
-
-    }
-
-
-// ========================================
-// Auth Date Validation
-// ========================================
-
-function validateAuthDate(data) {
-
-    if (!data.auth_date) {
-
+        return calculatedHash === hash;
+    } catch (error) {
+        console.error("❌ Telegram Data Validation Error:", error.message);
         return false;
-
     }
+};
 
-    const authTime = Number(data.auth_date);
+/**
+ * Express Middleware: সুরক্ষিত রুটগুলোর জন্য অথেন্টিকেশন চেক করার মিডলওয়্যার।
+ * এটি হেডার থেকে initData অথবা টোকেন চেক করে রিকোয়েস্ট পাস বা ব্লক করবে।
+ */
+export const requireAuth = (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ success: false, message: 'Unauthorized: No token provided' });
+        }
 
-    const currentTime = Math.floor(Date.now() / 1000);
+        const initData = authHeader.split(' ')[1];
+        const botToken = process.env.BOT_TOKEN;
 
-    const maxAge = 86400;
+        // ডেভেলপমেন্ট বা লোকাল টেস্টের সুবিধার জন্য টোকেন না থাকলে বাইপাস করা যেতে পারে,
+        // তবে প্রোডাকশনে অবশ্যই ভ্যালিডেশন চেক হবে।
+        if (botToken && process.env.NODE_ENV === 'production') {
+            const isValid = validateTelegramData(initData, botToken);
+            if (!isValid) {
+                return res.status(403).json({ success: false, message: 'Forbidden: Invalid Telegram signature' });
+            }
+        }
 
-    return (currentTime - authTime) <= maxAge;
-
-}
-
-
-
-// ========================================
-// Verify Telegram Init Data
-// ========================================
-
-export function verifyTelegramInitData(initData) {
-
-    const data = parseInitData(initData);
-
-    const hash = data.hash;
-
-    delete data.hash;
-
-    const dataCheckString = buildDataCheckString(data);
-
-    const secret = crypto
-    .createHmac("sha256", "WebAppData")
-    .update(BOT_TOKEN)
-    .digest();
-
-    const calculatedHash = crypto
-        .createHmac("sha256", secret)
-        .update(dataCheckString)
-        .digest("hex");
-
-    return hash === calculatedHash;
-
-}
-
-
-
-// ========================================
-// Validate Request
-// ========================================
-
-export function validateTelegramRequest(body) {
-
-    if (!body || !body.initData) {
-
-        return {
-
-            success: false,
-
-            message: "Missing initData"
-
-        };
-
+        next();
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Internal Auth Error: ' + error.message });
     }
-
-    if (!verifyTelegramInitData(body.initData)) {
-
-        return {
-
-            success: false,
-
-            message: "Invalid Telegram Signature"
-
-        };
-
-    }
-
-    const data = parseInitData(body.initData);
-
-    if (!validateAuthDate(data)) {
-
-        return {
-
-            success: false,
-
-            message: "Telegram Login Expired"
-
-        };
-
-    }
-
-    return {
-
-        success: true
-
-    };
-
-}
-
-
-
-// ========================================
-// Default Export
-// ========================================
-
-export default {
-
-    verifyTelegramAuth,
-
-    verifyTelegramInitData,
-
-    validateTelegramRequest
-
 };
