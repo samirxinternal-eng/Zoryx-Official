@@ -1,57 +1,59 @@
-import TelegramBot from 'node-telegram-bot-api';
+const { Telegraf } = require('telegraf');
 
-const token = process.env.BOT_TOKEN;
+// Replace with your actual bot token or load from environment variables
+const BOT_TOKEN = process.env.BOT_TOKEN || '8759518055:AAFt-nlhikzxY5tWBAC6DFxREY5AAIiedb8';
 
-// যদি বট টোকেন না থাকে তবে ক্র্যাশ না করে ওয়ার্নিং দিবে
-if (!token) {
-    console.warn("⚠️ BOT_TOKEN is missing in environment variables. Telegram bot will not start.");
-}
+const bot = new Telegraf(BOT_TOKEN);
 
-const bot = token ? new TelegramBot(token, { polling: true }) : null;
+// Start command with Web App Launch and Referral parameter handling
+bot.start((ctx) => {
+    const startPayload = ctx.payload; // Captures referral ID if user started via t.me/bot?start=xxx
+    const webAppUrl = process.env.WEBAPP_URL || 'https://zoryxminibotweb.onrender.com';
 
-if (bot) {
-    console.log("🤖 Telegram Bot is running successfully...");
-
-    // /start কমান্ড হ্যান্ডেলার
-    bot.onText(/\/start(?:\s+(.+))?/, (msg, match) => {
-        const chatId = msg.chat.id;
-        const firstName = msg.from.first_name || 'VIP Player';
-        const startParam = match ? match[1] : ''; // রেফারেল প্যারামিটার ক্যাপচার করার জন্য
-
-        // আপনার Render-এর মিনি অ্যাপ লিংক (ওয়েব অ্যাপ ইউআরএল)
-        // যদি রেফারেল কোড থাকে তবে তা স্টার্ট অ্যাপ ইউআরএলের সাথে পাস হবে
-        let webAppUrl = 'https://zoryxminibotweb.onrender.com';
-        if (startParam) {
-            webAppUrl = `https://zoryxminibotweb.onrender.com?startapp=${startParam}`;
-        }
-
-        const welcomeMessage = `✨ **Welcome to Zoryx, ${firstName}!** ✨\n\n` +
-            `The ultimate VIP Tap-To-Earn game on Telegram.\n` +
-            `Tap the coin, invite friends, complete elite tasks, and earn massive rewards!\n\n` +
-            `🚀 Click the button below to launch the game and start earning!`;
-
-        const opts = {
-            parse_mode: 'Markdown',
+    ctx.reply(
+        `Welcome to Zoryx VIP Tap-to-Earn! 🪙\n\nTap the button below to launch the app and start earning coins and XP.`,
+        {
             reply_markup: {
                 inline_keyboard: [
                     [
                         {
-                            text: '🚀 Play Now',
+                            text: '🚀 Launch Zoryx App',
                             web_app: { url: webAppUrl }
                         }
                     ],
                     [
                         {
-                            text: '📢 Join Community',
-                            url: 'https://t.me/your_community_channel' // আপনার টেলিগ্রাম চ্যানেল বা গ্রুপ লিংক এখানে দিতে পারেন
+                            text: '📢 Join Channel',
+                            url: 'https://t.me/'
+                        },
+                        {
+                            text: '💬 Support Chat',
+                            url: 'https://t.me/'
                         }
                     ]
                 ]
             }
-        };
+        }
+    );
+});
 
-        bot.sendMessage(chatId, welcomeMessage, opts);
-    });
+// Launch bot with conflict resolution (drops pending updates to prevent 409 Conflict)
+async function startBot() {
+    try {
+        await bot.telegram.deleteWebhook({ drop_pending_updates: true });
+        console.log("Webhook cleared successfully.");
+        
+        await bot.launch();
+        console.log("🤖 Telegram Bot is running successfully...");
+    } catch (error) {
+        console.error("Bot launch error:", error);
+    }
 }
 
-export default bot;
+startBot();
+
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
+
+module.exports = bot;
