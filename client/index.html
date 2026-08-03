@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zoryx - Tap To Earn</title>
+    <title>Zoryx - VIP Tap To Earn</title>
     
     <!-- Manifest & Telegram WebApp SDK -->
     <link rel="manifest" href="manifest.json">
@@ -15,54 +15,79 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="app" class="app-container">
-        <!-- Top Profile & Stats Bar -->
-        <header class="header">
+        <!-- Top VIP Profile & Stats Bar -->
+        <header class="vip-header">
             <div class="user-profile">
-                <div id="user-avatar-container" class="avatar-container">
-                    <!-- Dynamic Profile Image or Initial Letter will be injected here via JS -->
-                </div>
+                <div id="user-avatar-container" class="avatar-container"></div>
                 <div class="user-info">
-                    <h3 id="user-name">Loading...</h3>
-                    <span id="user-level">Level 1</span>
+                    <h3 id="user-name">VIP Player</h3>
+                    <span id="user-level" class="vip-level-badge">⭐ Level 1</span>
                 </div>
             </div>
-            <div class="stats-badge">
+            <div class="vip-stats-badge">
                 <span class="fire-icon">🔥</span>
                 <span id="header-xp">0 XP</span>
             </div>
         </header>
 
-        <!-- Main Game Area (Coin & Balance) -->
+        <!-- Main Dynamic Views -->
         <main class="main-content">
-            <div class="balance-section">
-                <h1>💎 <span id="coin-balance">0</span></h1>
-                <p>Zoryx Coins</p>
+            <!-- Home View (Tap To Earn) -->
+            <div id="view-home" class="view-section active">
+                <div class="balance-section">
+                    <h1>🪙 <span id="coin-balance">0</span></h1>
+                    <p class="vip-subtitle">ZORYX COINS</p>
+                </div>
+
+                <!-- Tap Coin Container -->
+                <div class="tap-container">
+                    <div id="tap-coin" class="tap-coin">
+                        <div class="coin-inner">Z</div>
+                    </div>
+                </div>
+
+                <!-- Energy Bar Section -->
+                <div class="energy-section">
+                    <div class="energy-info">
+                        <span>⚡ ENERGY BOOST</span>
+                        <span><span id="current-energy">1000</span> / <span id="max-energy">1000</span></span>
+                    </div>
+                    <div class="energy-bar-container">
+                        <div id="energy-bar" class="energy-bar"></div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Tap Coin Container -->
-            <div class="tap-container">
-                <div id="tap-coin" class="tap-coin">
-                    <div class="coin-inner">Z</div>
-                </div>
+            <!-- Tasks View -->
+            <div id="view-earn" class="view-section" style="display: none;">
+                <h2 class="vip-page-title">🎯 VIP TASKS</h2>
+                <p class="placeholder-text">Complete exclusive tasks to earn massive coin rewards!</p>
             </div>
 
-            <!-- Energy Bar Section -->
-            <div class="energy-section">
-                <div class="energy-info">
-                    <span>⚡ Energy</span>
-                    <span><span id="current-energy">1000</span> / <span id="max-energy">1000</span></span>
-                </div>
-                <div class="energy-bar-container">
-                    <div id="energy-bar" class="energy-bar"></div>
-                </div>
+            <!-- Spin View -->
+            <div id="view-spin" class="view-section" style="display: none;">
+                <h2 class="vip-page-title">🎡 LUCKY VIP SPIN</h2>
+                <p class="placeholder-text">Spin the wheel and unlock legendary jackpots!</p>
+            </div>
+
+            <!-- Frens View -->
+            <div id="view-frens" class="view-section" style="display: none;">
+                <h2 class="vip-page-title">👥 REFERRAL FRENS</h2>
+                <p class="placeholder-text">Invite your friends and earn high-tier commissions!</p>
+            </div>
+
+            <!-- Rank View -->
+            <div id="view-leaderboard" class="view-section" style="display: none;">
+                <h2 class="vip-page-title">🏆 GLOBAL RANKING</h2>
+                <div id="leaderboard-list" class="leaderboard-list">Loading elite rankings...</div>
             </div>
         </main>
 
-        <!-- Navigation / Tabs -->
+        <!-- VIP Bottom Navigation Bar -->
         <nav class="nav-bar">
             <button class="nav-item active" data-tab="home">🏠 Home</button>
             <button class="nav-item" data-tab="earn">🎯 Tasks</button>
@@ -72,9 +97,9 @@
         </nav>
     </div>
 
-    <!-- Scripts (ES Module Order) -->
+    <!-- Scripts -->
     <script type="module" src="telegram.js"></script>
     <script type="module" src="api.js"></script>
     <script type="module" src="app.js"></script>
 </body>
-</html>
+                    </html>
