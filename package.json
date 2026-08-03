@@ -1,9 +1,8 @@
 {
   "name": "zoryx-mini-app",
   "version": "1.0.0",
-  "description": "Zoryx VIP Telegram Mini App",
+  "description": "Zoryx VIP Tap-to-Earn Telegram Mini App",
   "main": "server/server.js",
-  "type": "module",
   "scripts": {
     "start": "node server/server.js"
   },
@@ -12,6 +11,9 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mongoose": "^8.3.1",
-    "node-telegram-bot-api": "^0.66.0"
+    "telegraf": "^4.16.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
