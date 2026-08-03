@@ -1,7 +1,7 @@
 {
   "name": "zoryx-mini-app",
   "version": "1.0.0",
-  "description": "Zoryx Telegram Mini App",
+  "description": "Zoryx VIP Telegram Mini App",
   "main": "server/server.js",
   "type": "module",
   "scripts": {
