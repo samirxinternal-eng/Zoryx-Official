@@ -19,7 +19,7 @@
 </head>
 <body>
     <div id="app" class="app-container">
-        <!-- Top VIP Profile & Stats Bar -->
+        <!-- Top VIP Profile, Stats & Rank Button Bar -->
         <header class="vip-header">
             <div class="user-profile">
                 <div id="user-avatar-container" class="avatar-container"></div>
@@ -28,9 +28,13 @@
                     <span id="user-level" class="vip-level-badge">⭐ Level 1</span>
                 </div>
             </div>
-            <div class="vip-stats-badge">
-                <span class="fire-icon">🔥</span>
-                <span id="header-xp">0 XP</span>
+            <div class="header-right-actions">
+                <div class="vip-stats-badge">
+                    <span class="fire-icon">🔥</span>
+                    <span id="header-xp">0 XP</span>
+                </div>
+                <!-- Rank Button at Top Right Corner -->
+                <button class="top-rank-btn" data-tab="leaderboard" title="Global Rank">🏆</button>
             </div>
         </header>
 
@@ -68,16 +72,20 @@
                 <p class="placeholder-text">Complete exclusive tasks to earn massive coin rewards!</p>
             </div>
 
-            <!-- Spin View -->
-            <div id="view-spin" class="view-section" style="display: none;">
-                <h2 class="vip-page-title">🎡 LUCKY VIP SPIN</h2>
-                <p class="placeholder-text">Spin the wheel and unlock legendary jackpots!</p>
+            <!-- Level View (Replaced Spin) -->
+            <div id="view-level" class="view-section" style="display: none;">
+                <h2 class="vip-page-title">⭐ VIP LEVEL STATUS</h2>
+                <div class="level-info-card">
+                    <p>Current Level: <span id="info-level" style="color: #fbbf24; font-weight: 800;">1</span></p>
+                    <p>Total XP: <span id="info-xp" style="color: #6366f1; font-weight: 800;">0</span></p>
+                    <p class="placeholder-text" style="margin-top: 15px;">Earn 1 XP per tap to level up! Every 1000 XP unlocks a new VIP Level.</p>
+                </div>
             </div>
 
             <!-- Frens View -->
             <div id="view-frens" class="view-section" style="display: none;">
                 <h2 class="vip-page-title">👥 REFERRAL FRENS</h2>
-                <p class="placeholder-text">Invite your friends and earn high-tier commissions!</p>
+                <p class="placeholder-text">Invite your friends and earn high-tier commissions & lucky spin boxes!</p>
             </div>
 
             <!-- Rank View -->
@@ -87,13 +95,24 @@
             </div>
         </main>
 
-        <!-- VIP Bottom Navigation Bar -->
+        <!-- VIP Bottom Navigation Bar (Larger, Better Spaced, Fully Working) -->
         <nav class="nav-bar">
-            <button class="nav-item active" data-tab="home">🏠 Home</button>
-            <button class="nav-item" data-tab="earn">🎯 Tasks</button>
-            <button class="nav-item" data-tab="spin">🎡 Spin</button>
-            <button class="nav-item" data-tab="frens">👥 Frens</button>
-            <button class="nav-item" data-tab="leaderboard">🏆 Rank</button>
+            <button class="nav-item active" data-tab="home">
+                <span class="nav-icon">🏠</span>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" data-tab="earn">
+                <span class="nav-icon">🎯</span>
+                <span>Tasks</span>
+            </button>
+            <button class="nav-item" data-tab="level">
+                <span class="nav-icon">⭐</span>
+                <span>Level</span>
+            </button>
+            <button class="nav-item" data-tab="frens">
+                <span class="nav-icon">👥</span>
+                <span>Frens</span>
+            </button>
         </nav>
     </div>
 
@@ -102,4 +121,4 @@
     <script type="module" src="api.js"></script>
     <script type="module" src="app.js"></script>
 </body>
-                    </html>
+                </html>
