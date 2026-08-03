@@ -68,12 +68,19 @@ function updateUI() {
     const maxEnergyEl = document.getElementById('max-energy');
     const xpEl = document.getElementById('header-xp');
     const levelEl = document.getElementById('user-level');
+    
+    // Level Page Elements
+    const infoLevelEl = document.getElementById('info-level');
+    const infoXpEl = document.getElementById('info-xp');
 
     if (balanceEl) balanceEl.textContent = state.balance.toLocaleString();
     if (energyEl) energyEl.textContent = Math.floor(state.energy);
     if (maxEnergyEl) maxEnergyEl.textContent = state.maxEnergy;
     if (xpEl) xpEl.textContent = `${state.xp} XP`;
     if (levelEl) levelEl.textContent = `⭐ Level ${state.level}`;
+    
+    if (infoLevelEl) infoLevelEl.textContent = state.level;
+    if (infoXpEl) infoXpEl.textContent = state.xp.toLocaleString();
 
     const energyBar = document.getElementById('energy-bar');
     if (energyBar) {
@@ -96,12 +103,18 @@ function setupEventListeners() {
             state.xp += tapValue;
             state.pendingTaps += tapValue;
 
+            // Level up logic (Every 1000 XP increases level by 1)
+            const calculatedLevel = Math.floor(state.xp / 1000) + 1;
+            if (calculatedLevel > state.level) {
+                state.level = calculatedLevel;
+            }
+
             updateUI();
             triggerTapAnimation(e, tapCoin);
         });
     }
 
-    // Tab Navigation Switching Logic
+    // Bottom Navigation Bar Items Switching Logic
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -112,6 +125,15 @@ function setupEventListeners() {
             switchTab(tabName);
         });
     });
+
+    // Top Right Rank Button Click Handler
+    const topRankBtn = document.querySelector('.top-rank-btn');
+    if (topRankBtn) {
+        topRankBtn.addEventListener('click', () => {
+            navItems.forEach(nav => nav.classList.remove('active'));
+            switchTab('leaderboard');
+        });
+    }
 }
 
 function switchTab(tabName) {
@@ -140,7 +162,7 @@ async function fetchLeaderboardData() {
         if (res && res.success && res.data) {
             let html = '<ul style="list-style: none; padding: 0;">';
             res.data.forEach((user, index) => {
-                html += `<li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                html += `<li style="padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-weight: 700;">#${index + 1} ${user.username || user.firstName || 'VIP Player'}</span>
                     <span style="color: #fbbf24; font-weight: 800;">🪙 ${user.balance.toLocaleString()}</span>
                 </li>`;
@@ -216,4 +238,4 @@ function startAutoRefreshAndSync() {
             }
         }
     }, 10000);
-}
+                                    }
