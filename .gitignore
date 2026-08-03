@@ -1,56 +1,15 @@
-/# ==========================================
-# Zoryx
-# .gitignore
-# ==========================================
-
 # Dependencies
 node_modules/
 
 # Environment Variables
 .env
-server/.env
 
 # Logs
-logs/
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-
-# Runtime Files
-*.pid
-*.seed
-*.pid.lock
-
-# Cache
-.cache/
-.npm/
-.eslintcache
+logs/
 
 # OS Files
 .DS_Store
 Thumbs.db
-
-# IDE / Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Build
-dist/
-build/
-
-# Coverage
-coverage/
-
-# Temporary Files
-tmp/
-temp/
-
-# Render
-.render/
-
-# Misc
-*.local
