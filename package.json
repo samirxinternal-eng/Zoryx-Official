@@ -1,7 +1,7 @@
 {
   "name": "zoryx-mini-app",
   "version": "1.0.0",
-  "description": "Zoryx Telegram Mini App - Tap To Earn Game",
+  "description": "Zoryx Telegram Mini App",
   "main": "server/server.js",
   "type": "module",
   "scripts": {
@@ -11,9 +11,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "mongoose": "^8.3.2"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "mongoose": "^8.3.1",
+    "node-telegram-bot-api": "^0.66.0"
   }
 }
