@@ -1,244 +1,51 @@
-// ==========================================
-// Zoryx Telegram Mini App
-// server/database.js
-// ==========================================
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
-"use strict";
+// Load environment variables
+dotenv.config();
 
-import mongoose from "mongoose";
-
-let connected = false;
-
-// ==========================================
-// Connect Database
-// ==========================================
-
-export async function connectDatabase() {
-
-    if (connected) {
-
-        return mongoose.connection;
-
-    }
-
+/**
+ * MongoDB Atlas Connection
+ * এটি সার্ভার চালু হওয়ার সময় ডাটাবেসের সাথে কানেকশন তৈরি করবে।
+ */
+export const connectDB = async () => {
     try {
-
-        const uri = process.env.MONGODB_URI;
-
-        if (!uri) {
-
-            throw new Error(
-                "MONGODB_URI is missing in .env"
-            );
-
+        if (!process.env.MONGODB_URI) {
+            throw new Error("MONGODB_URI is not defined in environment variables.");
         }
-
-        await mongoose.connect(uri, {
-
-            autoIndex: true,
-
-            maxPoolSize: 10,
-
-            serverSelectionTimeoutMS: 5000,
-
-            socketTimeoutMS: 45000
-
-        });
-
-        connected = true;
-
-        console.log("✅ MongoDB Connected");
-
-        return mongoose.connection;
-
+        
+        const conn = await mongoose.connect(process.env.MONGODB_URI);
+        console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+        console.error(`❌ Error connecting to MongoDB: ${error.message}`);
+        // ডাটাবেস কানেক্ট না হলে প্রজেক্ট বন্ধ করে দেওয়া হবে
+        process.exit(1); 
     }
-
-    catch (error) {
-
-        connected = false;
-
-        console.error(
-            "❌ MongoDB Connection Failed"
-        );
-
-        console.error(error);
-
-        process.exit(1);
-
-    }
-
-}
-
-// ==========================================
-// User Schema
-// ==========================================
-
-const UserSchema = new mongoose.Schema({
-
-    telegramId: {
-
-        type: Number,
-
-        required: true,
-
-        unique: true,
-
-        index: true
-
-    },
-
-    firstName: {
-
-        type: String,
-
-        default: ""
-
-    },
-
-    lastName: {
-
-        type: String,
-
-        default: ""
-
-    },
-
-    username: {
-
-        type: String,
-
-        default: ""
-
-    },
-
-    photo: {
-
-        type: String,
-
-        default: ""
-
-    },
-
-    balance: {
-
-        type: Number,
-
-        default: 0
-
-    },
-
-    energy: {
-
-        type: Number,
-
-        default: 1000
-
-    },
-
-    maxEnergy: {
-
-        type: Number,
-
-        default: 1000
-
-    },
-
-    totalTap: {
-
-        type: Number,
-
-        default: 0
-
-    },
-
-    level: {
-
-        type: Number,
-
-        default: 1
-
-    },
-
-    xp: {
-
-        type: Number,
-
-        default: 0
-
-    },
-
-    referrals: {
-
-        type: Number,
-
-        default: 0
-
-    },
-
-    referredBy: {
-
-        type: Number,
-
-        default: 0
-
-    },
-
-    lastDailyReward: {
-
-        type: Date,
-
-        default: null
-
-    }
-
-}, {
-
-    timestamps: true
-
+};
+
+/**
+ * User Schema Definition
+ * আপনার দেওয়া নির্দিষ্ট ফিল্ডগুলো এখানে ডিফাইন করা হয়েছে।
+ * { timestamps: true } স্বয়ংক্রিয়ভাবে createdAt এবং updatedAt তৈরি করবে।
+ */
+const userSchema = new mongoose.Schema({
+    telegramId: { type: String, required: true, unique: true },
+    firstName: { type: String, default: '' },
+    lastName: { type: String, default: '' },
+    username: { type: String, default: '' },
+    photo: { type: String, default: '' },
+    balance: { type: Number, default: 0 },
+    energy: { type: Number, default: 1000 },
+    maxEnergy: { type: Number, default: 1000 },
+    totalTap: { type: Number, default: 0 },
+    level: { type: Number, default: 1 },
+    xp: { type: Number, default: 0 },
+    referrals: { type: [String], default: [] },
+    referredBy: { type: String, default: null },
+    lastDailyReward: { type: Date, default: null }
+}, { 
+    timestamps: true, 
+    strict: false // Task বা Spin-এর মতো ডায়নামিক ডেটা হ্যান্ডেল করার জন্য
 });
 
-// ==========================================
-// Models
-// ==========================================
-
-export const User =
-
-    mongoose.models.User ||
-
-    mongoose.model(
-
-        "User",
-
-        UserSchema
-
-    );
-
-// ==========================================
-// Initialize
-// ==========================================
-
-export async function initializeDatabase() {
-
-    await connectDatabase();
-
-    console.log(
-
-        "✅ Database Initialized"
-
-    );
-
-}
-
-// ==========================================
-// Export Default
-// ==========================================
-
-export default {
-
-    connectDatabase,
-
-    initializeDatabase,
-
-    User
-
-};
+export const User = mongoose.model('User', userSchema);
