@@ -1,89 +1,16 @@
 {
-  "id": "/",
-  "name": "Zoryx Telegram Mini App",
   "short_name": "Zoryx",
-  "description": "Official Zoryx Telegram Mini App. Tap, Earn, Complete Tasks, Invite Friends and Climb the Leaderboard.",
-  "lang": "en",
-  "dir": "ltr",
-
-  "start_url": "/",
-  "scope": "/",
-
-  "display": "standalone",
-  "orientation": "portrait",
-
-  "background_color": "#0b0b0f",
-  "theme_color": "#ffc107",
-
-  "categories": [
-    "games",
-    "entertainment",
-    "productivity"
-  ],
-
-  "prefer_related_applications": false,
-
+  "name": "Zoryx Tap To Earn Game",
+  "description": "Zoryx Telegram Mini App Tap To Earn Game",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "https://telegram.org/img/t_logo.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ],
-
-  "screenshots": [
-    {
-      "src": "/logo.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Zoryx Home"
-    }
-  ],
-
-  "shortcuts": [
-    {
-      "name": "Home",
-      "short_name": "Home",
-      "description": "Open Home",
-      "url": "/#home",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Earn",
-      "short_name": "Earn",
-      "description": "Open Earn Page",
-      "url": "/#earn",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Leaderboard",
-      "short_name": "Leaderboard",
-      "description": "Open Leaderboard",
-      "url": "/#leaderboard",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    }
-  ]
+  "start_url": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "display": "standalone"
 }
