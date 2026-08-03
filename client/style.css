@@ -9,13 +9,13 @@
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
-    -webkit-tap-highlight-color: transparent; /* ৪ কোণা সাদা/নীল বক্স বা ট্যাপ ফ্ল্যাশ ইফেক্ট বন্ধ করতে */
+    -webkit-tap-highlight-color: transparent;
 }
 
 :root {
     --bg-primary: #050811;
     --bg-secondary: #0c1328;
-    --bg-card: rgba(255, 255, 255, 0.03);
+    --bg-card: rgba(255, 255, 255, 0.04);
     
     /* VIP Gradients & Colors */
     --vip-gold: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
@@ -54,16 +54,17 @@ body {
 }
 
 /* ==========================================
-   VIP HEADER SECTION
+   VIP HEADER SECTION & TOP RANK BUTTON
    ========================================== */
 .vip-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
+    padding: 14px 18px;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    z-index: 10;
 }
 
 .user-profile {
@@ -73,8 +74,8 @@ body {
 }
 
 .avatar-container {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     overflow: hidden;
     background: var(--vip-purple);
@@ -82,7 +83,7 @@ body {
     justify-content: center;
     align-items: center;
     font-weight: 800;
-    font-size: 20px;
+    font-size: 18px;
     color: white;
     border: 2px solid #a855f7;
     box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
@@ -95,7 +96,7 @@ body {
 }
 
 .user-info h3 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: 0.5px;
@@ -113,18 +114,43 @@ body {
     margin-top: 2px;
 }
 
+.header-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .vip-stats-badge {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     background: var(--bg-card);
-    padding: 8px 14px;
-    border-radius: 20px;
+    padding: 6px 12px;
+    border-radius: 16px;
     border: 1px solid var(--border-color);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: #f43f5e;
-    box-shadow: inset 0 0 10px rgba(244, 63, 94, 0.1);
+}
+
+.top-rank-btn {
+    background: var(--vip-gold);
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+    transition: transform 0.2s ease;
+    outline: none;
+}
+
+.top-rank-btn:active {
+    transform: scale(0.9);
 }
 
 /* ==========================================
@@ -165,6 +191,7 @@ body {
     font-size: 13px;
     text-align: center;
     padding: 0 20px;
+    line-height: 1.5;
 }
 
 .balance-section {
@@ -190,8 +217,26 @@ body {
     margin-top: 6px;
 }
 
+/* Level Info Card Style */
+.level-info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 24px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.level-info-card p {
+    font-size: 16px;
+    color: var(--text-primary);
+    margin: 8px 0;
+}
+
 /* ==========================================
-   VIP TAP COIN DESIGN (NO WHITE BOX EFFECT)
+   VIP TAP COIN DESIGN
    ========================================== */
 .tap-container {
     display: flex;
@@ -200,8 +245,8 @@ body {
 }
 
 .tap-coin {
-    width: 210px;
-    height: 210px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
     background: var(--vip-purple);
     display: flex;
@@ -212,7 +257,6 @@ body {
     transition: transform 0.06s ease;
     position: relative;
     outline: none;
-    -webkit-tap-highlight-color: transparent;
     border: 4px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -221,7 +265,7 @@ body {
 }
 
 .coin-inner {
-    font-size: 75px;
+    font-size: 70px;
     font-weight: 900;
     color: white;
     text-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
@@ -283,7 +327,7 @@ body {
 }
 
 /* ==========================================
-   VIP BOTTOM NAVIGATION BAR
+   VIP BOTTOM NAVIGATION BAR (Larger & Better)
    ========================================== */
 .nav-bar {
     display: flex;
@@ -291,35 +335,39 @@ body {
     align-items: center;
     background-color: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
-    padding: 10px 0;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+    padding: 12px 10px;
+    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.6);
+    z-index: 10;
 }
 
 .nav-item {
     background: none;
     border: none;
     color: var(--text-secondary);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 10px;
+    padding: 8px 16px;
+    border-radius: 14px;
     transition: all 0.2s ease;
     outline: none;
-    -webkit-tap-highlight-color: transparent;
+}
+
+.nav-icon {
+    font-size: 20px;
 }
 
 .nav-item.active {
     color: var(--text-primary);
-    background: rgba(99, 102, 241, 0.15);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
 }
 
 .nav-item:hover {
     color: var(--text-primary);
-}
+   }
