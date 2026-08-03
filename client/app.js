@@ -73,6 +73,10 @@ function updateUI() {
     const infoLevelEl = document.getElementById('info-level');
     const infoXpEl = document.getElementById('info-xp');
 
+    // Frens Page Elements
+    const frensCountEl = document.getElementById('frens-count');
+    const frensEarnedEl = document.getElementById('frens-earned');
+
     if (balanceEl) balanceEl.textContent = state.balance.toLocaleString();
     if (energyEl) energyEl.textContent = Math.floor(state.energy);
     if (maxEnergyEl) maxEnergyEl.textContent = state.maxEnergy;
@@ -81,6 +85,9 @@ function updateUI() {
     
     if (infoLevelEl) infoLevelEl.textContent = state.level;
     if (infoXpEl) infoXpEl.textContent = state.xp.toLocaleString();
+
+    if (frensCountEl) frensCountEl.textContent = state.referralCount || 0;
+    if (frensEarnedEl) frensEarnedEl.textContent = (state.referralEarnings || 0).toLocaleString();
 
     const energyBar = document.getElementById('energy-bar');
     if (energyBar) {
@@ -134,17 +141,40 @@ function setupEventListeners() {
             switchTab('leaderboard');
         });
     }
+
+    // Quick Boost Button from Home Page
+    const boostQuickBtn = document.querySelector('.boost-quick-btn');
+    if (boostQuickBtn) {
+        boostQuickBtn.addEventListener('click', () => {
+            navItems.forEach(nav => nav.classList.remove('active'));
+            switchTab('boost');
+        });
+    }
+
+    // Referral Link Copy Button
+    const inviteBtn = document.getElementById('invite-btn');
+    if (inviteBtn) {
+        inviteBtn.addEventListener('click', () => {
+            const botUsername = "ZoryxMiniBot"; // Your bot username
+            const refLink = `https://t.me/${botUsername}?start=${state.telegramId}`;
+            navigator.clipboard.writeText(refLink).then(() => {
+                alert("Referral link copied to clipboard!");
+            }).catch(err => {
+                console.error("Failed to copy link", err);
+            });
+        });
+    }
 }
 
 function switchTab(tabName) {
     const views = document.querySelectorAll('.view-section');
     views.forEach(view => {
-        view.style.display = 'none';
+        view.classList.remove('active');
     });
 
     const activeView = document.getElementById(`view-${tabName}`);
     if (activeView) {
-        activeView.style.display = 'flex';
+        activeView.classList.add('active');
     }
 
     if (tabName === 'leaderboard') {
@@ -189,14 +219,15 @@ function triggerTapAnimation(event, container) {
     floatText.style.top = `${y}px`;
     floatText.style.color = '#fbbf24';
     floatText.style.fontWeight = '900';
-    floatText.style.fontSize = '22px';
+    floatText.style.fontSize = '24px';
     floatText.style.pointerEvents = 'none';
     floatText.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+    floatText.style.zIndex = '100';
     
     container.appendChild(floatText);
 
     setTimeout(() => {
-        floatText.style.transform = 'translateY(-60px)';
+        floatText.style.transform = 'translateY(-70px)';
         floatText.style.opacity = '0';
     }, 20);
 
@@ -238,4 +269,4 @@ function startAutoRefreshAndSync() {
             }
         }
     }, 10000);
-                                    }
+}
