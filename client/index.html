@@ -1,170 +1,451 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zoryx - VIP Tap To Earn</title>
-    
-    <!-- Manifest & Telegram WebApp SDK -->
-    <link rel="manifest" href="manifest.json">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- Stylesheet -->
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-</head>
-<body>
-    <!-- Lightweight Background Particle Effect Container -->
-    <div id="particle-container" class="particle-container"></div>
 
-    <div id="app" class="app-container">
-        <!-- Top VIP Profile, Stats & Rank Button Bar -->
-        <header class="vip-header">
-            <div class="user-profile">
-                <div id="user-avatar-container" class="avatar-container"></div>
-                <div class="user-info">
-                    <h3 id="user-name">VIP Player</h3>
-                    <span id="user-level" class="vip-level-badge">⭐ Level 1</span>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
+    <title>Zoryx VIP</title>
+
+    <!-- Telegram Mini App -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="./style.css">
+
+</head>
+
+<body>
+
+<div id="app">
+
+    <!-- =========================
+         HOME PAGE
+    ========================== -->
+
+    <section id="view-home" class="view-section active">
+
+        <!-- Header -->
+
+        <header class="top-header">
+
+            <div class="profile-box">
+
+                <img
+                    id="user-photo"
+                    class="user-photo"
+                    src="https://placehold.co/120x120"
+                    alt="User"
+                >
+
+                <div class="profile-info">
+
+                    <h2 id="user-name">
+                        Loading...
+                    </h2>
+
+                    <p id="user-level">
+                        ⭐ Level 1
+                    </p>
+
                 </div>
+
             </div>
-            <div class="header-right-actions">
-                <div class="vip-stats-badge">
-                    <span class="fire-icon">🔥</span>
-                    <span id="header-xp">0 XP</span>
-                </div>
-                <!-- Rank Button at Top Right Corner -->
-                <button class="top-rank-btn" data-tab="leaderboard" title="Global Rank">🏆</button>
-            </div>
+
+            <button class="top-rank-btn">
+                🏆 Leaderboard
+            </button>
+
         </header>
 
-        <!-- Main Dynamic Views -->
-        <main class="main-content">
-            <!-- 1. Home View (Tap To Earn & Boost Button) -->
-            <div id="view-home" class="view-section active">
-                <div class="balance-section">
-                    <h1>🪙 <span id="coin-balance">0</span></h1>
-                    <p class="vip-subtitle">ZORYX COINS</p>
-                </div>
+        <!-- Balance Card -->
 
-                <!-- Big Golden Tap Coin Container -->
-                <div class="tap-container">
-                    <div id="tap-coin" class="tap-coin">
-                        <div class="coin-inner">Z</div>
-                    </div>
-                </div>
+        <div class="balance-card">
 
-                <!-- Energy Bar Section -->
-                <div class="energy-section">
-                    <div class="energy-info">
-                        <span>⚡ ENERGY BOOST</span>
-                        <span><span id="current-energy">1000</span> / <span id="max-energy">1000</span></span>
-                    </div>
-                    <div class="energy-bar-container">
-                        <div id="energy-bar" class="energy-bar"></div>
-                    </div>
-                </div>
+            <p class="balance-title">
+                Total Balance
+            </p>
 
-                <!-- Boost Quick Button on Home -->
-                <button class="boost-quick-btn" data-tab="boost">🚀 Open Boost Menu</button>
+            <h1 id="coin-balance">
+                0
+            </h1>
+
+            <span class="coin-text">
+                ZORYX COINS
+            </span>
+
+        </div>
+
+        <!-- XP -->
+
+        <div class="xp-card">
+
+            <span>
+                Experience
+            </span>
+
+            <span id="header-xp">
+                0 XP
+            </span>
+
+        </div>
+
+        <!-- Energy -->
+
+        <div class="energy-card">
+
+            <div class="energy-top">
+
+                <span>
+                    ⚡ Energy
+                </span>
+
+                <span>
+
+                    <span id="current-energy">
+                        1000
+                    </span>
+
+                    /
+
+                    <span id="max-energy">
+                        1000
+                    </span>
+
+                </span>
+
             </div>
 
-            <!-- 2. Tasks View (Ad Links & Telegram Channel Join) -->
-            <div id="view-earn" class="view-section">
-                <h2 class="vip-page-title">🎯 VIP TASKS</h2>
-                <div class="tasks-container">
-                    <div class="task-card">
-                        <div class="task-info">
-                            <h4>📢 Join Telegram Channel</h4>
-                            <p>+5,000 Zoryx Coins</p>
-                        </div>
-                        <button class="task-action-btn" onclick="window.open('https://t.me/', '_blank')">Start</button>
-                    </div>
-                    <div class="task-card">
-                        <div class="task-info">
-                            <h4>🌐 Visit Sponsor Ad</h4>
-                            <p>+2,000 Zoryx Coins</p>
-                        </div>
-                        <button class="task-action-btn" onclick="window.open('https://google.com', '_blank')">Visit</button>
-                    </div>
+            <div class="energy-progress">
+
+                <div
+                    id="energy-bar"
+                    class="energy-fill">
                 </div>
+
             </div>
 
-            <!-- 3. Level View (Level Rewards & Status) -->
-            <div id="view-level" class="view-section">
-                <h2 class="vip-page-title">⭐ VIP LEVEL STATUS</h2>
-                <div class="level-info-card">
-                    <p>Current Level: <span id="info-level" style="color: #fbbf24; font-weight: 800;">1</span></p>
-                    <p>Total XP: <span id="info-xp" style="color: #6366f1; font-weight: 800;">0</span></p>
-                    <p class="placeholder-text" style="margin-top: 15px;">Earn 1 XP per tap to level up! Every 1000 XP unlocks a new VIP Level and special rewards.</p>
-                </div>
-            </div>
+        </div>
 
-            <!-- 4. Frens View (Referral Stats & Link) -->
-            <div id="view-frens" class="view-section">
-                <h2 class="vip-page-title">👥 REFERRAL FRENS</h2>
-                <div class="frens-card">
-                    <p>Total Invited: <span id="frens-count" style="color: #fbbf24; font-weight: 800;">0</span> Frens</p>
-                    <p>Total Earned: <span id="frens-earned" style="color: #34d399; font-weight: 800;">0</span> Coins</p>
-                    <button id="invite-btn" class="task-action-btn" style="margin-top: 15px; width: 100%;">🔗 Copy Referral Link</button>
-                </div>
-            </div>
+        <!-- ZORYX TAP COIN এখান থেকে Part 1A-2 এ শুরু হবে -->
 
-            <!-- 5. Boost View (Multitap & Energy Boosters) -->
-            <div id="view-boost" class="view-section">
-                <h2 class="vip-page-title">🚀 BOOSTERS</h2>
-                <div class="boost-container">
-                    <div class="task-card">
-                        <div class="task-info">
-                            <h4>⚡ Multi-Tap Booster</h4>
-                            <p>Increase coins per tap</p>
-                        </div>
-                        <button class="task-action-btn" onclick="alert('Booster activated!')">Upgrade</button>
-                    </div>
-                    <div class="task-card">
-                        <div class="task-info">
-                            <h4>🔋 Energy Limit Refill</h4>
-                            <p>Max out your energy bar</p>
-                        </div>
-                        <button class="task-action-btn" onclick="alert('Energy refilled!')">Refill</button>
-                    </div>
-                </div>
-            </div>
 
-            <!-- 6. Rank View (Global Leaderboard) -->
-            <div id="view-leaderboard" class="view-section">
-                <h2 class="vip-page-title">🏆 GLOBAL RANKING</h2>
-                <div id="leaderboard-list" class="leaderboard-list">Loading elite rankings...</div>
-            </div>
-        </main>
+        <!-- =========================
+             TAP AREA
+        ========================== -->
 
-        <!-- VIP Bottom Navigation Bar (Larger, Better Spaced, Fully Working) -->
-        <nav class="nav-bar">
-            <button class="nav-item active" data-tab="home">
-                <span class="nav-icon">🏠</span>
-                <span>Home</span>
+        <div class="tap-wrapper">
+
+            <button
+                id="tap-coin"
+                class="tap-coin"
+                type="button">
+
+                <span class="tap-coin-text">
+                    ZORYX
+                </span>
+
             </button>
-            <button class="nav-item" data-tab="earn">
-                <span class="nav-icon">🎯</span>
-                <span>Tasks</span>
-            </button>
-            <button class="nav-item" data-tab="level">
-                <span class="nav-icon">⭐</span>
-                <span>Level</span>
-            </button>
-            <button class="nav-item" data-tab="frens">
-                <span class="nav-icon">👥</span>
-                <span>Frens</span>
-            </button>
-        </nav>
-    </div>
 
-    <!-- Scripts -->
-    <script type="module" src="telegram.js"></script>
-    <script type="module" src="api.js"></script>
-    <script type="module" src="app.js"></script>
+        </div>
+
+        <!-- Quick Boost Button -->
+
+        <div class="quick-boost-area">
+
+            <button
+                class="boost-quick-btn"
+                type="button">
+
+                ⚡ Open Boost Menu
+
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+         TASKS PAGE
+    ========================== -->
+
+    <section
+        id="view-tasks"
+        class="view-section">
+
+        <div class="page-header">
+
+            <h2>📋 Daily Tasks</h2>
+
+            <p>
+                Complete tasks and earn free Zoryx Coins.
+            </p>
+
+        </div>
+
+        <div id="tasks-container">
+
+            <!-- Tasks will load here -->
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+         LEADERBOARD PAGE
+    ========================== -->
+
+    <section
+        id="view-leaderboard"
+        class="view-section">
+
+        <div class="page-header">
+
+            <h2>🏆 Leaderboard</h2>
+
+            <p>
+                Top Zoryx Players
+            </p>
+
+        </div>
+
+        <div id="leaderboard-list">
+
+            Loading...
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+         LEVEL PAGE
+    ========================== -->
+
+    <section
+        id="view-level"
+        class="view-section">
+
+        <div class="page-header">
+
+            <h2>⭐ Level</h2>
+
+        </div>
+
+        <div class="level-card">
+
+            <p>
+                Current Level
+            </p>
+
+            <h1 id="info-level">
+
+                1
+
+            </h1>
+
+            <p>
+
+                XP :
+                <span id="info-xp">
+                    0
+                </span>
+
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         FRENS PAGE
+    ========================== -->
+
+    <section
+        id="view-frens"
+        class="view-section">
+
+        <div class="page-header">
+
+            <h2>👥 Frens</h2>
+
+            <p>
+                Invite your friends and earn rewards.
+            </p>
+
+        </div>
+
+        <div class="frens-card">
+
+            <div class="frens-item">
+
+                <span>Total Friends</span>
+
+                <strong id="frens-count">
+                    0
+                </strong>
+
+            </div>
+
+            <div class="frens-item">
+
+                <span>Total Earnings</span>
+
+                <strong>
+
+                    🪙
+                    <span id="frens-earned">
+                        0
+                    </span>
+
+                </strong>
+
+            </div>
+
+        </div>
+
+        <button
+            id="invite-btn"
+            class="primary-btn">
+
+            📨 Invite Friends
+
+        </button>
+
+    </section>
+
+    <!-- =========================
+         BOOST PAGE
+    ========================== -->
+
+    <section
+        id="view-boost"
+        class="view-section">
+
+        <div class="page-header">
+
+            <h2>⚡ Boost</h2>
+
+            <p>
+                Upgrade your power and energy.
+            </p>
+
+        </div>
+
+        <div class="boost-list">
+
+            <div class="boost-card">
+
+                <h3>
+                    ⚡ Energy Boost
+                </h3>
+
+                <p>
+                    Increase your maximum energy.
+                </p>
+
+                <button
+                    class="upgrade-btn"
+                    type="button">
+
+                    Upgrade
+
+                </button>
+
+            </div>
+
+            <div class="boost-card">
+
+                <h3>
+                    🚀 Tap Power
+                </h3>
+
+                <p>
+                    Earn more coins per tap.
+                </p>
+
+                <button
+                    class="upgrade-btn"
+                    type="button">
+
+                    Upgrade
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+         BOTTOM NAVIGATION
+    ========================== -->
+
+    <nav class="bottom-nav">
+
+        <button
+            class="nav-item active"
+            data-tab="home">
+
+            🏠
+            <span>Home</span>
+
+        </button>
+
+        <button
+            class="nav-item"
+            data-tab="tasks">
+
+            📋
+            <span>Tasks</span>
+
+        </button>
+
+        <button
+            class="nav-item"
+            data-tab="leaderboard">
+
+            🏆
+            <span>Rank</span>
+
+        </button>
+
+        <button
+            class="nav-item"
+            data-tab="level">
+
+            ⭐
+            <span>Level</span>
+
+        </button>
+
+        <button
+            class="nav-item"
+            data-tab="frens">
+
+            👥
+            <span>Frens</span>
+
+        </button>
+
+        <button
+            class="nav-item"
+            data-tab="boost">
+
+            ⚡
+            <span>Boost</span>
+
+        </button>
+
+    </nav>
+
+</div>
+
+<script type="module" src="./app.js"></script>
+
 </body>
-    </html>
+</html>
