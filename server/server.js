@@ -1,180 +1,367 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const { Telegraf } = require('telegraf');
-require('dotenv').config();
+// ======================================================
+// ZORYX TELEGRAM MINI APP
+// server/server.js
+// PART 1
+// ======================================================
+
+require("dotenv").config();
+
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const path = require("path");
+const { Telegraf } = require("telegraf");
 
 const app = express();
+
+// ======================================================
+// CONFIG
+// ======================================================
+
 const PORT = process.env.PORT || 10000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.static('client')); // Serves frontend files from 'client' folder
+const BOT_TOKEN = process.env.BOT_TOKEN;
 
-// MongoDB Connection (Cleaned up deprecated options to avoid warnings)
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://samir:samir@cluster0.mongodb.net/zoryxdb?retryWrites=true&w=majority';
+const WEBAPP_URL =
+process.env.WEBAPP_URL ||
+"https://zoryxminibotweb.onrender.com";
+
+const MONGO_URI =
+process.env.MONGO_URI;
+
+// ======================================================
+// MIDDLEWARE
+// ======================================================
+
+app.use(cors());
+
+app.use(express.json({
+    limit:"10mb"
+}));
+
+app.use(express.urlencoded({
+    extended:true
+}));
+
+app.use(express.static(
+    path.join(__dirname,"../client")
+));
+
+// ======================================================
+// TELEGRAM BOT
+// ======================================================
+
+const bot = new Telegraf(BOT_TOKEN);
+
+// ======================================================
+// MONGODB CONNECT
+// ======================================================
 
 mongoose.connect(MONGO_URI)
-    .then(() => console.log('✅ MongoDB Connected Successfully.'))
-    .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-// User Schema & Model
-const userSchema = new mongoose.Schema({
-    telegramId: { type: String, required: true, unique: true },
-    firstName: { type: String, default: '' },
-    lastName: { type: String, default: '' },
-    username: { type: String, default: '' },
-    photo: { type: String, default: '' },
-    balance: { type: Number, default: 0 },
-    energy: { type: Number, default: 1000 },
-    maxEnergy: { type: Number, default: 1000 },
-    totalTap: { type: Number, default: 0 },
-    level: { type: Number, default: 1 },
-    xp: { type: Number, default: 0 },
-    referredBy: { type: String, default: null },
-    referralCount: { type: Number, default: 0 },
-    referralEarnings: { type: Number, default: 0 },
-    lastUpdated: { type: Date, default: Date.now }
-});
+.then(()=>{
 
-const User = mongoose.model('User', userSchema);
+    console.log("✅ MongoDB Connected Successfully.");
 
-// ================= API ROUTES =================
+})
 
-// 1. User Login / Registration
-app.post('/api/login', async (req, res) => {
-    try {
-        const { telegramId, firstName, lastName, username, photo, referredBy } = req.body;
-        if (!telegramId) return res.status(400).json({ success: false, message: 'Telegram ID is required' });
+.catch((err)=>{
 
-        let user = await User.findOne({ telegramId });
-
-        if (!user) {
-            user = new User({
-                telegramId,
-                firstName,
-                lastName,
-                username,
-                photo,
-                referredBy: referredBy && referredBy !== telegramId ? referredBy : null
-            });
-            await user.save();
-
-            // Handle referral bonus if referred by someone valid
-            if (user.referredBy) {
-                const referrer = await User.findOne({ telegramId: user.referredBy });
-                if (referrer) {
-                    referrer.referralCount += 1;
-                    referrer.balance += 5000; // Bonus coins for referrer
-                    referrer.referralEarnings += 5000;
-                    await referrer.save();
-                }
-            }
-        } else {
-            // Update info if changed
-            user.firstName = firstName || user.firstName;
-            user.lastName = lastName || user.lastName;
-            user.username = username || user.username;
-            user.photo = photo || user.photo;
-            await user.save();
-        }
-
-        res.json({ success: true, data: user });
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
-    }
-});
-
-// 2. Sync / Get User Data
-app.get('/api/user/:telegramId', async (req, res) => {
-    try {
-        const user = await User.findOne({ telegramId: req.params.telegramId });
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-        res.json({ success: true, data: user });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Server error' });
-    }
-});
-
-// 3. Handle Taps & XP / Energy update
-app.post('/api/tap', async (req, res) => {
-    try {
-        const { telegramId, taps } = req.body;
-        if (!telegramId || typeof taps !== 'number') {
-            return res.status(400).json({ success: false, message: 'Invalid data' });
-        }
-
-        const user = await User.findOne({ telegramId });
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-
-        // Update coins, taps, xp, and energy
-        user.balance += taps;
-        user.totalTap += taps;
-        user.xp += taps;
-        user.energy = Math.max(0, user.energy - taps);
-        
-        // Level calculation (Every 1000 XP = 1 Level)
-        const calculatedLevel = Math.floor(user.xp / 1000) + 1;
-        if (calculatedLevel > user.level) {
-            user.level = calculatedLevel;
-        }
-
-        user.lastUpdated = Date.now();
-        await user.save();
-
-        res.json({ success: true, data: user });
-    } catch (error) {
-        console.error('Tap sync error:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
-    }
-});
-
-// 4. Leaderboard Route
-app.get('/api/leaderboard', async (req, res) => {
-    try {
-        const topUsers = await User.find().sort({ balance: -1 }).limit(20).select('username firstName balance level');
-        res.json({ success: true, data: topUsers });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Server error' });
-    }
-});
-
-// ================= TELEGRAM BOT INTEGRATION =================
-const BOT_TOKEN = process.env.BOT_TOKEN || '8759518055:AAFt-nlhikzxY5tWBAC6DFxREY5AAIiedb8';
-const bot = new Telegraf(BOT_TOKEN);
-const WEBAPP_URL = process.env.WEBAPP_URL || 'https://zoryxminibotweb.onrender.com';
-
-bot.start((ctx) => {
-    ctx.reply(
-        `Welcome to Zoryx VIP Tap-to-Earn! 🪙\n\nTap the button below to launch the app and start earning.`,
-        {
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: '🚀 Launch Zoryx App', web_app: { url: WEBAPP_URL } }],
-                    [{ text: '📢 Channel', url: 'https://t.me/' }, { text: '💬 Support', url: 'https://t.me/' }]
-                ]
-            }
-        }
+    console.error(
+        "❌ MongoDB Connection Error:",
+        err.message
     );
+
 });
 
-// Start Express Server & Bot together securely with conflict clearance
-app.listen(PORT, async () => {
-    console.log(`🚀 Zoryx VIP Server is running on port ${PORT}`);
-    
-    try {
-        await bot.telegram.deleteWebhook({ drop_pending_updates: true });
-        console.log('🧹 Telegram Webhook cleared successfully.');
-        
-        await bot.launch();
-        console.log('🤖 Telegram Bot is running successfully...');
-    } catch (err) {
-        console.error('Bot launch error:', err);
+// ======================================================
+// USER SCHEMA
+// ======================================================
+
+const userSchema = new mongoose.Schema({
+
+    telegramId:{
+        type:String,
+        required:true,
+        unique:true
+    },
+
+    firstName:{
+        type:String,
+        default:""
+    },
+
+    lastName:{
+        type:String,
+        default:""
+    },
+
+    username:{
+        type:String,
+        default:""
+    },
+
+    photo:{
+        type:String,
+        default:""
+    },
+
+    balance:{
+        type:Number,
+        default:0
+    },
+
+    energy:{
+        type:Number,
+        default:1000
+    },
+
+    maxEnergy:{
+        type:Number,
+        default:1000
+    },
+
+    totalTap:{
+        type:Number,
+        default:0
+    },
+
+    xp:{
+        type:Number,
+        default:0
+    },
+
+    level:{
+        type:Number,
+        default:1
+    },
+
+    tapPower:{
+        type:Number,
+        default:1
+    },
+
+    referredBy:{
+        type:String,
+        default:null
+    },
+
+    referralCount:{
+        type:Number,
+        default:0
+    },
+
+    referralEarnings:{
+        type:Number,
+        default:0
+    },
+
+    referralRewardGiven:{
+        type:Boolean,
+        default:false
+    },
+
+    dailyRewardClaimed:{
+        type:Boolean,
+        default:false
+    },
+
+    lastDailyClaim:{
+        type:Date,
+        default:null
+    },
+
+    lastTapTime:{
+        type:Number,
+        default:0
+    },
+
+    createdAt:{
+        type:Date,
+        default:Date.now
+    },
+
+    updatedAt:{
+        type:Date,
+        default:Date.now
     }
+
 });
 
-// Graceful stop
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+// ======================================================
+// AUTO UPDATE DATE
+// ======================================================
+
+userSchema.pre("save",function(next){
+
+    this.updatedAt = new Date();
+
+    next();
+
+});
+
+// ======================================================
+// MODEL
+// ======================================================
+
+const User = mongoose.model(
+    "User",
+    userSchema
+);
+
+// ======================================================
+// HEALTH CHECK
+// ======================================================
+
+app.get("/",(req,res)=>{
+
+    res.json({
+
+        success:true,
+
+        app:"Zoryx Telegram Mini App",
+
+        status:"Running"
+
+    });
+
+});
+
+// ======================================================
+// PART 1 END
+// ======================================================
+
+
+// ======================================================
+// PART 1A
+// GLOBAL CONFIG & HELPER FUNCTIONS
+// ======================================================
+
+// Energy Settings
+const ENERGY_RECHARGE_TIME = 2;      // 2 seconds = +1 Energy
+const MAX_TAPS_PER_SECOND = 15;
+const REFERRAL_REWARD = 5000;
+const NEW_USER_REWARD = 1000;
+const XP_PER_TAP = 1;
+
+// ======================================================
+// GET USER LEVEL
+// ======================================================
+
+function getLevelFromXP(xp){
+
+    return Math.floor(xp / 1000) + 1;
+
+}
+
+// ======================================================
+// GET REQUIRED XP
+// ======================================================
+
+function getNextLevelXP(level){
+
+    return level * 1000;
+
+}
+
+// ======================================================
+// ENERGY RECHARGE
+// ======================================================
+
+function rechargeEnergy(user){
+
+    const now = Date.now();
+
+    const lastUpdate = new Date(
+        user.updatedAt
+    ).getTime();
+
+    const secondsPassed = Math.floor(
+
+        (now - lastUpdate) / 1000
+
+    );
+
+    if(secondsPassed >= ENERGY_RECHARGE_TIME){
+
+        const energyGain = Math.floor(
+
+            secondsPassed /
+            ENERGY_RECHARGE_TIME
+
+        );
+
+        user.energy = Math.min(
+
+            user.maxEnergy,
+
+            user.energy + energyGain
+
+        );
+
+    }
+
+}
+
+// ======================================================
+// SAFE USER RESPONSE
+// ======================================================
+
+function buildUserResponse(user){
+
+    return{
+
+        telegramId:user.telegramId,
+
+        firstName:user.firstName,
+
+        lastName:user.lastName,
+
+        username:user.username,
+
+        photo:user.photo,
+
+        balance:user.balance,
+
+        energy:user.energy,
+
+        maxEnergy:user.maxEnergy,
+
+        totalTap:user.totalTap,
+
+        xp:user.xp,
+
+        level:user.level,
+
+        tapPower:user.tapPower,
+
+        referralCount:user.referralCount,
+
+        referralEarnings:user.referralEarnings
+
+    };
+
+}
+
+// ======================================================
+// API ERROR
+// ======================================================
+
+function serverError(res,error){
+
+    console.error(error);
+
+    return res.status(500).json({
+
+        success:false,
+
+        message:"Internal Server Error"
+
+    });
+
+}
+
+// ======================================================
+// PART 1A END
+// ======================================================
+
