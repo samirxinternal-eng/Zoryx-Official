@@ -1,1 +1,462 @@
+/* ---------------------------------------------------------
+   Aura Coin — design tokens
+   Void background so the orb's glow has room to read as light,
+   not a flat "dark app" default. The aura itself is a shifting
+   three-hue gradient rather than one flat accent color.
+--------------------------------------------------------- */
+:root {
+  --void: #0b0a14;
+  --surface: #15131f;
+  --surface-2: #1d1a2b;
+  --stroke: #2a2740;
 
+  --aura-violet: #8b5cf6;
+  --aura-rose: #ec7fb5;
+  --aura-cyan: #5eead4;
+
+  --ink: #f1eefa;
+  --ink-muted: #8b87a3;
+  --ink-faint: #5b5773;
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--void);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--aura-cyan);
+  outline-offset: 2px;
+}
+
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 84px;
+  position: relative;
+}
+
+/* ---------- Topbar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 8px;
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+  background: linear-gradient(120deg, var(--aura-violet), var(--aura-rose));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.coin-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.coin-chip__icon { font-size: 13px; }
+
+/* ---------- Views ---------- */
+.view {
+  padding: 12px 20px 20px;
+  animation: fade-in 0.25s ease both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.view-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  margin: 8px 0 2px;
+}
+
+.view-subtitle {
+  color: var(--ink-muted);
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+
+/* ---------- Orb stage (signature element) ---------- */
+.orb-stage {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  margin: 28px auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.level-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.level-ring__track {
+  fill: none;
+  stroke: var(--surface-2);
+  stroke-width: 6;
+}
+
+.level-ring__fill {
+  fill: none;
+  stroke: var(--aura-cyan);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 628;
+  stroke-dashoffset: 500;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.orb {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease;
+}
+
+.orb:active { transform: scale(0.94); }
+
+.orb__glow {
+  position: absolute;
+  inset: -30px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    var(--aura-violet), var(--aura-rose), var(--aura-cyan), var(--aura-violet));
+  filter: blur(28px);
+  opacity: 0.55;
+  animation: swirl 8s linear infinite;
+}
+
+.orb__core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #2a2440, var(--surface) 70%);
+  border: 1px solid var(--stroke);
+  box-shadow: inset 0 0 40px rgba(139, 92, 246, 0.35);
+}
+
+@keyframes swirl {
+  to { transform: rotate(360deg); }
+}
+
+.particle-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--aura-cyan);
+  animation: float-up 0.9s ease-out forwards;
+}
+
+@keyframes float-up {
+  from { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  to   { opacity: 0; transform: translate(-50%, -70px) scale(1.15); }
+}
+
+.level-caption {
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 14px;
+  margin: 0 0 24px;
+}
+
+.level-caption span#level-number {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ---------- Invite card ---------- */
+.invite-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+}
+
+.invite-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.invite-card__text strong {
+  font-family: var(--font-display);
+  font-size: 15px;
+}
+
+.invite-card__text span {
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
+.btn {
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn--ghost {
+  background: var(--surface-2);
+  border: 1px solid var(--stroke);
+  color: var(--ink);
+}
+
+.btn--primary {
+  background: linear-gradient(120deg, var(--aura-violet), var(--aura-rose));
+  color: #10071f;
+}
+
+/* ---------- Watch ad card ---------- */
+.ad-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(120deg, rgba(139,92,246,0.14), rgba(94,234,212,0.08));
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.ad-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ad-card__text strong {
+  font-family: var(--font-display);
+  font-size: 15px;
+}
+
+.ad-card__text span {
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+.ad-card .btn {
+  flex-shrink: 0;
+}
+
+/* ---------- Task type badge ---------- */
+.task-card__type {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+/* ---------- Task list ---------- */
+.task-list, .board-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.task-card {
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.task-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.task-card__title {
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-card__reward {
+  font-size: 12px;
+  color: var(--aura-cyan);
+  font-weight: 600;
+}
+
+.task-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--ink-faint);
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
+/* ---------- Leaderboard ---------- */
+.board-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+}
+
+.board-row.is-top {
+  background: linear-gradient(120deg, rgba(139,92,246,0.16), rgba(236,127,181,0.10));
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.board-row__rank {
+  font-family: var(--font-display);
+  font-weight: 700;
+  width: 26px;
+  color: var(--ink-muted);
+  flex-shrink: 0;
+}
+
+.board-row.is-top .board-row__rank {
+  color: var(--aura-rose);
+}
+
+.board-row__name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.board-row__coins {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--aura-cyan);
+  flex-shrink: 0;
+}
+
+/* ---------- Tab bar ---------- */
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  background: rgba(21, 19, 31, 0.92);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid var(--stroke);
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+}
+
+.tabbar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 0;
+  color: var(--ink-faint);
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+}
+
+.tabbar__icon {
+  font-size: 18px;
+}
+
+.tabbar__item.is-active {
+  color: var(--ink);
+  background: linear-gradient(180deg, rgba(139,92,246,0.14), transparent);
+}
+
+.tabbar__item.is-active .tabbar__icon {
+  color: var(--aura-cyan);
+}
+
+/* ---------- Motion & accessibility floor ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .orb__glow { animation: none; }
+  .view { animation: none; }
+  .particle { animation: none; opacity: 0; }
+  .level-ring__fill { transition: none; }
+  }
