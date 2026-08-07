@@ -1,1 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>ZORY X — Tap to Earn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
 
+<div class="app">
+
+  <header class="topbar">
+    <span class="wordmark">zory x</span>
+    <div class="coin-chip">
+      <span class="coin-chip__icon">⚡</span>
+      <span id="coin-balance">0</span>
+    </div>
+  </header>
+
+  <!-- HOME VIEW -->
+  <main class="view" id="view-home">
+    <div class="orb-stage">
+      <svg class="level-ring" viewBox="0 0 220 220">
+        <circle class="level-ring__track" cx="110" cy="110" r="100" />
+        <circle class="level-ring__fill" id="level-ring-fill" cx="110" cy="110" r="100" />
+      </svg>
+
+      <button class="orb" id="tap-orb" aria-label="Tap to earn">
+        <span class="orb__glow"></span>
+        <span class="orb__core"></span>
+      </button>
+
+      <div class="particle-field" id="particle-field"></div>
+    </div>
+
+    <p class="level-caption">
+      Level <span id="level-number">1</span> · <span id="level-hint">Tap to charge your aura</span>
+    </p>
+
+    <div class="invite-card">
+      <div class="invite-card__text">
+        <strong>Invite friends</strong>
+        <span id="referral-count">0 joined</span>
+      </div>
+      <button class="btn btn--ghost" id="copy-referral">Copy link</button>
+    </div>
+  </main>
+
+  <!-- TASKS VIEW -->
+  <main class="view" id="view-tasks" hidden>
+    <h1 class="view-title">Tasks</h1>
+    <p class="view-subtitle">Complete these to boost your aura.</p>
+
+    <div class="ad-card">
+      <div class="ad-card__text">
+        <strong>Watch an ad</strong>
+        <span>+<span id="ad-reward-amount">20</span> coins, no limit but a short wait between ads</span>
+      </div>
+      <button class="btn btn--primary" id="watch-ad-btn">▶ Watch</button>
+    </div>
+
+    <div class="task-list" id="task-list">
+      <!-- filled by script.js -->
+    </div>
+  </main>
+
+  <!-- LEADERBOARD VIEW -->
+  <main class="view" id="view-leaderboard" hidden>
+    <h1 class="view-title">Leaderboard</h1>
+    <p class="view-subtitle">The strongest auras right now.</p>
+    <div class="board-list" id="board-list">
+      <!-- filled by script.js -->
+    </div>
+  </main>
+
+  <nav class="tabbar">
+    <button class="tabbar__item is-active" data-view="home">
+      <span class="tabbar__icon">◎</span>
+      <span>Home</span>
+    </button>
+    <button class="tabbar__item" data-view="tasks">
+      <span class="tabbar__icon">✓</span>
+      <span>Tasks</span>
+    </button>
+    <button class="tabbar__item" data-view="leaderboard">
+      <span class="tabbar__icon">▲</span>
+      <span>Rank</span>
+    </button>
+  </nav>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+    </html>
