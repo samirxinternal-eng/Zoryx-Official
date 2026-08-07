@@ -1,1 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>ZORY X BOT</title>
+<link rel="stylesheet" href="css/style.css" />
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
 
+<div id="app">
+
+  <!-- ===== HEADER ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-name">ZORY X BOT</span>
+    </div>
+    <button id="langBtn" class="lang-pill">🌐 <span id="langCode">BN</span></button>
+  </header>
+
+  <!-- ===== PAGES ===== -->
+  <main id="pages">
+
+    <!-- HOME -->
+    <section id="page-home" class="page active">
+      <div class="profile-card">
+        <img id="userPhoto" class="avatar" src="" alt="avatar" />
+        <div class="profile-info">
+          <h2 id="userName">...</h2>
+          <p id="userUsername" class="muted">@username</p>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card coin">
+          <div class="stat-value" id="coinBalance">0</div>
+          <div class="stat-label">🪙 <span data-i18n="coins">Coins</span></div>
+        </div>
+        <div class="stat-card energy">
+          <div class="stat-value" id="energyBalance">0</div>
+          <div class="stat-label">⚡ <span data-i18n="energy">Energy</span></div>
+        </div>
+        <div class="stat-card friends">
+          <div class="stat-value" id="referralCountHome">0</div>
+          <div class="stat-label">👥 <span data-i18n="invites">Invites</span></div>
+        </div>
+      </div>
+
+      <div class="section-title" data-i18n="quickActions">Quick Actions</div>
+      <div class="quick-actions">
+        <button class="quick-btn" data-nav="earn">
+          <span class="qb-icon">🎯</span>
+          <span data-i18n="earnCoins">Earn Coins</span>
+        </button>
+        <button class="quick-btn" data-nav="friends">
+          <span class="qb-icon">🔗</span>
+          <span data-i18n="inviteFriends">Invite Friends</span>
+        </button>
+        <button class="quick-btn" data-nav="leaderboard">
+          <span class="qb-icon">🏆</span>
+          <span data-i18n="viewRanking">View Ranking</span>
+        </button>
+        <button class="quick-btn" id="watchAdHomeBtn">
+          <span class="qb-icon">📺</span>
+          <span data-i18n="watchAd">Watch Ad</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- EARN -->
+    <section id="page-earn" class="page">
+      <div class="section-title" data-i18n="earnTasks">Earn Tasks</div>
+
+      <button id="watchAdBtn" class="ad-banner">
+        <span class="ad-icon">📺</span>
+        <div class="ad-text">
+          <strong data-i18n="watchAdTitle">Watch Ad</strong>
+          <small data-i18n="watchAdDesc">Watch a short ad and earn coins + energy</small>
+        </div>
+        <span class="ad-plus">+20</span>
+      </button>
+
+      <div id="taskList" class="task-list"></div>
+
+      <button id="addTaskFab" class="fab hidden">+ <span data-i18n="addTask">Add Task</span></button>
+    </section>
+
+    <!-- FRIENDS -->
+    <section id="page-friends" class="page">
+      <div class="section-title" data-i18n="inviteFriends">Invite Friends</div>
+      <div class="referral-card">
+        <div class="referral-icon">🎁</div>
+        <p data-i18n="referralDesc">Invite your friends and earn coins for every friend that joins!</p>
+        <div class="referral-link-box">
+          <input id="referralLinkInput" type="text" readonly />
+          <button id="copyLinkBtn">📋</button>
+        </div>
+        <button id="shareLinkBtn" class="primary-btn">📤 <span data-i18n="shareWithFriends">Share with Friends</span></button>
+      </div>
+      <div class="stats-row single">
+        <div class="stat-card friends">
+          <div class="stat-value" id="referralCountFriends">0</div>
+          <div class="stat-label">👥 <span data-i18n="totalInvites">Total Invites</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEADERBOARD -->
+    <section id="page-leaderboard" class="page">
+      <div class="section-title" data-i18n="leaderboard">Leaderboard</div>
+      <div id="leaderboardList" class="leaderboard-list"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-nav="home">
+      <span class="nav-icon">🏠</span>
+      <span data-i18n="home">Home</span>
+    </button>
+    <button class="nav-btn" data-nav="earn">
+      <span class="nav-icon">🎯</span>
+      <span data-i18n="earn">Earn</span>
+    </button>
+    <button class="nav-btn" data-nav="friends">
+      <span class="nav-icon">👥</span>
+      <span data-i18n="friends">Friends</span>
+    </button>
+    <button class="nav-btn" data-nav="leaderboard">
+      <span class="nav-icon">🏆</span>
+      <span data-i18n="leaderboard">Leaderboard</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- ===== LANGUAGE MODAL ===== -->
+<div id="langModal" class="modal hidden">
+  <div class="modal-box">
+    <h3 data-i18n="chooseLanguage">Choose Language</h3>
+    <div class="lang-options">
+      <button class="lang-option" data-lang="bn">🇧🇩 বাংলা</button>
+      <button class="lang-option" data-lang="en">🇬🇧 English</button>
+      <button class="lang-option" data-lang="hi">🇮🇳 हिंदी</button>
+      <button class="lang-option" data-lang="ar">🇸🇦 العربية</button>
+    </div>
+    <button class="close-modal" data-close="langModal" data-i18n="close">Close</button>
+  </div>
+</div>
+
+<!-- ===== ADD TASK MODAL (admin only) ===== -->
+<div id="addTaskModal" class="modal hidden">
+  <div class="modal-box">
+    <h3 data-i18n="addNewTask">Add New Task</h3>
+
+    <label data-i18n="platform">Platform</label>
+    <div id="platformSwitcher" class="platform-switcher">
+      <button class="platform-opt active" data-platform="telegram_channel">✈️<span>Telegram</span></button>
+      <button class="platform-opt" data-platform="telegram_bot">🤖<span>Bot</span></button>
+      <button class="platform-opt" data-platform="discord">🎮<span>Discord</span></button>
+      <button class="platform-opt" data-platform="youtube">▶️<span>YouTube</span></button>
+      <button class="platform-opt" data-platform="tiktok">🎵<span>TikTok</span></button>
+      <button class="platform-opt" data-platform="facebook">📘<span>Facebook</span></button>
+      <button class="platform-opt" data-platform="twitter">🐦<span>Twitter</span></button>
+      <button class="platform-opt" data-platform="instagram">📷<span>Instagram</span></button>
+      <button class="platform-opt" data-platform="website">🌐<span>Website</span></button>
+    </div>
+
+    <label data-i18n="taskTitle">Title</label>
+    <input id="taskTitleInput" type="text" placeholder="e.g. Join our official channel" />
+
+    <label data-i18n="taskUrl">Link / URL</label>
+    <input id="taskUrlInput" type="text" placeholder="https://t.me/yourchannel" />
+
+    <label data-i18n="rewardCoins">Reward (coins)</label>
+    <input id="taskRewardInput" type="number" value="10" min="1" />
+
+    <button id="submitTaskBtn" class="primary-btn" data-i18n="submit">Submit</button>
+    <button class="close-modal" data-close="addTaskModal" data-i18n="cancel">Cancel</button>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="js/i18n.js"></script>
+<script src="js/app.js"></script>
+</body>
+  </html>
