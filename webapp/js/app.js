@@ -3,21 +3,35 @@
   if (tg) {
     tg.ready();
     tg.expand();
-    try { tg.setHeaderColor('#1a1035'); } catch (e) {}
+    try { tg.setHeaderColor('#0a0a0a'); } catch (e) {}
   }
 
   const initData = tg ? tg.initData : '';
   let state = {
     me: null,
     tasks: [],
-    monetagZoneId: '',
     selectedPlatform: 'telegram_channel',
+    selectedAction: 'join',
     userSelectedPlatform: 'telegram_channel',
     activePlatformFilter: 'all',
     activeLbTab: 'tasks',
     activeActivityCat: 'invite',
     weeklyTimerInterval: null,
+    verifyTaskId: null,
   };
+
+  const PLATFORM_ACTIONS = {
+    telegram_channel: ['join'],
+    telegram_bot: ['start'],
+    discord: ['join'],
+    tiktok: ['follow', 'like', 'comment', 'share'],
+    youtube: ['subscribe', 'like', 'comment'],
+    instagram: ['follow', 'like', 'comment', 'share'],
+    facebook: ['follow', 'like', 'comment', 'share'],
+    twitter: ['follow', 'like', 'comment', 'repost'],
+    website: ['visit'],
+  };
+  const MANUAL_VERIFY_PLATFORMS = ['discord', 'tiktok', 'youtube', 'instagram', 'facebook', 'twitter'];
 
   async function api(path, opts = {}) {
     const res = await fetch(`/api${path}`, {
@@ -45,14 +59,18 @@
     return d.innerHTML;
   }
 
+  function fmtUsdt(n) {
+    return Number(n || 0).toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+  }
+
   // ================= Navigation =================
   function navigate(page) {
     document.querySelectorAll('.page').forEach((p) => p.classList.remove('active'));
     document.getElementById(`page-${page}`).classList.add('active');
     document.querySelectorAll('.nav-btn').forEach((b) => b.classList.toggle('active', b.dataset.nav === page));
-    if (page === 'tasks') loadTasks();
+    if (page === 'tasks') { loadTasks(); loadAdHistory(); }
     if (page === 'rank') { loadStats(); loadLeaderboard(); }
-    if (page === 'activity') loadAchievements();
+    if (page === 'activity') { loadAchievements(); loadEvents(); }
   }
   document.querySelectorAll('[data-nav]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -87,33 +105,40 @@
     document.getElementById('userPhoto').src = avatarUrl;
     document.getElementById('userPhoto2').src = avatarUrl;
 
-    document.getElementById('coinBalance').textContent = me.coins.toFixed(1).replace(/\.0$/, '');
-    document.getElementById('usdtBalance').textContent = me.usdtBalance.toFixed(2);
+    document.getElementById('usdtBalance').textContent = Number(me.balanceUSDT).toFixed(3);
     document.getElementById('referralCountHome').textContent = me.referralCount;
     document.getElementById('tasksDoneHome').textContent = me.completedTasksCount;
-    document.getElementById('walletUSDT').textContent = me.usdtBalance.toFixed(3);
+    document.getElementById('walletUSDT').textContent = Number(me.balanceUSDT).toFixed(3);
 
     document.getElementById('checkinStreak').textContent = me.checkInStreak;
     document.getElementById('checkinStreak2').textContent = me.checkInStreak;
-    document.getElementById('checkinReward').textContent = me.dailyCheckInReward;
-    document.getElementById('checkinReward2').textContent = me.dailyCheckInReward;
-    const checkinUsdt = (me.dailyCheckInReward * me.coinToUsdtRate).toFixed(2);
-    document.getElementById('checkinRewardUsdt').textContent = checkinUsdt;
-    document.getElementById('checkinRewardUsdt2').textContent = checkinUsdt;
+    document.getElementById('checkinReward').textContent = fmtUsdt(me.dailyCheckInRewardUSDT);
+    document.getElementById('checkinReward2').textContent = fmtUsdt(me.dailyCheckInRewardUSDT);
     setCheckinButtons(me.canCheckInToday);
 
+    document.getElementById('adRewardText').textContent = fmtUsdt(me.adRewardUSDT);
+
     document.getElementById('addTaskFab').classList.toggle('hidden', !me.isAdmin);
-    document.getElementById('pendingTasksBtn').classList.toggle('hidden', !me.isAdmin);
-    if (me.isAdmin) refreshPendingCount();
+    document.getElementById('pendingRequestsBtn').classList.toggle('hidden', !me.isAdmin);
+    document.getElementById('pendingVerifyBtn').classList.toggle('hidden', !me.isAdmin);
+    document.getElementById('editAdRewardBtn').classList.toggle('hidden', !me.isAdmin);
+    document.getElementById('createEventFab').classList.toggle('hidden', !me.isAdmin);
+    if (me.isAdmin) {
+      refreshPendingRequestsCount();
+      refreshPendingVerifyCount();
+    }
 
     document.getElementById('taskNotifLink').href = me.officialChannel;
     document.getElementById('announcementsLink').href = me.officialChannel;
     document.getElementById('communityLink').href = me.communityChannel;
 
+    document.getElementById('postTaskDescText').textContent = I18N.t('postTaskDesc').replace('{amount}', me.taskPostPaymentUSDT);
+
     if (!me.language) {
       document.getElementById('langModal').classList.remove('hidden');
     } else {
       await I18N.load(me.language);
+      document.getElementById('postTaskDescText').textContent = I18N.t('postTaskDesc').replace('{amount}', me.taskPostPaymentUSDT);
     }
   }
 
@@ -127,12 +152,11 @@
   async function doCheckIn() {
     try {
       const result = await api('/checkin', { method: 'POST' });
-      document.getElementById('coinBalance').textContent = result.coins.toFixed(1).replace(/\.0$/, '');
-      document.getElementById('usdtBalance').textContent = result.usdtBalance.toFixed(2);
+      document.getElementById('usdtBalance').textContent = Number(result.balanceUSDT).toFixed(3);
       document.getElementById('checkinStreak').textContent = result.checkInStreak;
       document.getElementById('checkinStreak2').textContent = result.checkInStreak;
       setCheckinButtons(false);
-      showToast(`🎉 +${result.rewarded} ZX`);
+      showToast(`🎉 +💵${fmtUsdt(result.rewardedUSDT)} USDT`);
     } catch (e) {
       showToast(e.message);
     }
@@ -147,6 +171,7 @@
       const lang = btn.dataset.lang;
       await api('/language', { method: 'POST', body: { lang } });
       await I18N.load(lang);
+      if (state.me) document.getElementById('postTaskDescText').textContent = I18N.t('postTaskDesc').replace('{amount}', state.me.taskPostPaymentUSDT);
       document.getElementById('langModal').classList.add('hidden');
       showToast('✅');
     });
@@ -158,7 +183,7 @@
   // ================= Tasks =================
   const PLATFORM_ICON = {
     telegram_channel: '✈️', telegram_bot: '🤖', discord: '🎮', youtube: '▶️',
-    tiktok: '🎵', facebook: '📘', twitter: '🐦', instagram: '📷', website: '🌐',
+    tiktok: '🎵', facebook: '📘', twitter: '✖️', instagram: '📷', website: '🌐',
   };
 
   function renderTaskCard(task, showAdminControls) {
@@ -166,8 +191,14 @@
     let actionHtml = '';
     if (task.status === 'completed') {
       actionHtml = `<button class="task-action-btn done" disabled>✔ ${I18N.t('completed')}</button>`;
+    } else if (task.status === 'pending_verification') {
+      actionHtml = `<button class="task-action-btn pending" disabled>⏳ ${I18N.t('pendingReview')}</button>`;
     } else if (task.status === 'started') {
-      actionHtml = `<button class="task-action-btn check" data-check="${task.id}">${I18N.t('check')}</button>`;
+      if (task.verificationMode === 'manual') {
+        actionHtml = `<button class="task-action-btn verify" data-verify="${task.id}">${I18N.t('verifyNow')}</button>`;
+      } else {
+        actionHtml = `<button class="task-action-btn check" data-check="${task.id}">${I18N.t('check')}</button>`;
+      }
     } else {
       actionHtml = `<button class="task-action-btn go" data-go="${task.id}" data-url="${task.url}">${I18N.t('go')}</button>`;
     }
@@ -181,7 +212,11 @@
     card.innerHTML = `
       <div class="task-badge">${I18N.t('mustDoTag')}</div>
       <div class="task-icon">${icon}</div>
-      <div class="task-info"><h4>${escapeHtml(task.title)}</h4><span>+${task.rewardCoins} 🪙</span></div>
+      <div class="task-info">
+        <h4>${escapeHtml(task.title)}</h4>
+        <span>+💵${fmtUsdt(task.rewardUSDT)} USDT</span>
+        <span class="task-action-tag">${I18N.t('action_' + task.actionType) || task.actionType}</span>
+      </div>
       ${actionHtml}
       ${deleteHtml}
     `;
@@ -208,12 +243,18 @@
         try {
           const result = await api('/tasks/check', { method: 'POST', body: { taskId } });
           if (result.status === 'completed') {
-            showToast(`🎉 +${result.rewardCoins || 0} 🪙`);
-            document.getElementById('coinBalance').textContent = result.coins.toFixed(1).replace(/\.0$/, '');
-            document.getElementById('usdtBalance').textContent = result.usdtBalance.toFixed(2);
+            showToast(`🎉 +💵${fmtUsdt(result.rewardUSDT)} USDT`);
+            document.getElementById('usdtBalance').textContent = Number(result.balanceUSDT).toFixed(3);
             loadTasks();
           }
         } catch (e) { showToast(e.message); }
+      });
+    });
+    container.querySelectorAll('[data-verify]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.verifyTaskId = btn.dataset.verify;
+        document.getElementById('verifyUsernameInput').value = '';
+        document.getElementById('verifyModal').classList.remove('hidden');
       });
     });
     container.querySelectorAll('[data-delete]').forEach((btn) => {
@@ -228,6 +269,17 @@
       });
     });
   }
+
+  document.getElementById('submitVerifyBtn').addEventListener('click', async () => {
+    const username = document.getElementById('verifyUsernameInput').value.trim();
+    if (!username) return showToast(I18N.t('fillAllFields'));
+    try {
+      await api('/tasks/verify', { method: 'POST', body: { taskId: state.verifyTaskId, username } });
+      showToast(I18N.t('verifySubmitted'));
+      document.getElementById('verifyModal').classList.add('hidden');
+      loadTasks();
+    } catch (e) { showToast(e.message); }
+  });
 
   async function loadTasks() {
     const listEl = document.getElementById('taskList');
@@ -273,36 +325,60 @@
   });
 
   // ================= Add Task (admin, free) =================
-  document.getElementById('addTaskFab').addEventListener('click', () => document.getElementById('addTaskModal').classList.remove('hidden'));
+  function renderActionSwitcher(containerId, platform, onSelect) {
+    const container = document.getElementById(containerId);
+    const actions = PLATFORM_ACTIONS[platform] || [];
+    container.innerHTML = actions
+      .map((a, i) => `<button class="platform-opt${i === 0 ? ' active' : ''}" data-action="${a}">${I18N.t('action_' + a) || a}</button>`)
+      .join('');
+    if (actions.length) onSelect(actions[0]);
+    container.querySelectorAll('[data-action]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        container.querySelectorAll('[data-action]').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        onSelect(btn.dataset.action);
+      });
+    });
+  }
+
+  document.getElementById('addTaskFab').addEventListener('click', () => {
+    renderActionSwitcher('actionSwitcher', state.selectedPlatform, (a) => (state.selectedAction = a));
+    document.getElementById('addTaskModal').classList.remove('hidden');
+  });
   document.querySelectorAll('#platformSwitcher .platform-opt').forEach((btn) => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('#platformSwitcher .platform-opt').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       state.selectedPlatform = btn.dataset.platform;
+      renderActionSwitcher('actionSwitcher', state.selectedPlatform, (a) => (state.selectedAction = a));
     });
   });
   document.getElementById('submitTaskBtn').addEventListener('click', async () => {
     const title = document.getElementById('taskTitleInput').value.trim();
     const url = document.getElementById('taskUrlInput').value.trim();
-    const rewardCoins = document.getElementById('taskRewardInput').value;
+    const rewardUSDT = document.getElementById('taskRewardInput').value;
     if (!title || !url) return showToast(I18N.t('fillAllFields'));
     try {
-      await api('/tasks', { method: 'POST', body: { title, url, platform: state.selectedPlatform, rewardCoins } });
+      await api('/tasks', {
+        method: 'POST',
+        body: { title, url, platform: state.selectedPlatform, actionType: state.selectedAction, rewardUSDT },
+      });
       showToast(I18N.t('taskAdded'));
       document.getElementById('addTaskModal').classList.add('hidden');
       document.getElementById('taskTitleInput').value = '';
       document.getElementById('taskUrlInput').value = '';
-      document.getElementById('taskRewardInput').value = 1;
+      document.getElementById('taskRewardInput').value = 0.01;
       loadTasks();
     } catch (e) { showToast(e.message); }
   });
 
-  // ================= User Paid Task Submission =================
+  // ================= User Task Request (fixed payment) =================
   document.getElementById('userAddTaskFab').addEventListener('click', async () => {
     try {
       const info = await api('/tasks/payment-info');
       document.getElementById('payNetwork').textContent = info.network;
       document.getElementById('payAddress').textContent = info.address;
+      document.getElementById('postTaskDescText').textContent = I18N.t('postTaskDesc').replace('{amount}', info.amountUSDT);
     } catch (e) {}
     document.getElementById('userTaskModal').classList.remove('hidden');
   });
@@ -313,15 +389,6 @@
       state.userSelectedPlatform = btn.dataset.platform;
     });
   });
-  function updateBudgetPreview() {
-    const reward = Number(document.getElementById('userTaskRewardInput').value) || 0;
-    const slots = Number(document.getElementById('userTaskSlotsInput').value) || 0;
-    const totalCoins = reward * slots;
-    const totalUsdt = (totalCoins * (state.me ? state.me.coinToUsdtRate : 0.1)).toFixed(2);
-    document.getElementById('budgetPreview').textContent = `${I18N.t('totalBudget')}: ${totalCoins.toFixed(1)} ZX (~$${totalUsdt})`;
-  }
-  document.getElementById('userTaskRewardInput').addEventListener('input', updateBudgetPreview);
-  document.getElementById('userTaskSlotsInput').addEventListener('input', updateBudgetPreview);
   document.getElementById('copyPayAddressBtn').addEventListener('click', () => {
     const addr = document.getElementById('payAddress').textContent;
     navigator.clipboard?.writeText(addr).catch(() => {});
@@ -330,66 +397,62 @@
   document.getElementById('submitUserTaskBtn').addEventListener('click', async () => {
     const title = document.getElementById('userTaskTitleInput').value.trim();
     const url = document.getElementById('userTaskUrlInput').value.trim();
-    const rewardCoins = document.getElementById('userTaskRewardInput').value;
-    const maxCompletions = document.getElementById('userTaskSlotsInput').value;
     if (!title || !url) return showToast(I18N.t('fillAllFields'));
     try {
-      await api('/tasks/submit', { method: 'POST', body: { title, url, platform: state.userSelectedPlatform, rewardCoins, maxCompletions } });
+      await api('/tasks/requests', { method: 'POST', body: { title, url, platform: state.userSelectedPlatform } });
       showToast(I18N.t('taskSubmitted'));
       document.getElementById('userTaskModal').classList.add('hidden');
+      document.getElementById('userTaskTitleInput').value = '';
+      document.getElementById('userTaskUrlInput').value = '';
     } catch (e) { showToast(e.message); }
   });
 
-  // ================= Admin: Pending Paid Tasks =================
-  async function refreshPendingCount() {
+  // ================= Admin: Pending Task Requests =================
+  async function refreshPendingRequestsCount() {
     try {
-      const { tasks } = await api('/tasks/pending');
-      document.getElementById('pendingCount').textContent = tasks.length;
+      const { requests } = await api('/tasks/requests/pending');
+      document.getElementById('pendingRequestsCount').textContent = requests.length;
     } catch (e) {}
   }
-  document.getElementById('pendingTasksBtn').addEventListener('click', async () => {
-    const listEl = document.getElementById('pendingTasksList');
+  document.getElementById('pendingRequestsBtn').addEventListener('click', async () => {
+    const listEl = document.getElementById('pendingRequestsList');
     listEl.innerHTML = `<p class="muted">${I18N.t('loading')}</p>`;
-    document.getElementById('pendingTasksModal').classList.remove('hidden');
+    document.getElementById('pendingRequestsModal').classList.remove('hidden');
     try {
-      const { tasks } = await api('/tasks/pending');
-      if (!tasks.length) {
-        listEl.innerHTML = `<p class="muted">${I18N.t('noPendingTasks')}</p>`;
-        return;
-      }
+      const { requests } = await api('/tasks/requests/pending');
+      if (!requests.length) { listEl.innerHTML = `<p class="muted">${I18N.t('noPendingTasks')}</p>`; return; }
       listEl.innerHTML = '';
-      tasks.forEach((t) => {
+      requests.forEach((r) => {
         const div = document.createElement('div');
         div.className = 'pending-task-item';
         div.innerHTML = `
-          <h4>${escapeHtml(t.title)}</h4>
-          <p>${PLATFORM_ICON[t.platform] || '🌐'} ${t.platform} · ${t.rewardCoins} ZX x ${t.maxCompletions} = ${t.budgetCoins.toFixed(1)} ZX (~$${t.budgetUSDT})</p>
-          <p>Sponsor: ${t.sponsorTelegramId}</p>
+          <h4>${escapeHtml(r.title)}</h4>
+          <p>${PLATFORM_ICON[r.platform] || '🌐'} ${r.platform} · <a href="${r.url}" target="_blank" style="color:var(--accent-3)">${escapeHtml(r.url)}</a></p>
+          <p>Sponsor: ${r.sponsorTelegramId}</p>
           <div class="pending-task-actions">
-            <button class="approve-btn" data-approve="${t.id}">✅ ${I18N.t('approve')}</button>
-            <button class="reject-btn" data-reject="${t.id}">❌ ${I18N.t('reject')}</button>
+            <button class="approve-btn" data-handle="${r.id}">✅ ${I18N.t('paymentReceived')}</button>
+            <button class="reject-btn" data-rejectreq="${r.id}">❌ ${I18N.t('reject')}</button>
           </div>
         `;
         listEl.appendChild(div);
       });
-      listEl.querySelectorAll('[data-approve]').forEach((btn) => {
+      listEl.querySelectorAll('[data-handle]').forEach((btn) => {
         btn.addEventListener('click', async () => {
           try {
-            await api(`/tasks/pending/${btn.dataset.approve}/approve`, { method: 'POST' });
+            await api(`/tasks/requests/${btn.dataset.handle}/handle`, { method: 'POST' });
             showToast('✅');
-            document.getElementById('pendingTasksBtn').click();
-            refreshPendingCount();
-            loadTasks();
+            document.getElementById('pendingRequestsBtn').click();
+            refreshPendingRequestsCount();
           } catch (e) { showToast(e.message); }
         });
       });
-      listEl.querySelectorAll('[data-reject]').forEach((btn) => {
+      listEl.querySelectorAll('[data-rejectreq]').forEach((btn) => {
         btn.addEventListener('click', async () => {
           try {
-            await api(`/tasks/pending/${btn.dataset.reject}/reject`, { method: 'POST' });
+            await api(`/tasks/requests/${btn.dataset.rejectreq}/reject`, { method: 'POST' });
             showToast('🗑');
-            document.getElementById('pendingTasksBtn').click();
-            refreshPendingCount();
+            document.getElementById('pendingRequestsBtn').click();
+            refreshPendingRequestsCount();
           } catch (e) { showToast(e.message); }
         });
       });
@@ -397,6 +460,104 @@
       listEl.innerHTML = `<p class="muted">${e.message}</p>`;
     }
   });
+
+  // ================= Admin: Pending Verifications =================
+  async function refreshPendingVerifyCount() {
+    try {
+      const { verifications } = await api('/tasks/verifications');
+      document.getElementById('pendingVerifyCount').textContent = verifications.length;
+    } catch (e) {}
+  }
+  document.getElementById('pendingVerifyBtn').addEventListener('click', async () => {
+    const listEl = document.getElementById('pendingVerifyList');
+    listEl.innerHTML = `<p class="muted">${I18N.t('loading')}</p>`;
+    document.getElementById('pendingVerifyModal').classList.remove('hidden');
+    try {
+      const { verifications } = await api('/tasks/verifications');
+      if (!verifications.length) { listEl.innerHTML = `<p class="muted">${I18N.t('noPendingTasks')}</p>`; return; }
+      listEl.innerHTML = '';
+      verifications.forEach((v) => {
+        const div = document.createElement('div');
+        div.className = 'pending-task-item';
+        div.innerHTML = `
+          <h4>${escapeHtml(v.taskTitle)}</h4>
+          <p>${PLATFORM_ICON[v.platform] || '🌐'} ${v.platform} · ${I18N.t('action_' + v.actionType) || v.actionType} · +💵${fmtUsdt(v.rewardUSDT)} USDT</p>
+          <p>${I18N.t('submittedUsername')}: <small class="username">${escapeHtml(v.submittedUsername)}</small></p>
+          <p>User: ${v.userId}</p>
+          <div class="pending-task-actions">
+            <button class="approve-btn" data-approvev="${v.id}">✅ ${I18N.t('approve')}</button>
+            <button class="reject-btn" data-rejectv="${v.id}">❌ ${I18N.t('reject')}</button>
+          </div>
+        `;
+        listEl.appendChild(div);
+      });
+      listEl.querySelectorAll('[data-approvev]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          try {
+            await api(`/tasks/verifications/${btn.dataset.approvev}/approve`, { method: 'POST' });
+            showToast('✅');
+            document.getElementById('pendingVerifyBtn').click();
+            refreshPendingVerifyCount();
+          } catch (e) { showToast(e.message); }
+        });
+      });
+      listEl.querySelectorAll('[data-rejectv]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          try {
+            await api(`/tasks/verifications/${btn.dataset.rejectv}/reject`, { method: 'POST' });
+            showToast('🗑');
+            document.getElementById('pendingVerifyBtn').click();
+            refreshPendingVerifyCount();
+          } catch (e) { showToast(e.message); }
+        });
+      });
+    } catch (e) {
+      listEl.innerHTML = `<p class="muted">${e.message}</p>`;
+    }
+  });
+
+  // ================= Ad watch + history + admin edit =================
+  async function loadAdHistory() {
+    const listEl = document.getElementById('adHistoryList');
+    try {
+      const list = await api('/ads/history');
+      if (!list.length) { listEl.innerHTML = `<div class="ad-history-empty">${I18N.t('noAdHistory')}</div>`; return; }
+      listEl.innerHTML = list
+        .map((a) => `<div class="ad-history-row"><span class="amount">+💵${fmtUsdt(a.amountUSDT)} USDT</span><span class="time">${new Date(a.watchedAt).toLocaleString()}</span></div>`)
+        .join('');
+    } catch (e) {}
+  }
+
+  document.getElementById('editAdRewardBtn').addEventListener('click', async () => {
+    const current = document.getElementById('adRewardText').textContent;
+    const val = window.prompt(I18N.t('editAdRewardPrompt'), current);
+    if (val === null) return;
+    const amount = Number(val);
+    if (!amount || amount <= 0) return showToast(I18N.t('fillAllFields'));
+    try {
+      const result = await api('/ads/reward', { method: 'POST', body: { amountUSDT: amount } });
+      document.getElementById('adRewardText').textContent = fmtUsdt(result.adRewardUSDT);
+      showToast('✅');
+    } catch (e) { showToast(e.message); }
+  });
+
+  async function watchAdFlow() {
+    try {
+      if (typeof window.showMonetagRewardedAd === 'function') {
+        await window.showMonetagRewardedAd();
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+      const result = await api('/ads/watch', { method: 'POST' });
+      document.getElementById('usdtBalance').textContent = Number(result.balanceUSDT).toFixed(3);
+      showToast(`🎉 +💵${fmtUsdt(result.rewardedUSDT)} USDT`);
+      loadAdHistory();
+    } catch (e) {
+      showToast(e.message || I18N.t('adCooldownMsg'));
+    }
+  }
+  document.getElementById('watchAdBtn').addEventListener('click', watchAdFlow);
+  document.getElementById('watchAdHomeBtn').addEventListener('click', () => { navigate('tasks'); watchAdFlow(); });
 
   // ================= Rank / Friends =================
   document.getElementById('copyLinkBtn').addEventListener('click', () => {
@@ -407,7 +568,7 @@
   });
   document.getElementById('shareLinkBtn').addEventListener('click', () => {
     const link = document.getElementById('referralLinkInput').value;
-    const shareText = '🚀 Join ZORY X BOT and start earning ZX Coin today! Complete simple tasks, invite friends, and climb the leaderboard 🏆';
+    const shareText = '🚀 Join ZORY X BOT and start earning USDT today! Complete simple tasks, invite friends, and climb the leaderboard 🏆';
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(shareText)}`;
     if (tg && tg.openTelegramLink) tg.openTelegramLink(shareUrl);
     else window.open(shareUrl, '_blank');
@@ -463,22 +624,24 @@
     const rows = await api(`/leaderboard?type=${state.activeLbTab}`);
     listEl.innerHTML = '';
     const unit = state.activeLbTab === 'invites' ? '' : ' USDT';
+    const prefix = state.activeLbTab === 'invites' ? '' : '💵';
     rows.forEach((r) => {
       const row = document.createElement('div');
       row.className = 'lb-row' + (r.isYou ? ' you' : '');
       const rankClass = r.rank === 1 ? 'top1' : r.rank === 2 ? 'top2' : r.rank === 3 ? 'top3' : '';
       const medal = r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : r.rank;
+      const value = state.activeLbTab === 'invites' ? r.value : fmtUsdt(r.value);
       row.innerHTML = `
         <div class="lb-rank ${rankClass}">${medal}</div>
         <img class="lb-avatar" src="${r.photoUrl || 'https://api.dicebear.com/7.x/identicon/svg?seed=' + r.name}" />
         <div class="lb-name">${escapeHtml(r.name)}</div>
-        <div class="lb-coins">${r.value}${unit}</div>
+        <div class="lb-coins">${prefix}${value}${unit}</div>
       `;
       listEl.appendChild(row);
     });
   }
 
-  // ================= Activity =================
+  // ================= Activity: Achievements =================
   document.querySelectorAll('#page-activity .tab-row [data-activity]').forEach((btn) => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('#page-activity .tab-row [data-activity]').forEach((b) => b.classList.remove('active'));
@@ -513,12 +676,11 @@
       const div = document.createElement('div');
       div.className = 'achievement-card';
       const btnLabel = a.claimed ? '✔ ' + I18N.t('claimed') : a.claimable ? I18N.t('claim') : `${a.progress}/${a.target}`;
-      const usdtReward = (a.rewardCoins * (state.me ? state.me.coinToUsdtRate : 0.1)).toFixed(2);
       div.innerHTML = `
         <div class="ach-top">
           <span class="ach-icon">${a.icon}</span>
           <div class="ach-text"><strong>${I18N.t(a.titleKey)}</strong><small>${I18N.t(a.descKey)}</small></div>
-          <span class="ach-reward">+${usdtReward} USDT<br/>+${a.rewardCoins} ZX</span>
+          <span class="ach-reward">+💵${fmtUsdt(a.rewardUSDT)} USDT</span>
         </div>
         <div class="ach-progress-bar"><div class="ach-progress-fill" style="width:${pct}%"></div></div>
         <div class="ach-bottom">
@@ -532,34 +694,67 @@
       btn.addEventListener('click', async () => {
         try {
           const result = await api('/achievements/claim', { method: 'POST', body: { achievementId: btn.dataset.claim } });
-          const rewardedUsdt = (result.rewarded * (state.me ? state.me.coinToUsdtRate : 0.1)).toFixed(2);
-          showToast(`🎉 +${rewardedUsdt} USDT / +${result.rewarded} ZX`);
-          document.getElementById('coinBalance').textContent = result.coins.toFixed(1).replace(/\.0$/, '');
-          document.getElementById('usdtBalance').textContent = result.usdtBalance.toFixed(2);
+          showToast(`🎉 +💵${fmtUsdt(result.rewardedUSDT)} USDT`);
+          document.getElementById('usdtBalance').textContent = Number(result.balanceUSDT).toFixed(3);
           loadAchievements();
         } catch (e) { showToast(e.message); }
       });
     });
   }
 
-  // ================= Watch Ad =================
-  async function watchAdFlow() {
+  // ================= Activity: Events =================
+  async function loadEvents() {
+    const listEl = document.getElementById('eventsList');
+    const emptyEl = document.getElementById('eventsEmptyState');
     try {
-      if (typeof window.showMonetagRewardedAd === 'function') {
-        await window.showMonetagRewardedAd();
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+      const events = await api('/events');
+      if (!events.length) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        return;
       }
-      const result = await api('/ads/watch', { method: 'POST' });
-      document.getElementById('coinBalance').textContent = result.coins.toFixed(1).replace(/\.0$/, '');
-      document.getElementById('usdtBalance').textContent = result.usdtBalance.toFixed(2);
-      showToast(I18N.t('adRewardMsg'));
-    } catch (e) {
-      showToast(e.message || I18N.t('adCooldownMsg'));
-    }
+      emptyEl.classList.add('hidden');
+      const isAdmin = !!(state.me && state.me.isAdmin);
+      listEl.innerHTML = events
+        .map(
+          (e) => `
+        <div class="event-card">
+          ${isAdmin ? `<button class="event-delete-btn" data-delevent="${e.id}">🗑</button>` : ''}
+          <h4>${escapeHtml(e.title)}</h4>
+          <p>${escapeHtml(e.description || '')}</p>
+          ${e.link ? `<a class="event-link" href="${e.link}" target="_blank">🔗 ${I18N.t('openLink')}</a>` : ''}
+        </div>`
+        )
+        .join('');
+      listEl.querySelectorAll('[data-delevent]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          try {
+            await api(`/events/${btn.dataset.delevent}`, { method: 'DELETE' });
+            loadEvents();
+          } catch (e2) { showToast(e2.message); }
+        });
+      });
+    } catch (e) {}
   }
-  document.getElementById('watchAdBtn').addEventListener('click', watchAdFlow);
-  document.getElementById('watchAdHomeBtn').addEventListener('click', () => { navigate('tasks'); watchAdFlow(); });
+
+  document.getElementById('createEventFab').addEventListener('click', () => {
+    document.getElementById('createEventModal').classList.remove('hidden');
+  });
+  document.getElementById('submitEventBtn').addEventListener('click', async () => {
+    const title = document.getElementById('eventTitleInput').value.trim();
+    const description = document.getElementById('eventDescInput').value.trim();
+    const link = document.getElementById('eventLinkInput').value.trim();
+    if (!title) return showToast(I18N.t('fillAllFields'));
+    try {
+      await api('/events', { method: 'POST', body: { title, description, link } });
+      showToast('✅');
+      document.getElementById('createEventModal').classList.add('hidden');
+      document.getElementById('eventTitleInput').value = '';
+      document.getElementById('eventDescInput').value = '';
+      document.getElementById('eventLinkInput').value = '';
+      loadEvents();
+    } catch (e) { showToast(e.message); }
+  });
 
   // ================= Withdraw =================
   async function openWithdrawModal() {
@@ -596,9 +791,8 @@
     try {
       const result = await api('/withdraw', { method: 'POST', body: { amountUSDT, recipientAddress } });
       showToast(I18N.t('withdrawSubmitted'));
-      document.getElementById('coinBalance').textContent = result.coins.toFixed(1).replace(/\.0$/, '');
-      document.getElementById('usdtBalance').textContent = result.usdtBalance.toFixed(2);
-      document.getElementById('walletUSDT').textContent = result.usdtBalance.toFixed(3);
+      document.getElementById('usdtBalance').textContent = Number(result.balanceUSDT).toFixed(3);
+      document.getElementById('walletUSDT').textContent = Number(result.balanceUSDT).toFixed(3);
       document.getElementById('wdAmountInput').value = '';
       document.getElementById('wdAddressInput').value = '';
       openWithdrawModal();
@@ -626,8 +820,6 @@
     try {
       await I18N.load('bn');
       await loadMe();
-      const cfg = await api('/config');
-      state.monetagZoneId = cfg.monetagZoneId;
       tickTicker();
       await loadStats();
     } catch (e) {
