@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema(
     photoUrl: { type: String, default: '' },
     language: { type: String, default: null },
     coins: { type: Number, default: 0 },
-    energy: { type: Number, default: 100 },
     referredBy: { type: String, default: null },
     referralCount: { type: Number, default: 0 },
     completedTasksCount: { type: Number, default: 0 },
