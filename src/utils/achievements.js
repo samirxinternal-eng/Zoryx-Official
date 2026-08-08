@@ -1,15 +1,5 @@
-// Static achievement definitions. Progress is computed live from the user's
-// stored counters (referralCount / completedTasksCount) - nothing here is
-// per-user data, so this file can be edited freely to add more achievements.
-//
-// rewardCoins is set so that rewardCoins * COIN_TO_USDT_RATE (0.1) equals a
-// clean USDT bonus, matching the FoxiGrow-style milestone table:
-//   3 invites    -> +0.5 USDT / +5 ZX
-//   50 invites   -> +2 USDT   / +20 ZX
-//   200 invites  -> +10 USDT  / +100 ZX
-//   1000 invites -> +50 USDT  / +500 ZX
-//   5000 invites -> +200 USDT / +2000 ZX
-//   20000 invites-> +1500 USDT/ +15000 ZX
+// Static achievement definitions (USDT-only). Progress is computed live from
+// the user's stored counters (referralCount / completedTasksCount).
 
 const ACHIEVEMENTS = [
   {
@@ -20,7 +10,7 @@ const ACHIEVEMENTS = [
     descKey: 'ach_first_invitation_desc',
     target: 3,
     metric: 'referralCount',
-    rewardCoins: 5,
+    rewardUSDT: 1.5,
   },
   {
     id: 'social_butterfly',
@@ -30,7 +20,7 @@ const ACHIEVEMENTS = [
     descKey: 'ach_social_butterfly_desc',
     target: 50,
     metric: 'referralCount',
-    rewardCoins: 20,
+    rewardUSDT: 25,
   },
   {
     id: 'invite_master',
@@ -40,7 +30,7 @@ const ACHIEVEMENTS = [
     descKey: 'ach_invite_master_desc',
     target: 200,
     metric: 'referralCount',
-    rewardCoins: 100,
+    rewardUSDT: 100,
   },
   {
     id: 'invite_the_master',
@@ -50,7 +40,7 @@ const ACHIEVEMENTS = [
     descKey: 'ach_invite_the_master_desc',
     target: 1000,
     metric: 'referralCount',
-    rewardCoins: 500,
+    rewardUSDT: 500,
   },
   {
     id: 'invite_the_king',
@@ -60,7 +50,7 @@ const ACHIEVEMENTS = [
     descKey: 'ach_invite_the_king_desc',
     target: 5000,
     metric: 'referralCount',
-    rewardCoins: 2000,
+    rewardUSDT: 2500,
   },
   {
     id: 'invite_the_vip',
@@ -70,7 +60,7 @@ const ACHIEVEMENTS = [
     descKey: 'ach_invite_the_vip_desc',
     target: 20000,
     metric: 'referralCount',
-    rewardCoins: 15000,
+    rewardUSDT: 10000,
   },
   {
     id: 'first_task',
@@ -80,7 +70,7 @@ const ACHIEVEMENTS = [
     descKey: 'ach_first_task_desc',
     target: 1,
     metric: 'completedTasksCount',
-    rewardCoins: 2,
+    rewardUSDT: 0.05,
   },
   {
     id: 'task_grinder',
@@ -90,7 +80,7 @@ const ACHIEVEMENTS = [
     descKey: 'ach_task_grinder_desc',
     target: 25,
     metric: 'completedTasksCount',
-    rewardCoins: 15,
+    rewardUSDT: 0.5,
   },
   {
     id: 'task_legend',
@@ -100,7 +90,7 @@ const ACHIEVEMENTS = [
     descKey: 'ach_task_legend_desc',
     target: 100,
     metric: 'completedTasksCount',
-    rewardCoins: 50,
+    rewardUSDT: 2,
   },
 ];
 
