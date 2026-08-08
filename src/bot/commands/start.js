@@ -1,7 +1,7 @@
 const User = require('../../models/User');
 const { t } = require('../../locales');
 const { languageKeyboard, mainMenuKeyboard } = require('../keyboards');
-const { REFERRAL_REWARD, DEFAULT_LANG } = require('../../config');
+const { REFERRAL_REWARD_USDT, DEFAULT_LANG } = require('../../config');
 
 module.exports = async function startCommand(ctx) {
   const from = ctx.from;
@@ -29,7 +29,7 @@ module.exports = async function startCommand(ctx) {
     if (referredBy) {
       const referrer = await User.findOneAndUpdate(
         { telegramId: referredBy },
-        { $inc: { coins: REFERRAL_REWARD, referralCount: 1 } },
+        { $inc: { balanceUSDT: REFERRAL_REWARD_USDT, referralCount: 1 } },
         { new: true }
       );
       if (referrer) {
@@ -37,7 +37,7 @@ module.exports = async function startCommand(ctx) {
           const rl = t(referrer.language || DEFAULT_LANG);
           await ctx.telegram.sendMessage(
             referrer.telegramId,
-            `🎉 +${REFERRAL_REWARD} coins! ${from.first_name || 'A friend'} joined using your invite link.`
+            `🎉 +${REFERRAL_REWARD_USDT} USDT! ${from.first_name || 'A friend'} joined using your invite link.`
           );
         } catch (e) {
           /* user may have blocked the bot, ignore */
