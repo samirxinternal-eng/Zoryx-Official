@@ -22,6 +22,10 @@ const I18N = (function () {
       const key = el.getAttribute('data-i18n');
       if (dict[key]) el.textContent = dict[key];
     });
+    document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
+      const key = el.getAttribute('data-i18n-ph');
+      if (dict[key]) el.setAttribute('placeholder', dict[key]);
+    });
     document.documentElement.lang = lang;
     document.documentElement.dir = RTL_LANGS.includes(lang) ? 'rtl' : 'ltr';
     const codeEl = document.getElementById('langCode');
