@@ -76,8 +76,8 @@ async function run() {
     const name = FAKE_NAMES[i];
     const telegramId = `fake_${1000 + i}`;
     const balanceUSDT = randomFloat(264.08, 3964.43, 2);   // Tasks tab
-    const referralCount = randomFloat(1.50, 10000, 2);      // Invites tab
-    const weeklyUSDT = randomFloat(64.39, 17000, 2);        // Weekly tab (resets every Monday)
+    const referralCount = randomInt(56, 20000);              // Invites tab — পূর্ণ সংখ্যা
+    const weeklyUSDT = randomFloat(64.39, 17000, 2);         // Weekly tab (resets every Monday)
     const photoUrl = randomUsers[i]?.picture?.large || '';
 
     await User.findOneAndUpdate(
