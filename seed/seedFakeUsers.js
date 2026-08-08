@@ -22,7 +22,6 @@ function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Build a list of unique full names (first + last combos), up to `count`.
 function buildFakeNames(count) {
   const names = new Set();
   while (names.size < count) {
@@ -33,7 +32,7 @@ function buildFakeNames(count) {
   return Array.from(names);
 }
 
-const FAKE_NAMES = buildFakeNames(100); // 👈 এখানে ১০০ সেট করা আছে
+const FAKE_NAMES = buildFakeNames(100);
 
 async function run() {
   await mongoose.connect(MONGODB_URI);
@@ -47,9 +46,7 @@ async function run() {
     const coins = randomInt(500, 95000);
     const referralCount = randomInt(5, 900);
     const weeklyCoins = randomInt(50, 3000);
-
-    // প্রতিটা ইউজারের জন্য ইউনিক, ভিন্ন দেখতে avatar
-    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(telegramId)}`;
+    const photoUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(telegramId)}`;
 
     await User.findOneAndUpdate(
       { telegramId },
@@ -63,7 +60,7 @@ async function run() {
         weeklyWeekKey: currentWeekKey,
         isFake: true,
         language: 'en',
-        avatar: avatarUrl, // ⚠️ ফিল্ড নাম মডেল অনুযায়ী বদলাতে হতে পারে
+        photoUrl,
       },
       { upsert: true }
     );
