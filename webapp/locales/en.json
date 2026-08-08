@@ -22,6 +22,7 @@
   "go": "Go", "check": "Check", "linkCopied": "Link copied!", "adRewardMsg": "🎉 You earned coins and energy!",
   "adCooldownMsg": "Please wait a bit, then try again.", "taskAdded": "✅ Task added successfully!",
   "fillAllFields": "Please fill all fields", "loading": "Loading...",
+  "delete": "Delete", "confirmDeleteTask": "Delete this task? This cannot be undone.", "taskDeleted": "🗑 Task deleted",
   "postTaskTitle": "Post a Task", "postTaskDesc": "Send USDT to the address below based on the reward budget you want, then fill the form. Our team will review payment and activate your task within 24 hours.",
   "copy": "Copy", "slots": "Number of people (slots)", "totalBudget": "Total budget", "submitForReview": "Submit for Review",
   "taskSubmitted": "✅ Submitted! We'll review and activate it soon.", "pendingTasksTitle": "Pending Paid Tasks",
