@@ -1,26 +1,30 @@
 const User = require('../models/User');
 const WithdrawRequest = require('../models/WithdrawRequest');
-const Task = require('../models/Task');
+const AdWatch = require('../models/AdWatch');
+const Settings = require('../models/Settings');
+const Event = require('../models/Event');
 const bot = require('../bot/bot');
 const { verifyInitData } = require('../utils/verifyTelegram');
-const { isAdmin, isOwner } = require('../bot/middlewares/adminCheck');
-const { coinsToUsdt, isSameUTCDate, addCoins, getWeekKey, msUntilNextWeekReset } = require('../utils/economy');
+const { isAdmin } = require('../bot/middlewares/adminCheck');
+const { isSameUTCDate, addBalance, getWeekKey } = require('../utils/economy');
 const { ACHIEVEMENTS, getProgress } = require('../utils/achievements');
 const {
   BOT_USERNAME,
-  AD_REWARD,
-  DAILY_CHECKIN_REWARD,
+  AD_REWARD_USDT_DEFAULT,
+  DAILY_CHECKIN_REWARD_USDT,
   SUPPORTED_LANGS,
   WITHDRAW_MIN_USDT,
   TASK_PAYMENT_ADDRESS,
   TASK_PAYMENT_NETWORK,
+  TASK_POST_PAYMENT_USDT,
   OFFICIAL_CHANNEL,
   COMMUNITY_CHANNEL,
   BASE_FAKE_USERS,
   BASE_FAKE_TASKS,
   BASE_FAKE_REWARDS_USD,
   LAUNCH_DATE,
-  COIN_TO_USDT_RATE,
+  LEADERBOARD_LIMIT,
+  OWNER_IDS,
 } = require('../config');
 
 async function requireTelegramAuth(req, res, next) {
@@ -31,6 +35,14 @@ async function requireTelegramAuth(req, res, next) {
   }
   req.tgUser = tgUser;
   next();
+}
+
+async function getSettings() {
+  let settings = await Settings.findOne({ singleton: 'main' });
+  if (!settings) {
+    settings = await Settings.create({ singleton: 'main', adRewardUSDT: AD_REWARD_USDT_DEFAULT });
+  }
+  return settings;
 }
 
 async function getMe(req, res) {
@@ -65,6 +77,7 @@ async function getMe(req, res) {
 
   const admin = await isAdmin(telegramId);
   const canCheckInToday = !isSameUTCDate(user.lastCheckInAt, new Date());
+  const settings = await getSettings();
 
   return res.json({
     telegramId: user.telegramId,
@@ -73,18 +86,18 @@ async function getMe(req, res) {
     username: user.username,
     photoUrl: user.photoUrl,
     language: user.language,
-    coins: user.coins,
-    usdtBalance: coinsToUsdt(user.coins),
+    balanceUSDT: user.balanceUSDT,
     referralCount: user.referralCount,
     completedTasksCount: user.completedTasksCount,
     checkInStreak: user.checkInStreak,
     canCheckInToday,
-    dailyCheckInReward: DAILY_CHECKIN_REWARD,
+    dailyCheckInRewardUSDT: DAILY_CHECKIN_REWARD_USDT,
+    adRewardUSDT: settings.adRewardUSDT,
     isAdmin: admin,
     referralLink: `https://t.me/${BOT_USERNAME}?start=ref_${user.telegramId}`,
-    coinToUsdtRate: COIN_TO_USDT_RATE,
     officialChannel: OFFICIAL_CHANNEL,
     communityChannel: COMMUNITY_CHANNEL,
+    taskPostPaymentUSDT: TASK_POST_PAYMENT_USDT,
   });
 }
 
@@ -114,15 +127,14 @@ async function dailyCheckIn(req, res) {
 
   user.checkInStreak = wasYesterday ? user.checkInStreak + 1 : 1;
   user.lastCheckInAt = new Date();
-  addCoins(user, DAILY_CHECKIN_REWARD);
+  addBalance(user, DAILY_CHECKIN_REWARD_USDT);
   await user.save();
 
   return res.json({
     ok: true,
-    coins: user.coins,
-    usdtBalance: coinsToUsdt(user.coins),
+    balanceUSDT: user.balanceUSDT,
     checkInStreak: user.checkInStreak,
-    rewarded: DAILY_CHECKIN_REWARD,
+    rewardedUSDT: DAILY_CHECKIN_REWARD_USDT,
   });
 }
 
@@ -134,7 +146,7 @@ async function getLeaderboard(req, res) {
   if (type === 'invites') {
     const top = await User.find({}, { firstName: 1, username: 1, photoUrl: 1, referralCount: 1, telegramId: 1 })
       .sort({ referralCount: -1 })
-      .limit(50)
+      .limit(LEADERBOARD_LIMIT)
       .lean();
     return res.json(
       top.map((u, i) => ({
@@ -151,33 +163,33 @@ async function getLeaderboard(req, res) {
     const currentWeekKey = getWeekKey();
     const top = await User.find(
       { weeklyWeekKey: currentWeekKey },
-      { firstName: 1, username: 1, photoUrl: 1, weeklyCoins: 1, telegramId: 1 }
+      { firstName: 1, username: 1, photoUrl: 1, weeklyUSDT: 1, telegramId: 1 }
     )
-      .sort({ weeklyCoins: -1 })
-      .limit(50)
+      .sort({ weeklyUSDT: -1 })
+      .limit(LEADERBOARD_LIMIT)
       .lean();
     return res.json(
       top.map((u, i) => ({
         rank: i + 1,
         name: u.firstName || u.username || 'Player',
         photoUrl: u.photoUrl || '',
-        value: coinsToUsdt(u.weeklyCoins),
+        value: u.weeklyUSDT,
         isYou: u.telegramId === telegramId,
       }))
     );
   }
 
-  // default: "tasks" -> total earnings (USDT) ranking
-  const top = await User.find({}, { firstName: 1, username: 1, photoUrl: 1, coins: 1, telegramId: 1 })
-    .sort({ coins: -1 })
-    .limit(50)
+  // default: "tasks" -> total balance ranking
+  const top = await User.find({}, { firstName: 1, username: 1, photoUrl: 1, balanceUSDT: 1, telegramId: 1 })
+    .sort({ balanceUSDT: -1 })
+    .limit(LEADERBOARD_LIMIT)
     .lean();
   return res.json(
     top.map((u, i) => ({
       rank: i + 1,
       name: u.firstName || u.username || 'Player',
       photoUrl: u.photoUrl || '',
-      value: coinsToUsdt(u.coins),
+      value: u.balanceUSDT,
       isYou: u.telegramId === telegramId,
     }))
   );
@@ -185,13 +197,13 @@ async function getLeaderboard(req, res) {
 
 // ================= Live platform stats =================
 async function getStats(req, res) {
-  const [realUsers, realTasksCompleted] = await Promise.all([
+  const [realUsers, realTasksCompleted, realBalanceAgg] = await Promise.all([
     User.countDocuments({ isFake: false }),
     User.aggregate([{ $group: { _id: null, total: { $sum: '$completedTasksCount' } } }]),
+    User.aggregate([{ $group: { _id: null, total: { $sum: '$balanceUSDT' } } }]),
   ]);
-  const realCoinsAgg = await User.aggregate([{ $group: { _id: null, total: { $sum: '$coins' } } }]);
   const realTasksTotal = (realTasksCompleted[0] && realTasksCompleted[0].total) || 0;
-  const realRewardsUSD = coinsToUsdt((realCoinsAgg[0] && realCoinsAgg[0].total) || 0);
+  const realRewardsUSD = (realBalanceAgg[0] && realBalanceAgg[0].total) || 0;
 
   const runningDays = Math.max(1, Math.floor((Date.now() - new Date(LAUNCH_DATE).getTime()) / 86400000));
 
@@ -219,7 +231,7 @@ async function getAchievements(req, res) {
       descKey: a.descKey,
       target: a.target,
       progress: Math.min(progress, a.target),
-      rewardCoins: a.rewardCoins,
+      rewardUSDT: a.rewardUSDT,
       claimed: user.claimedAchievements.includes(a.id),
       claimable: progress >= a.target && !user.claimedAchievements.includes(a.id),
     };
@@ -249,10 +261,10 @@ async function claimAchievement(req, res) {
   }
 
   user.claimedAchievements.push(achievementId);
-  addCoins(user, def.rewardCoins);
+  addBalance(user, def.rewardUSDT);
   await user.save();
 
-  return res.json({ ok: true, coins: user.coins, usdtBalance: coinsToUsdt(user.coins), rewarded: def.rewardCoins });
+  return res.json({ ok: true, balanceUSDT: user.balanceUSDT, rewardedUSDT: def.rewardUSDT });
 }
 
 // ================= Ads =================
@@ -266,11 +278,42 @@ async function watchAd(req, res) {
     return res.status(429).json({ error: 'Please wait before watching another ad' });
   }
 
-  addCoins(user, AD_REWARD);
+  const settings = await getSettings();
+  const reward = settings.adRewardUSDT;
+
+  addBalance(user, reward);
   user.lastAdWatchAt = new Date();
   await user.save();
 
-  return res.json({ ok: true, coins: user.coins, usdtBalance: coinsToUsdt(user.coins), rewarded: AD_REWARD });
+  await AdWatch.create({ userId: telegramId, amountUSDT: reward, watchedAt: new Date() });
+
+  return res.json({ ok: true, balanceUSDT: user.balanceUSDT, rewardedUSDT: reward });
+}
+
+async function getAdHistory(req, res) {
+  const telegramId = String(req.tgUser.id);
+  const list = await AdWatch.find({ userId: telegramId }).sort({ watchedAt: -1 }).limit(50).lean();
+  return res.json(list.map((a) => ({ amountUSDT: a.amountUSDT, watchedAt: a.watchedAt })));
+}
+
+// ================= Settings (admin: editable ad reward) =================
+async function getAdRewardSetting(req, res) {
+  const settings = await getSettings();
+  return res.json({ adRewardUSDT: settings.adRewardUSDT });
+}
+
+async function updateAdRewardSetting(req, res) {
+  const telegramId = String(req.tgUser.id);
+  if (!(await isAdmin(telegramId))) return res.status(403).json({ error: 'Not authorized' });
+
+  const amount = Number(req.body.amountUSDT);
+  if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
+
+  const settings = await getSettings();
+  settings.adRewardUSDT = Math.round(amount * 1000) / 1000;
+  await settings.save();
+
+  return res.json({ ok: true, adRewardUSDT: settings.adRewardUSDT });
 }
 
 // ================= Withdraw =================
@@ -280,7 +323,7 @@ async function getWithdrawInfo(req, res) {
   if (!user) return res.status(404).json({ error: 'User not found' });
 
   return res.json({
-    withdrawableUSDT: coinsToUsdt(user.coins),
+    withdrawableUSDT: user.balanceUSDT,
     minUSDT: WITHDRAW_MIN_USDT,
     feeUSDT: 0,
   });
@@ -301,25 +344,21 @@ async function createWithdrawRequest(req, res) {
   const user = await User.findOne({ telegramId });
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  const userBalanceUSDT = coinsToUsdt(user.coins);
-  if (amount > userBalanceUSDT) {
+  if (amount > user.balanceUSDT) {
     return res.status(400).json({ error: 'Amount exceeds your withdrawable balance' });
   }
 
-  const coinsToDeduct = amount / COIN_TO_USDT_RATE;
-  user.coins -= coinsToDeduct;
+  user.balanceUSDT = Math.round((user.balanceUSDT - amount) * 1000) / 1000;
   await user.save();
 
   const request = await WithdrawRequest.create({
     userId: telegramId,
-    amountCoins: coinsToDeduct,
+    amountCoins: amount, // kept for schema compat; equals amountUSDT now (1:1, no coin unit)
     amountUSDT: amount,
     recipientAddress: recipientAddress.trim(),
     status: 'pending',
   });
 
-  // notify owners so they can process it manually within 24h
-  const { OWNER_IDS } = require('../config');
   for (const ownerId of OWNER_IDS) {
     try {
       await bot.telegram.sendMessage(
@@ -331,7 +370,7 @@ async function createWithdrawRequest(req, res) {
     }
   }
 
-  return res.json({ ok: true, requestId: request._id, coins: user.coins, usdtBalance: coinsToUsdt(user.coins) });
+  return res.json({ ok: true, requestId: request._id, balanceUSDT: user.balanceUSDT });
 }
 
 async function listMyWithdrawals(req, res) {
@@ -353,7 +392,33 @@ async function getTaskPaymentInfo(req, res) {
   return res.json({
     address: TASK_PAYMENT_ADDRESS,
     network: TASK_PAYMENT_NETWORK,
+    amountUSDT: TASK_POST_PAYMENT_USDT,
   });
+}
+
+// ================= Events (Activity -> Events tab) =================
+async function listEvents(req, res) {
+  const events = await Event.find({ active: true }).sort({ createdAt: -1 }).limit(30).lean();
+  return res.json(events.map((e) => ({ id: e._id, title: e.title, description: e.description, link: e.link, createdAt: e.createdAt })));
+}
+
+async function createEvent(req, res) {
+  const telegramId = String(req.tgUser.id);
+  if (!(await isAdmin(telegramId))) return res.status(403).json({ error: 'Not authorized' });
+
+  const { title, description, link } = req.body;
+  if (!title) return res.status(400).json({ error: 'Title is required' });
+
+  const event = await Event.create({ title, description: description || '', link: link || '', createdBy: telegramId });
+  return res.json({ ok: true, event });
+}
+
+async function deleteEvent(req, res) {
+  const telegramId = String(req.tgUser.id);
+  if (!(await isAdmin(telegramId))) return res.status(403).json({ error: 'Not authorized' });
+
+  await Event.findByIdAndUpdate(req.params.id, { active: false });
+  return res.json({ ok: true });
 }
 
 module.exports = {
@@ -366,8 +431,14 @@ module.exports = {
   getAchievements,
   claimAchievement,
   watchAd,
+  getAdHistory,
+  getAdRewardSetting,
+  updateAdRewardSetting,
   getWithdrawInfo,
   createWithdrawRequest,
   listMyWithdrawals,
   getTaskPaymentInfo,
+  listEvents,
+  createEvent,
+  deleteEvent,
 };
