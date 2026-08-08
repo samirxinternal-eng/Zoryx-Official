@@ -1,10 +1,4 @@
-const { COIN_TO_USDT_RATE } = require('../config');
-
-function coinsToUsdt(coins) {
-  return Math.round(coins * COIN_TO_USDT_RATE * 1000) / 1000;
-}
-
-// ISO week key like "2026-W32", used to lazily bucket/reset weekly leaderboard coins
+// ISO week key like "2026-W32", used to lazily bucket/reset weekly leaderboard USDT
 function getWeekKey(date = new Date()) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
@@ -25,17 +19,18 @@ function msUntilNextWeekReset() {
   return next.getTime() - now.getTime();
 }
 
-// Adds `coins` to a user's balance + weekly bucket (lazily resetting the
+// Adds `amountUSDT` to a user's balance + weekly bucket (lazily resetting the
 // weekly bucket if the ISO week has rolled over). Does NOT save() - caller
-// is expected to save the user document.
-function addCoins(user, coins) {
+// is expected to save the user document. Rounds to 3 decimal places to avoid
+// floating point drift.
+function addBalance(user, amountUSDT) {
   const currentWeekKey = getWeekKey();
   if (user.weeklyWeekKey !== currentWeekKey) {
     user.weeklyWeekKey = currentWeekKey;
-    user.weeklyCoins = 0;
+    user.weeklyUSDT = 0;
   }
-  user.coins += coins;
-  user.weeklyCoins += coins;
+  user.balanceUSDT = Math.round((user.balanceUSDT + amountUSDT) * 1000) / 1000;
+  user.weeklyUSDT = Math.round((user.weeklyUSDT + amountUSDT) * 1000) / 1000;
 }
 
 function isSameUTCDate(a, b) {
@@ -47,4 +42,9 @@ function isSameUTCDate(a, b) {
   );
 }
 
-module.exports = { coinsToUsdt, getWeekKey, msUntilNextWeekReset, addCoins, isSameUTCDate };
+// Normalizes a URL for duplicate/spam checks (lowercase, trimmed, trailing slash removed)
+function normalizeUrl(url) {
+  return String(url || '').trim().toLowerCase().replace(/\/+$/, '');
+}
+
+module.exports = { getWeekKey, msUntilNextWeekReset, addBalance, isSameUTCDate, normalizeUrl };
