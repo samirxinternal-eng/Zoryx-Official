@@ -75,7 +75,6 @@ async function getMe(req, res) {
     language: user.language,
     coins: user.coins,
     usdtBalance: coinsToUsdt(user.coins),
-    energy: user.energy,
     referralCount: user.referralCount,
     completedTasksCount: user.completedTasksCount,
     checkInStreak: user.checkInStreak,
@@ -268,11 +267,10 @@ async function watchAd(req, res) {
   }
 
   addCoins(user, AD_REWARD);
-  user.energy = Math.min(100, user.energy + 10);
   user.lastAdWatchAt = new Date();
   await user.save();
 
-  return res.json({ ok: true, coins: user.coins, usdtBalance: coinsToUsdt(user.coins), energy: user.energy, rewarded: AD_REWARD });
+  return res.json({ ok: true, coins: user.coins, usdtBalance: coinsToUsdt(user.coins), rewarded: AD_REWARD });
 }
 
 // ================= Withdraw =================
