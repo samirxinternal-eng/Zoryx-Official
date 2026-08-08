@@ -413,6 +413,17 @@ html[dir="rtl"] .task-info, html[dir="rtl"] .ad-text { text-align: right; }
   background: linear-gradient(135deg, var(--gold), #f59e0b); color: #1a1035;
 }
 
+.task-delete-btn {
+  flex-shrink: 0;
+  border: 1px solid rgba(239,68,68,0.4);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 14px;
+  background: rgba(239,68,68,0.15);
+  color: #f87171;
+  margin-left: 6px;
+}
+
 /* ===== RANK PAGE ===== */
 .live-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0; }
 .live-stat {
