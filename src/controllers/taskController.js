@@ -1,21 +1,29 @@
 const Task = require('../models/Task');
 const TaskCompletion = require('../models/TaskCompletion');
+const TaskRequest = require('../models/TaskRequest');
 const User = require('../models/User');
 const bot = require('../bot/bot');
-const { isAdmin, getPermissions, isOwner } = require('../bot/middlewares/adminCheck');
+const { isAdmin, getPermissions } = require('../bot/middlewares/adminCheck');
 const { extractChannelUsername } = require('../utils/extractChannel');
-const { addCoins, coinsToUsdt } = require('../utils/economy');
-const { MIN_TASK_REWARD_COINS, MAX_TASK_REWARD_COINS, OWNER_IDS } = require('../config');
+const { addBalance, normalizeUrl } = require('../utils/economy');
+const { PLATFORM_ACTIONS, getVerificationMode } = require('../utils/taskActions');
+const { MIN_TASK_REWARD_USDT, MAX_TASK_REWARD_USDT, OWNER_IDS } = require('../config');
 
-const MIN_WAIT_MS = 8000;
+const MIN_WAIT_MS = 8000; // wait-verify platforms: min time between "Go" and "Check"
 
-function validateReward(rewardCoins) {
-  const r = Number(rewardCoins);
+function validateReward(rewardUSDT) {
+  const r = Number(rewardUSDT);
   if (Number.isNaN(r)) return null;
-  if (r < MIN_TASK_REWARD_COINS || r > MAX_TASK_REWARD_COINS) return null;
-  return Math.round(r * 10) / 10;
+  if (r < MIN_TASK_REWARD_USDT || r > MAX_TASK_REWARD_USDT) return null;
+  return Math.round(r * 1000) / 1000;
 }
 
+function validateAction(platform, actionType) {
+  const allowed = PLATFORM_ACTIONS[platform];
+  return allowed && allowed.includes(actionType);
+}
+
+// ================= Task listing =================
 async function listTasks(req, res) {
   const telegramId = String(req.tgUser.id);
   const admin = await isAdmin(telegramId);
@@ -37,14 +45,17 @@ async function listTasks(req, res) {
       title: task.title,
       url: task.url,
       platform: task.platform,
-      rewardCoins: task.rewardCoins,
-      status: c ? c.status : 'new',
+      actionType: task.actionType,
+      rewardUSDT: task.rewardUSDT,
+      verificationMode: getVerificationMode(task.platform),
+      status: c ? c.status : 'new', // new | started | pending_verification | completed
     };
   });
 
   return res.json({ tasks: result, isAdmin: admin });
 }
 
+// ================= Admin: create free task =================
 async function createTask(req, res) {
   const telegramId = String(req.tgUser.id);
   const admin = await isAdmin(telegramId);
@@ -53,16 +64,25 @@ async function createTask(req, res) {
     return res.status(403).json({ error: 'Not authorized to add tasks' });
   }
 
-  const { title, url, platform, rewardCoins } = req.body;
-  if (!title || !url || !platform) {
-    return res.status(400).json({ error: 'title, url and platform are required' });
+  const { title, url, platform, actionType, rewardUSDT } = req.body;
+  if (!title || !url || !platform || !actionType) {
+    return res.status(400).json({ error: 'title, url, platform and actionType are required' });
   }
   if (!Task.PLATFORMS.includes(platform)) {
     return res.status(400).json({ error: 'Invalid platform' });
   }
-  const reward = validateReward(rewardCoins);
+  if (!validateAction(platform, actionType)) {
+    return res.status(400).json({ error: 'Invalid action type for this platform' });
+  }
+  const reward = validateReward(rewardUSDT);
   if (reward === null) {
-    return res.status(400).json({ error: `Reward must be between ${MIN_TASK_REWARD_COINS} and ${MAX_TASK_REWARD_COINS} coins` });
+    return res.status(400).json({ error: `Reward must be between ${MIN_TASK_REWARD_USDT} and ${MAX_TASK_REWARD_USDT} USDT` });
+  }
+
+  const urlNormalized = normalizeUrl(url);
+  const duplicate = await Task.findOne({ urlNormalized, active: true });
+  if (duplicate) {
+    return res.status(400).json({ error: 'A task with this exact link is already active. Please use a different link.' });
   }
 
   const channelUsername = platform === 'telegram_channel' ? extractChannelUsername(url) : null;
@@ -70,11 +90,12 @@ async function createTask(req, res) {
   const task = await Task.create({
     title,
     url,
+    urlNormalized,
     platform,
-    rewardCoins: reward,
+    actionType,
+    rewardUSDT: reward,
     channelUsername,
     createdBy: telegramId,
-    source: 'admin',
     active: true,
   });
 
@@ -92,10 +113,13 @@ async function deleteTask(req, res) {
   return res.json({ ok: true });
 }
 
-// ==== Regular users submitting a paid task (pending admin approval) ====
-async function submitUserTask(req, res) {
+// ================= Regular user: request a paid task be posted =================
+// Simplified flow: user pays a FIXED amount (TASK_POST_PAYMENT_USDT) out-of-band,
+// submits platform+url+title, admin verifies the payment manually and then
+// creates the real Task themselves via createTask above.
+async function submitTaskRequest(req, res) {
   const telegramId = String(req.tgUser.id);
-  const { title, url, platform, rewardCoins, maxCompletions } = req.body;
+  const { title, url, platform } = req.body;
 
   if (!title || !url || !platform) {
     return res.status(400).json({ error: 'title, url and platform are required' });
@@ -103,103 +127,94 @@ async function submitUserTask(req, res) {
   if (!Task.PLATFORMS.includes(platform)) {
     return res.status(400).json({ error: 'Invalid platform' });
   }
-  const reward = validateReward(rewardCoins);
-  if (reward === null) {
-    return res.status(400).json({ error: `Reward must be between ${MIN_TASK_REWARD_COINS} and ${MAX_TASK_REWARD_COINS} coins` });
-  }
-  const slots = Number(maxCompletions);
-  if (!slots || slots < 1) {
-    return res.status(400).json({ error: 'Please specify how many people can complete this task' });
+
+  const urlNormalized = normalizeUrl(url);
+
+  // anti-spam: same link can't be submitted again while a request is pending,
+  // or if it's already a live task
+  const [dupRequest, dupTask] = await Promise.all([
+    TaskRequest.findOne({ urlNormalized, status: 'pending' }),
+    Task.findOne({ urlNormalized, active: true }),
+  ]);
+  if (dupRequest || dupTask) {
+    return res.status(400).json({ error: 'This link has already been submitted or is already an active task.' });
   }
 
-  const channelUsername = platform === 'telegram_channel' ? extractChannelUsername(url) : null;
-
-  const task = await Task.create({
-    title,
-    url,
-    platform,
-    rewardCoins: reward,
-    channelUsername,
-    createdBy: telegramId,
-    source: 'user',
+  const request = await TaskRequest.create({
     sponsorTelegramId: telegramId,
-    paymentStatus: 'pending',
-    maxCompletions: slots,
-    active: false,
+    platform,
+    url,
+    urlNormalized,
+    title,
+    status: 'pending',
   });
 
   for (const ownerId of OWNER_IDS) {
     try {
       await bot.telegram.sendMessage(
         ownerId,
-        `🆕 New paid task submitted (awaiting payment confirmation)\nBy: ${telegramId}\nTitle: ${title}\nPlatform: ${platform}\nReward/user: ${reward} coins\nSlots: ${slots}\nBudget: ${(reward * slots).toFixed(1)} coins (~$${coinsToUsdt(reward * slots)})\nTask ID: ${task._id}\n\nOpen the Mini App → Earn → Pending Tasks to approve or reject.`
+        `🆕 New task request (payment to verify manually)\nBy: ${telegramId}\nTitle: ${title}\nPlatform: ${platform}\nLink: ${url}\nRequest ID: ${request._id}\n\nCheck your wallet for the payment, then open the Mini App → Tasks → Requests to mark it handled, and add the real task from "+ Add Task".`
       );
     } catch (e) {
       /* ignore */
     }
   }
 
-  return res.json({ ok: true, task });
+  return res.json({ ok: true, request });
 }
 
-async function listPendingUserTasks(req, res) {
+async function listPendingTaskRequests(req, res) {
   const telegramId = String(req.tgUser.id);
   if (!(await isAdmin(telegramId))) return res.status(403).json({ error: 'Not authorized' });
 
-  const tasks = await Task.find({ source: 'user', paymentStatus: 'pending' }).sort({ createdAt: -1 }).lean();
+  const requests = await TaskRequest.find({ status: 'pending' }).sort({ createdAt: -1 }).lean();
   return res.json({
-    tasks: tasks.map((t) => ({
-      id: t._id,
-      title: t.title,
-      url: t.url,
-      platform: t.platform,
-      rewardCoins: t.rewardCoins,
-      maxCompletions: t.maxCompletions,
-      sponsorTelegramId: t.sponsorTelegramId,
-      budgetCoins: t.rewardCoins * t.maxCompletions,
-      budgetUSDT: coinsToUsdt(t.rewardCoins * t.maxCompletions),
-      createdAt: t.createdAt,
+    requests: requests.map((r) => ({
+      id: r._id,
+      title: r.title,
+      platform: r.platform,
+      url: r.url,
+      sponsorTelegramId: r.sponsorTelegramId,
+      createdAt: r.createdAt,
     })),
   });
 }
 
-async function approveUserTask(req, res) {
+async function handleTaskRequest(req, res) {
   const telegramId = String(req.tgUser.id);
   if (!(await isAdmin(telegramId))) return res.status(403).json({ error: 'Not authorized' });
 
-  const task = await Task.findById(req.params.id);
-  if (!task || task.source !== 'user') return res.status(404).json({ error: 'Task not found' });
+  const request = await TaskRequest.findById(req.params.id);
+  if (!request || request.status !== 'pending') return res.status(404).json({ error: 'Request not found' });
 
-  task.paymentStatus = 'confirmed';
-  task.active = true;
-  await task.save();
+  request.status = 'handled';
+  await request.save();
 
   try {
-    await bot.telegram.sendMessage(task.sponsorTelegramId, `✅ Your task "${task.title}" has been approved and is now live!`);
+    await bot.telegram.sendMessage(request.sponsorTelegramId, `✅ Payment confirmed! Your task "${request.title}" is being added now.`);
   } catch (e) {}
 
   return res.json({ ok: true });
 }
 
-async function rejectUserTask(req, res) {
+async function rejectTaskRequest(req, res) {
   const telegramId = String(req.tgUser.id);
   if (!(await isAdmin(telegramId))) return res.status(403).json({ error: 'Not authorized' });
 
-  const task = await Task.findById(req.params.id);
-  if (!task || task.source !== 'user') return res.status(404).json({ error: 'Task not found' });
+  const request = await TaskRequest.findById(req.params.id);
+  if (!request || request.status !== 'pending') return res.status(404).json({ error: 'Request not found' });
 
-  task.paymentStatus = 'rejected';
-  task.active = false;
-  await task.save();
+  request.status = 'rejected';
+  await request.save();
 
   try {
-    await bot.telegram.sendMessage(task.sponsorTelegramId, `❌ Your task "${task.title}" was rejected. Please contact support if you believe this is a mistake.`);
+    await bot.telegram.sendMessage(request.sponsorTelegramId, `❌ Your task request "${request.title}" was rejected (payment not found). Please contact support.`);
   } catch (e) {}
 
   return res.json({ ok: true });
 }
 
-// ==== Go / Check flow ====
+// ================= Go / Verify flow =================
 async function startTask(req, res) {
   const telegramId = String(req.tgUser.id);
   const { taskId } = req.body;
@@ -209,13 +224,14 @@ async function startTask(req, res) {
 
   await TaskCompletion.findOneAndUpdate(
     { userId: telegramId, taskId },
-    { $setOnInsert: { startedAt: new Date() }, status: 'started' },
+    { $setOnInsert: { startedAt: new Date() }, status: 'started', submittedUsername: null },
     { upsert: true, new: true }
   );
 
   return res.json({ ok: true, status: 'started' });
 }
 
+// wait-verify / auto-verify platforms use this ("Check" button)
 async function checkTask(req, res) {
   const telegramId = String(req.tgUser.id);
   const { taskId } = req.body;
@@ -231,7 +247,9 @@ async function checkTask(req, res) {
     return res.json({ ok: true, status: 'completed', alreadyCompleted: true });
   }
 
-  if (task.platform === 'telegram_channel' && task.channelUsername) {
+  const mode = getVerificationMode(task.platform);
+
+  if (mode === 'auto' && task.channelUsername) {
     try {
       const member = await bot.telegram.getChatMember(task.channelUsername, telegramId);
       const joined = ['member', 'administrator', 'creator'].includes(member.status);
@@ -243,15 +261,128 @@ async function checkTask(req, res) {
         error: 'Could not verify channel membership. Make sure ZORY X BOT is an admin of that channel.',
       });
     }
-  } else {
+  } else if (mode === 'wait') {
     const elapsed = Date.now() - new Date(completion.startedAt).getTime();
     if (elapsed < MIN_WAIT_MS) {
       return res.status(400).json({ error: 'Please complete the task first, then tap Check again.' });
     }
+  } else {
+    return res.status(400).json({ error: 'This task requires manual verification. Tap "Verify Now" instead.' });
   }
 
+  return completeTaskForUser(task, completion, telegramId, res);
+}
+
+// manual-verify platforms use this ("Verify Now" button) - user submits their
+// username on that platform, an admin reviews it later
+async function submitVerification(req, res) {
+  const telegramId = String(req.tgUser.id);
+  const { taskId, username } = req.body;
+
+  if (!username || !username.trim()) {
+    return res.status(400).json({ error: 'Please enter your username on that platform' });
+  }
+
+  const task = await Task.findById(taskId);
+  if (!task || !task.active) return res.status(404).json({ error: 'Task not found' });
+
+  const completion = await TaskCompletion.findOne({ userId: telegramId, taskId });
+  if (!completion) {
+    return res.status(400).json({ error: 'Tap "Go" first before verifying' });
+  }
+  if (completion.status === 'completed') {
+    return res.json({ ok: true, status: 'completed', alreadyCompleted: true });
+  }
+
+  completion.status = 'pending_verification';
+  completion.submittedUsername = username.trim();
+  await completion.save();
+
+  for (const ownerId of OWNER_IDS) {
+    try {
+      await bot.telegram.sendMessage(
+        ownerId,
+        `🔍 New verification request\nUser: ${telegramId}\nTask: ${task.title}\nPlatform: ${task.platform} (${task.actionType})\nSubmitted username: ${username.trim()}\n\nReview it in the Mini App → Tasks → Verifications.`
+      );
+    } catch (e) {}
+  }
+
+  return res.json({ ok: true, status: 'pending_verification' });
+}
+
+async function listPendingVerifications(req, res) {
+  const telegramId = String(req.tgUser.id);
+  if (!(await isAdmin(telegramId))) return res.status(403).json({ error: 'Not authorized' });
+
+  const list = await TaskCompletion.find({ status: 'pending_verification' })
+    .sort({ updatedAt: 1 })
+    .limit(50)
+    .populate('taskId')
+    .lean();
+
+  return res.json({
+    verifications: list
+      .filter((v) => v.taskId)
+      .map((v) => ({
+        id: v._id,
+        userId: v.userId,
+        submittedUsername: v.submittedUsername,
+        taskTitle: v.taskId.title,
+        platform: v.taskId.platform,
+        actionType: v.taskId.actionType,
+        rewardUSDT: v.taskId.rewardUSDT,
+        taskUrl: v.taskId.url,
+      })),
+  });
+}
+
+async function approveVerification(req, res) {
+  const telegramId = String(req.tgUser.id);
+  if (!(await isAdmin(telegramId))) return res.status(403).json({ error: 'Not authorized' });
+
+  const completion = await TaskCompletion.findById(req.params.id).populate('taskId');
+  if (!completion || completion.status !== 'pending_verification' || !completion.taskId) {
+    return res.status(404).json({ error: 'Verification not found' });
+  }
+
+  await completeTaskForUser(completion.taskId, completion, completion.userId, null, true);
+
+  try {
+    await bot.telegram.sendMessage(completion.userId, `✅ Your task "${completion.taskId.title}" was verified! Reward credited.`);
+  } catch (e) {}
+
+  return res.json({ ok: true });
+}
+
+async function rejectVerification(req, res) {
+  const telegramId = String(req.tgUser.id);
+  if (!(await isAdmin(telegramId))) return res.status(403).json({ error: 'Not authorized' });
+
+  const completion = await TaskCompletion.findById(req.params.id).populate('taskId');
+  if (!completion || completion.status !== 'pending_verification') {
+    return res.status(404).json({ error: 'Verification not found' });
+  }
+
+  completion.status = 'started';
+  completion.submittedUsername = null;
+  await completion.save();
+
+  try {
+    await bot.telegram.sendMessage(
+      completion.userId,
+      `❌ We couldn't verify your submission for "${completion.taskId ? completion.taskId.title : 'the task'}". Please double check and tap "Verify Now" again.`
+    );
+  } catch (e) {}
+
+  return res.json({ ok: true });
+}
+
+// shared: marks a completion as completed + credits the user's balance.
+// If `res` is null, it's being called from the admin-approval path (no HTTP response needed here).
+async function completeTaskForUser(task, completion, telegramId, res, skipResponse) {
   if (task.maxCompletions && task.completionsCount >= task.maxCompletions) {
-    return res.status(400).json({ error: 'This task has reached its completion limit.' });
+    if (res) return res.status(400).json({ error: 'This task has reached its completion limit.' });
+    return;
   }
 
   completion.status = 'completed';
@@ -262,27 +393,32 @@ async function checkTask(req, res) {
   await task.save();
 
   const user = await User.findOne({ telegramId });
-  addCoins(user, task.rewardCoins);
+  addBalance(user, task.rewardUSDT);
   user.completedTasksCount += 1;
   await user.save();
 
-  return res.json({
-    ok: true,
-    status: 'completed',
-    rewardCoins: task.rewardCoins,
-    coins: user.coins,
-    usdtBalance: coinsToUsdt(user.coins),
-  });
+  if (res) {
+    return res.json({
+      ok: true,
+      status: 'completed',
+      rewardUSDT: task.rewardUSDT,
+      balanceUSDT: user.balanceUSDT,
+    });
+  }
 }
 
 module.exports = {
   listTasks,
   createTask,
   deleteTask,
-  submitUserTask,
-  listPendingUserTasks,
-  approveUserTask,
-  rejectUserTask,
+  submitTaskRequest,
+  listPendingTaskRequests,
+  handleTaskRequest,
+  rejectTaskRequest,
   startTask,
   checkTask,
+  submitVerification,
+  listPendingVerifications,
+  approveVerification,
+  rejectVerification,
 };
