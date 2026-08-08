@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
     username: { type: String, default: '' },
     photoUrl: { type: String, default: '' },
     language: { type: String, default: null },
-    coins: { type: Number, default: 0 },
+    balanceUSDT: { type: Number, default: 0 },
     referredBy: { type: String, default: null },
     referralCount: { type: Number, default: 0 },
     completedTasksCount: { type: Number, default: 0 },
@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
     checkInStreak: { type: Number, default: 0 },
     claimedAchievements: { type: [String], default: [] },
     // weekly leaderboard bucket - reset lazily when the ISO week changes
-    weeklyCoins: { type: Number, default: 0 },
+    weeklyUSDT: { type: Number, default: 0 },
     weeklyWeekKey: { type: String, default: null },
     isFake: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
