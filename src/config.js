@@ -25,7 +25,8 @@ module.exports = {
   LEADERBOARD_LIMIT: 100,
 
   // ===== Withdraw =====
-  WITHDRAW_MIN_USDT: Number(process.env.WITHDRAW_MIN_USDT || 2),
+  WITHDRAW_MIN_USDT: Number(process.env.WITHDRAW_MIN_USDT || 50),
+  WITHDRAW_MAX_USDT: Number(process.env.WITHDRAW_MAX_USDT || 5000),
 
   // ===== Paid task submission — where users send USDT to unlock posting a task =====
   TASK_PAYMENT_ADDRESS:
