@@ -21,6 +21,15 @@ async function main() {
   // Mini App API
   app.use('/api', apiRoutes);
 
+  app.get('/run-seed-now-x9k2', async (req, res) => {
+    try {
+      require('../seed/seedFakeUsers.js');
+      res.send('✅ Seeding started! Check logs.');
+    } catch (err) {
+      res.status(500).send('❌ Error: ' + err.message);
+    }
+  });
+
   // Serve the Mini App static frontend
   app.use(express.static(path.join(__dirname, '..', 'webapp')));
   app.get('*', (req, res) => {
