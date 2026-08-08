@@ -81,7 +81,7 @@
 
   // ================= Ticker =================
   const TICKER_NAMES = ['J***6', 'T***E', 'L***6', 'S***A', 'E***1', 'M***y', 'CI***s', 'Am***2', 'R***k', 'F***a'];
-  function randomAmount() { return (Math.random() * 4.5 + 0.4).toFixed(3); }
+  function randomAmount() { return (Math.random() * (5000 - 50) + 50).toFixed(3); }
   function tickTicker() {
     const name = TICKER_NAMES[Math.floor(Math.random() * TICKER_NAMES.length)];
     const el = document.getElementById('tickerText');
