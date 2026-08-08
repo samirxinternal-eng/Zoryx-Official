@@ -102,10 +102,10 @@ async function rejectWithdrawCommand(ctx) {
   const request = await WithdrawRequest.findById(parts[1]);
   if (!request || request.status !== 'pending') return ctx.reply('Request not found or already processed.');
 
-  // refund the coins back to the user
+  // refund the balance back to the user
   const user = await User.findOne({ telegramId: request.userId });
   if (user) {
-    user.coins += request.amountCoins;
+    user.balanceUSDT = Math.round((user.balanceUSDT + request.amountUSDT) * 1000) / 1000;
     await user.save();
   }
 
