@@ -15,20 +15,19 @@ module.exports = {
   PORT: process.env.PORT || 3000,
   MONETAG_ZONE_ID: process.env.MONETAG_ZONE_ID || '',
 
-  // ===== ZX Coin economy =====
-  // 10 ZX Coin = 1 USDT  ->  1 coin = 0.1 USDT
-  COIN_TO_USDT_RATE: Number(process.env.COIN_TO_USDT_RATE || 0.1),
-  COIN_NAME: 'ZX Coin',
-  REFERRAL_REWARD: Number(process.env.REFERRAL_REWARD || 5), // coins
-  AD_REWARD: Number(process.env.AD_REWARD || 2), // coins
-  DAILY_CHECKIN_REWARD: Number(process.env.DAILY_CHECKIN_REWARD || 2), // coins
-  MIN_TASK_REWARD_COINS: 0.2,
-  MAX_TASK_REWARD_COINS: 100,
+  // ===== USDT-only economy (no coin system) =====
+  REFERRAL_REWARD_USDT: Number(process.env.REFERRAL_REWARD_USDT || 0.5),
+  AD_REWARD_USDT_DEFAULT: Number(process.env.AD_REWARD_USDT_DEFAULT || 0.5), // admin-editable at runtime via Settings
+  DAILY_CHECKIN_REWARD_USDT: Number(process.env.DAILY_CHECKIN_REWARD_USDT || 0.5),
+  MIN_TASK_REWARD_USDT: 0.001,
+  MAX_TASK_REWARD_USDT: 100,
+  TASK_POST_PAYMENT_USDT: Number(process.env.TASK_POST_PAYMENT_USDT || 10),
+  LEADERBOARD_LIMIT: 100,
 
   // ===== Withdraw =====
   WITHDRAW_MIN_USDT: Number(process.env.WITHDRAW_MIN_USDT || 2),
 
-  // ===== Paid task submission (regular users pay to post a task) =====
+  // ===== Paid task submission — where users send USDT to unlock posting a task =====
   TASK_PAYMENT_ADDRESS:
     process.env.TASK_PAYMENT_ADDRESS || 'UQAVEPBT35E0amE3PpQObBDC9ZGAflMcNlUpwCRVph2eHXkg',
   TASK_PAYMENT_NETWORK: process.env.TASK_PAYMENT_NETWORK || 'TON (USDT-TON)',
