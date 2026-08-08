@@ -11,22 +11,32 @@ const {
   getAchievements,
   claimAchievement,
   watchAd,
+  getAdHistory,
+  getAdRewardSetting,
+  updateAdRewardSetting,
   getWithdrawInfo,
   createWithdrawRequest,
   listMyWithdrawals,
   getTaskPaymentInfo,
+  listEvents,
+  createEvent,
+  deleteEvent,
 } = require('../controllers/userController');
 
 const {
   listTasks,
   createTask,
   deleteTask,
-  submitUserTask,
-  listPendingUserTasks,
-  approveUserTask,
-  rejectUserTask,
+  submitTaskRequest,
+  listPendingTaskRequests,
+  handleTaskRequest,
+  rejectTaskRequest,
   startTask,
   checkTask,
+  submitVerification,
+  listPendingVerifications,
+  approveVerification,
+  rejectVerification,
 } = require('../controllers/taskController');
 
 const { MONETAG_ZONE_ID } = require('../config');
@@ -42,7 +52,15 @@ router.get('/stats', getStats);
 router.get('/achievements', getAchievements);
 router.post('/achievements/claim', claimAchievement);
 router.post('/ads/watch', watchAd);
+router.get('/ads/history', getAdHistory);
+router.get('/ads/reward', getAdRewardSetting);
+router.post('/ads/reward', updateAdRewardSetting); // admin only (checked in controller)
 router.get('/config', (req, res) => res.json({ monetagZoneId: MONETAG_ZONE_ID }));
+
+// events
+router.get('/events', listEvents);
+router.post('/events', createEvent); // admin only
+router.delete('/events/:id', deleteEvent); // admin only
 
 // withdraw
 router.get('/withdraw/info', getWithdrawInfo);
@@ -51,16 +69,22 @@ router.get('/withdraw/history', listMyWithdrawals);
 
 // tasks
 router.get('/tasks', listTasks);
-router.post('/tasks', createTask);
-router.delete('/tasks/:id', deleteTask);
+router.post('/tasks', createTask); // admin only
+router.delete('/tasks/:id', deleteTask); // admin only
 router.post('/tasks/go', startTask);
 router.post('/tasks/check', checkTask);
+router.post('/tasks/verify', submitVerification);
 
-// paid user-submitted tasks
+// admin: verification review queue
+router.get('/tasks/verifications', listPendingVerifications);
+router.post('/tasks/verifications/:id/approve', approveVerification);
+router.post('/tasks/verifications/:id/reject', rejectVerification);
+
+// paid task requests (regular users pay a fixed amount, admin manually adds the task)
 router.get('/tasks/payment-info', getTaskPaymentInfo);
-router.post('/tasks/submit', submitUserTask);
-router.get('/tasks/pending', listPendingUserTasks);
-router.post('/tasks/pending/:id/approve', approveUserTask);
-router.post('/tasks/pending/:id/reject', rejectUserTask);
+router.post('/tasks/requests', submitTaskRequest);
+router.get('/tasks/requests/pending', listPendingTaskRequests); // admin only
+router.post('/tasks/requests/:id/handle', handleTaskRequest); // admin only
+router.post('/tasks/requests/:id/reject', rejectTaskRequest); // admin only
 
 module.exports = router;
