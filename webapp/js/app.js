@@ -89,7 +89,6 @@
 
     document.getElementById('coinBalance').textContent = me.coins.toFixed(1).replace(/\.0$/, '');
     document.getElementById('usdtBalance').textContent = me.usdtBalance.toFixed(2);
-    document.getElementById('energyBalance').textContent = me.energy;
     document.getElementById('referralCountHome').textContent = me.referralCount;
     document.getElementById('tasksDoneHome').textContent = me.completedTasksCount;
     document.getElementById('walletUSDT').textContent = me.usdtBalance.toFixed(3);
@@ -98,6 +97,9 @@
     document.getElementById('checkinStreak2').textContent = me.checkInStreak;
     document.getElementById('checkinReward').textContent = me.dailyCheckInReward;
     document.getElementById('checkinReward2').textContent = me.dailyCheckInReward;
+    const checkinUsdt = (me.dailyCheckInReward * me.coinToUsdtRate).toFixed(2);
+    document.getElementById('checkinRewardUsdt').textContent = checkinUsdt;
+    document.getElementById('checkinRewardUsdt2').textContent = checkinUsdt;
     setCheckinButtons(me.canCheckInToday);
 
     document.getElementById('addTaskFab').classList.toggle('hidden', !me.isAdmin);
@@ -511,11 +513,12 @@
       const div = document.createElement('div');
       div.className = 'achievement-card';
       const btnLabel = a.claimed ? '✔ ' + I18N.t('claimed') : a.claimable ? I18N.t('claim') : `${a.progress}/${a.target}`;
+      const usdtReward = (a.rewardCoins * (state.me ? state.me.coinToUsdtRate : 0.1)).toFixed(2);
       div.innerHTML = `
         <div class="ach-top">
           <span class="ach-icon">${a.icon}</span>
           <div class="ach-text"><strong>${I18N.t(a.titleKey)}</strong><small>${I18N.t(a.descKey)}</small></div>
-          <span class="ach-reward">+${a.rewardCoins} ZX</span>
+          <span class="ach-reward">+${usdtReward} USDT<br/>+${a.rewardCoins} ZX</span>
         </div>
         <div class="ach-progress-bar"><div class="ach-progress-fill" style="width:${pct}%"></div></div>
         <div class="ach-bottom">
@@ -529,7 +532,8 @@
       btn.addEventListener('click', async () => {
         try {
           const result = await api('/achievements/claim', { method: 'POST', body: { achievementId: btn.dataset.claim } });
-          showToast(`🎉 +${result.rewarded} ZX`);
+          const rewardedUsdt = (result.rewarded * (state.me ? state.me.coinToUsdtRate : 0.1)).toFixed(2);
+          showToast(`🎉 +${rewardedUsdt} USDT / +${result.rewarded} ZX`);
           document.getElementById('coinBalance').textContent = result.coins.toFixed(1).replace(/\.0$/, '');
           document.getElementById('usdtBalance').textContent = result.usdtBalance.toFixed(2);
           loadAchievements();
@@ -549,7 +553,6 @@
       const result = await api('/ads/watch', { method: 'POST' });
       document.getElementById('coinBalance').textContent = result.coins.toFixed(1).replace(/\.0$/, '');
       document.getElementById('usdtBalance').textContent = result.usdtBalance.toFixed(2);
-      document.getElementById('energyBalance').textContent = result.energy;
       showToast(I18N.t('adRewardMsg'));
     } catch (e) {
       showToast(e.message || I18N.t('adCooldownMsg'));
