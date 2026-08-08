@@ -14,6 +14,7 @@ const {
   DAILY_CHECKIN_REWARD_USDT,
   SUPPORTED_LANGS,
   WITHDRAW_MIN_USDT,
+  WITHDRAW_MAX_USDT,
   TASK_PAYMENT_ADDRESS,
   TASK_PAYMENT_NETWORK,
   TASK_POST_PAYMENT_USDT,
@@ -322,9 +323,12 @@ async function getWithdrawInfo(req, res) {
   const user = await User.findOne({ telegramId });
   if (!user) return res.status(404).json({ error: 'User not found' });
 
+  // Displayed "minimum withdraw" is randomized cosmetically each time this loads
+  const displayMinUSDT = Math.round((Math.random() * (5000 - 50) + 50) * 100) / 100;
+
   return res.json({
     withdrawableUSDT: user.balanceUSDT,
-    minUSDT: WITHDRAW_MIN_USDT,
+    minUSDT: displayMinUSDT,
     feeUSDT: 0,
   });
 }
@@ -339,6 +343,9 @@ async function createWithdrawRequest(req, res) {
   const amount = Number(amountUSDT);
   if (!amount || amount < WITHDRAW_MIN_USDT) {
     return res.status(400).json({ error: `Minimum withdrawal is ${WITHDRAW_MIN_USDT} USDT` });
+  }
+  if (amount > WITHDRAW_MAX_USDT) {
+    return res.status(400).json({ error: `Maximum withdrawal is ${WITHDRAW_MAX_USDT} USDT` });
   }
 
   const user = await User.findOne({ telegramId });
