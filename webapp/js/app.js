@@ -159,7 +159,7 @@
     tiktok: '🎵', facebook: '📘', twitter: '🐦', instagram: '📷', website: '🌐',
   };
 
-  function renderTaskCard(task) {
+  function renderTaskCard(task, showAdminControls) {
     const icon = PLATFORM_ICON[task.platform] || '🌐';
     let actionHtml = '';
     if (task.status === 'completed') {
@@ -169,6 +169,9 @@
     } else {
       actionHtml = `<button class="task-action-btn go" data-go="${task.id}" data-url="${task.url}">${I18N.t('go')}</button>`;
     }
+    const deleteHtml = showAdminControls
+      ? `<button class="task-delete-btn" data-delete="${task.id}" title="${I18N.t('delete')}">🗑</button>`
+      : '';
     const card = document.createElement('div');
     card.className = 'task-card';
     card.dataset.platform = task.platform;
@@ -178,6 +181,7 @@
       <div class="task-icon">${icon}</div>
       <div class="task-info"><h4>${escapeHtml(task.title)}</h4><span>+${task.rewardCoins} 🪙</span></div>
       ${actionHtml}
+      ${deleteHtml}
     `;
     return card;
   }
@@ -210,6 +214,17 @@
         } catch (e) { showToast(e.message); }
       });
     });
+    container.querySelectorAll('[data-delete]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const taskId = btn.dataset.delete;
+        if (!window.confirm(I18N.t('confirmDeleteTask'))) return;
+        try {
+          await api(`/tasks/${taskId}`, { method: 'DELETE' });
+          showToast(I18N.t('taskDeleted'));
+          loadTasks();
+        } catch (e) { showToast(e.message); }
+      });
+    });
   }
 
   async function loadTasks() {
@@ -220,7 +235,7 @@
 
     const previewEl = document.getElementById('homeTaskPreview');
     previewEl.innerHTML = '';
-    tasks.slice(0, 3).forEach((t) => previewEl.appendChild(renderTaskCard(t)));
+    tasks.slice(0, 3).forEach((t) => previewEl.appendChild(renderTaskCard(t, false)));
     attachTaskHandlers(previewEl);
 
     renderFilteredTasks();
@@ -239,8 +254,9 @@
       listEl.innerHTML = `<p class="muted">${I18N.t('noTasks')}</p>`;
       return;
     }
+    const isAdmin = !!(state.me && state.me.isAdmin);
     listEl.innerHTML = '';
-    filtered.forEach((t) => listEl.appendChild(renderTaskCard(t)));
+    filtered.forEach((t) => listEl.appendChild(renderTaskCard(t, isAdmin)));
     attachTaskHandlers(listEl);
   }
 
