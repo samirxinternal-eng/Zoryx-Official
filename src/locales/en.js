@@ -12,7 +12,10 @@ module.exports = {
     '/announcement — Broadcast a message to all users\n' +
     '/addadmin <telegram_id> — Add a new admin (owner only)\n' +
     '/removeadmin <telegram_id> — Remove an admin (owner only)\n' +
-    '/stats — Bot user/admin statistics\n\n' +
+    '/stats — Bot user/admin statistics\n' +
+    '/withdrawals — List pending withdrawal requests (owner only)\n' +
+    '/approvewithdraw <id> — Mark a withdrawal as sent\n' +
+    '/rejectwithdraw <id> — Reject a withdrawal and refund the balance\n\n' +
     'ℹ️ Tasks are added/edited from the Mini App *Earn* section (Add Task button is visible to admins only).',
   announcementAsk: '📢 Now send your announcement message. It will be broadcast to all users.',
   announcementSending: (count) => `⏳ Sending to ${count} users...`,
