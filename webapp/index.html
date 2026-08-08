@@ -9,9 +9,16 @@
 </head>
 <body>
 
-<div id="app">
+<!-- ===== LOADING SCREEN ===== -->
+<div id="loadingScreen">
+  <div class="loader-logo">⚡</div>
+  <div class="loader-title">ZORY X BOT</div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+  <div class="loader-sub">Loading your dashboard...</div>
+</div>
 
-  <!-- ===== HEADER ===== -->
+<div id="app" class="hidden">
+
   <header class="topbar">
     <div class="brand">
       <span class="brand-logo">⚡</span>
@@ -20,24 +27,29 @@
     <button id="langBtn" class="lang-pill">🌐 <span id="langCode">BN</span></button>
   </header>
 
-  <!-- ===== PAGES ===== -->
+  <div id="ticker" class="ticker"><span id="tickerText">...</span></div>
+
   <main id="pages">
 
-    <!-- HOME -->
+    <!-- ================= HOME ================= -->
     <section id="page-home" class="page active">
       <div class="profile-card">
         <img id="userPhoto" class="avatar" src="" alt="avatar" />
         <div class="profile-info">
           <h2 id="userName">...</h2>
-          <p id="userUsername" class="muted">@username</p>
+          <p class="muted"><span id="userUsername">@username</span></p>
         </div>
       </div>
 
-      <div class="stats-row">
-        <div class="stat-card coin">
-          <div class="stat-value" id="coinBalance">0</div>
-          <div class="stat-label">🪙 <span data-i18n="coins">Coins</span></div>
+      <div class="balance-card">
+        <div class="balance-main">
+          <div class="balance-usdt"><span id="usdtBalance">0.00</span> <span class="muted">USDT</span></div>
+          <div class="balance-coins">🪙 <span id="coinBalance">0</span> <span data-i18n="zxCoin">ZX Coin</span></div>
         </div>
+        <button class="withdraw-mini-btn" data-nav="profile" data-open-withdraw="1">💸 <span data-i18n="withdraw">Withdraw</span></button>
+      </div>
+
+      <div class="stats-row">
         <div class="stat-card energy">
           <div class="stat-value" id="energyBalance">0</div>
           <div class="stat-label">⚡ <span data-i18n="energy">Energy</span></div>
@@ -46,52 +58,70 @@
           <div class="stat-value" id="referralCountHome">0</div>
           <div class="stat-label">👥 <span data-i18n="invites">Invites</span></div>
         </div>
+        <div class="stat-card done">
+          <div class="stat-value" id="tasksDoneHome">0</div>
+          <div class="stat-label">✅ <span data-i18n="done">Done</span></div>
+        </div>
+      </div>
+
+      <div class="checkin-card">
+        <div class="checkin-info">
+          <strong data-i18n="dailyCheckin">Daily Check-in</strong>
+          <small><span id="checkinStreak">0</span> <span data-i18n="dayStreak">day streak</span> · +<span id="checkinReward">2</span> ZX</small>
+        </div>
+        <button id="checkinBtn" class="checkin-btn" data-i18n="checkIn">CHECK IN</button>
       </div>
 
       <div class="section-title" data-i18n="quickActions">Quick Actions</div>
       <div class="quick-actions">
-        <button class="quick-btn" data-nav="earn">
-          <span class="qb-icon">🎯</span>
-          <span data-i18n="earnCoins">Earn Coins</span>
-        </button>
-        <button class="quick-btn" data-nav="friends">
-          <span class="qb-icon">🔗</span>
-          <span data-i18n="inviteFriends">Invite Friends</span>
-        </button>
-        <button class="quick-btn" data-nav="leaderboard">
-          <span class="qb-icon">🏆</span>
-          <span data-i18n="viewRanking">View Ranking</span>
-        </button>
-        <button class="quick-btn" id="watchAdHomeBtn">
-          <span class="qb-icon">📺</span>
-          <span data-i18n="watchAd">Watch Ad</span>
-        </button>
+        <button class="quick-btn" data-nav="tasks"><span class="qb-icon">🎯</span><span data-i18n="earnCoins">Earn Coins</span></button>
+        <button class="quick-btn" data-nav="rank" data-scroll-invite="1"><span class="qb-icon">🔗</span><span data-i18n="inviteFriends">Invite Friends</span></button>
+        <button class="quick-btn" data-nav="rank"><span class="qb-icon">🏆</span><span data-i18n="viewRanking">View Ranking</span></button>
+        <button class="quick-btn" id="watchAdHomeBtn"><span class="qb-icon">📺</span><span data-i18n="watchAd">Watch Ad</span></button>
       </div>
+
+      <div class="section-title" data-i18n="mustDo">Must Do</div>
+      <div id="homeTaskPreview" class="task-list"></div>
     </section>
 
-    <!-- EARN -->
-    <section id="page-earn" class="page">
-      <div class="section-title" data-i18n="earnTasks">Earn Tasks</div>
+    <!-- ================= TASKS ================= -->
+    <section id="page-tasks" class="page">
+      <div class="tasks-header">
+        <div class="section-title" style="margin:0" data-i18n="taskCenter">Task Center</div>
+        <button id="pendingTasksBtn" class="pending-btn hidden">🕒 <span data-i18n="pending">Pending</span> (<span id="pendingCount">0</span>)</button>
+      </div>
+
+      <div class="search-row">
+        <input id="taskSearchInput" type="text" data-i18n-ph="searchTasks" placeholder="Search tasks..." />
+      </div>
+
+      <div id="platformChips" class="chip-row">
+        <button class="chip active" data-filter="all" data-i18n="all">All</button>
+        <button class="chip" data-filter="telegram_channel">✈️ Telegram</button>
+        <button class="chip" data-filter="discord">🎮 Discord</button>
+        <button class="chip" data-filter="youtube">▶️ YouTube</button>
+        <button class="chip" data-filter="tiktok">🎵 TikTok</button>
+        <button class="chip" data-filter="instagram">📷 Instagram</button>
+      </div>
 
       <button id="watchAdBtn" class="ad-banner">
         <span class="ad-icon">📺</span>
-        <div class="ad-text">
-          <strong data-i18n="watchAdTitle">Watch Ad</strong>
-          <small data-i18n="watchAdDesc">Watch a short ad and earn coins + energy</small>
-        </div>
-        <span class="ad-plus">+20</span>
+        <div class="ad-text"><strong data-i18n="watchAdTitle">Watch Ad</strong><small data-i18n="watchAdDesc">Watch a short ad and earn coins + energy</small></div>
+        <span class="ad-plus">+2</span>
       </button>
 
       <div id="taskList" class="task-list"></div>
 
       <button id="addTaskFab" class="fab hidden">+ <span data-i18n="addTask">Add Task</span></button>
+      <button id="userAddTaskFab" class="fab fab-secondary">💰 <span data-i18n="postTask">Post a Task</span></button>
     </section>
 
-    <!-- FRIENDS -->
-    <section id="page-friends" class="page">
-      <div class="section-title" data-i18n="inviteFriends">Invite Friends</div>
-      <div class="referral-card">
-        <div class="referral-icon">🎁</div>
+    <!-- ================= RANK ================= -->
+    <section id="page-rank" class="page">
+      <div class="section-title" data-i18n="leaderboard">Leaderboard</div>
+
+      <div id="inviteCard" class="referral-card">
+        <div class="section-title" style="margin-top:0" data-i18n="inviteFriends">Invite Friends</div>
         <p data-i18n="referralDesc">Invite your friends and earn coins for every friend that joins!</p>
         <div class="referral-link-box">
           <input id="referralLinkInput" type="text" readonly />
@@ -99,40 +129,116 @@
         </div>
         <button id="shareLinkBtn" class="primary-btn">📤 <span data-i18n="shareWithFriends">Share with Friends</span></button>
       </div>
-      <div class="stats-row single">
-        <div class="stat-card friends">
-          <div class="stat-value" id="referralCountFriends">0</div>
-          <div class="stat-label">👥 <span data-i18n="totalInvites">Total Invites</span></div>
+
+      <div class="live-stats-row">
+        <div class="live-stat"><div class="live-value" id="statTasks">0</div><div class="live-label" data-i18n="totalTasks">Total Tasks</div></div>
+        <div class="live-stat"><div class="live-value" id="statRewards">$0</div><div class="live-label" data-i18n="totalRewards">Total Rewards</div></div>
+        <div class="live-stat"><div class="live-value" id="statUsers">0</div><div class="live-label" data-i18n="users">Users</div></div>
+        <div class="live-stat"><div class="live-value" id="statDays">0D</div><div class="live-label" data-i18n="runningTime">Running Time</div></div>
+      </div>
+
+      <div class="tab-row">
+        <button class="tab-btn active" data-lb="tasks" data-i18n="tasksTab">Tasks</button>
+        <button class="tab-btn" data-lb="invites" data-i18n="invitesTab">Invites</button>
+        <button class="tab-btn" data-lb="weekly" data-i18n="weeklyTab">Weekly</button>
+      </div>
+
+      <div id="weeklyCountdown" class="weekly-countdown hidden">
+        <span data-i18n="endsIn">Ends in</span> <strong id="weeklyTimer">--:--:--</strong>
+      </div>
+
+      <div id="leaderboardList" class="leaderboard-list"></div>
+    </section>
+
+    <!-- ================= ACTIVITY ================= -->
+    <section id="page-activity" class="page">
+      <div class="section-title" data-i18n="activityCenter">Activity Center</div>
+
+      <div class="tab-row">
+        <button class="tab-btn active" data-activity="achieve" data-i18n="achieve">Achieve</button>
+        <button class="tab-btn" data-activity="daily" data-i18n="daily">Daily</button>
+        <button class="tab-btn" data-activity="events" data-i18n="events">Events</button>
+      </div>
+
+      <div id="activity-achieve" class="activity-tab active">
+        <div class="achieve-overview">
+          <div class="ao-item"><div class="ao-value"><span id="achDone">0</span>/<span id="achTotal">0</span></div><div class="ao-label" data-i18n="completed">Completed</div></div>
+        </div>
+        <div class="sub-tab-row">
+          <button class="sub-tab active" data-cat="invite" data-i18n="inviteCat">Invite</button>
+          <button class="sub-tab" data-cat="earning" data-i18n="earningCat">Earning</button>
+        </div>
+        <div id="achievementList" class="achievement-list"></div>
+      </div>
+
+      <div id="activity-daily" class="activity-tab">
+        <div class="checkin-card" style="margin-top:14px">
+          <div class="checkin-info">
+            <strong data-i18n="dailyCheckin">Daily Check-in</strong>
+            <small><span id="checkinStreak2">0</span> <span data-i18n="dayStreak">day streak</span> · +<span id="checkinReward2">2</span> ZX</small>
+          </div>
+          <button id="checkinBtn2" class="checkin-btn" data-i18n="checkIn">CHECK IN</button>
+        </div>
+      </div>
+
+      <div id="activity-events" class="activity-tab">
+        <div class="empty-state">
+          <div class="empty-icon">🎉</div>
+          <p data-i18n="noEvents">No active events right now. Stay tuned!</p>
         </div>
       </div>
     </section>
 
-    <!-- LEADERBOARD -->
-    <section id="page-leaderboard" class="page">
-      <div class="section-title" data-i18n="leaderboard">Leaderboard</div>
-      <div id="leaderboardList" class="leaderboard-list"></div>
+    <!-- ================= PROFILE ================= -->
+    <section id="page-profile" class="page">
+      <div class="section-title" data-i18n="profile">Profile</div>
+
+      <div class="profile-card big">
+        <img id="userPhoto2" class="avatar" src="" alt="avatar" />
+        <div class="profile-info">
+          <h2 id="userName2">...</h2>
+          <span class="level-badge">Lv.1 · <span data-i18n="newbie">Newbie</span></span>
+        </div>
+        <div class="trust-badge">TRUST <strong>500</strong></div>
+      </div>
+
+      <div class="wallet-card">
+        <div class="wallet-icon">💼</div>
+        <div class="wallet-label" data-i18n="myWallet">My Wallet</div>
+        <div class="wallet-balance">$<span id="walletUSDT">0.000</span> <span class="muted">USDT</span></div>
+        <button id="openWithdrawBtn" class="primary-btn">📤 <span data-i18n="withdraw">Withdraw</span></button>
+      </div>
+
+      <div class="list-card">
+        <div class="section-title" data-i18n="rewardHistory">Reward History</div>
+        <div class="empty-state small"><p data-i18n="noRewards">No reward records</p></div>
+      </div>
+
+      <div class="list-card">
+        <div class="section-title" data-i18n="messagesCommunity">Messages &amp; Community</div>
+        <a class="list-row" id="taskNotifLink" target="_blank">
+          <span>📨</span>
+          <div class="list-row-text"><strong data-i18n="taskNotifications">Task Notifications</strong><small data-i18n="taskNotifDesc">Join to get tasks first &amp; earn rewards faster</small></div>
+        </a>
+        <a class="list-row" id="announcementsLink" target="_blank">
+          <span>📢</span>
+          <div class="list-row-text"><strong data-i18n="announcements">Announcements</strong><small>@zoryxofficial</small></div>
+        </a>
+        <a class="list-row" id="communityLink" target="_blank">
+          <span>💬</span>
+          <div class="list-row-text"><strong data-i18n="community">Community</strong><small>@zoryxofficial</small></div>
+        </a>
+      </div>
     </section>
 
   </main>
 
-  <!-- ===== BOTTOM NAV ===== -->
   <nav class="bottom-nav">
-    <button class="nav-btn active" data-nav="home">
-      <span class="nav-icon">🏠</span>
-      <span data-i18n="home">Home</span>
-    </button>
-    <button class="nav-btn" data-nav="earn">
-      <span class="nav-icon">🎯</span>
-      <span data-i18n="earn">Earn</span>
-    </button>
-    <button class="nav-btn" data-nav="friends">
-      <span class="nav-icon">👥</span>
-      <span data-i18n="friends">Friends</span>
-    </button>
-    <button class="nav-btn" data-nav="leaderboard">
-      <span class="nav-icon">🏆</span>
-      <span data-i18n="leaderboard">Leaderboard</span>
-    </button>
+    <button class="nav-btn active" data-nav="home"><span class="nav-icon">🏠</span><span data-i18n="home">Home</span></button>
+    <button class="nav-btn" data-nav="tasks"><span class="nav-icon">🎯</span><span data-i18n="tasksNav">Tasks</span></button>
+    <button class="nav-btn" data-nav="rank"><span class="nav-icon">🏆</span><span data-i18n="rank">Rank</span></button>
+    <button class="nav-btn" data-nav="activity"><span class="nav-icon">📅</span><span data-i18n="activityNav">Activity</span></button>
+    <button class="nav-btn" data-nav="profile"><span class="nav-icon">👤</span><span data-i18n="profileNav">Profile</span></button>
   </nav>
 
 </div>
@@ -151,11 +257,10 @@
   </div>
 </div>
 
-<!-- ===== ADD TASK MODAL (admin only) ===== -->
+<!-- ===== ADD TASK MODAL (admin, free) ===== -->
 <div id="addTaskModal" class="modal hidden">
   <div class="modal-box">
     <h3 data-i18n="addNewTask">Add New Task</h3>
-
     <label data-i18n="platform">Platform</label>
     <div id="platformSwitcher" class="platform-switcher">
       <button class="platform-opt active" data-platform="telegram_channel">✈️<span>Telegram</span></button>
@@ -168,18 +273,105 @@
       <button class="platform-opt" data-platform="instagram">📷<span>Instagram</span></button>
       <button class="platform-opt" data-platform="website">🌐<span>Website</span></button>
     </div>
-
     <label data-i18n="taskTitle">Title</label>
     <input id="taskTitleInput" type="text" placeholder="e.g. Join our official channel" />
-
     <label data-i18n="taskUrl">Link / URL</label>
     <input id="taskUrlInput" type="text" placeholder="https://t.me/yourchannel" />
-
-    <label data-i18n="rewardCoins">Reward (coins)</label>
-    <input id="taskRewardInput" type="number" value="10" min="1" />
-
+    <label data-i18n="rewardCoins">Reward (ZX Coin, 0.2 - 100)</label>
+    <input id="taskRewardInput" type="number" value="1" min="0.2" max="100" step="0.1" />
     <button id="submitTaskBtn" class="primary-btn" data-i18n="submit">Submit</button>
     <button class="close-modal" data-close="addTaskModal" data-i18n="cancel">Cancel</button>
+  </div>
+</div>
+
+<!-- ===== USER PAID TASK SUBMISSION MODAL ===== -->
+<div id="userTaskModal" class="modal hidden">
+  <div class="modal-box">
+    <h3 data-i18n="postTaskTitle">Post a Task</h3>
+    <p class="muted small" data-i18n="postTaskDesc">Send USDT to the address below based on the reward budget you want, then fill the form. Our team will review payment and activate your task within 24 hours.</p>
+
+    <div class="pay-address-box">
+      <div class="pay-network" id="payNetwork">TON (USDT-TON)</div>
+      <div class="pay-address" id="payAddress">...</div>
+      <button id="copyPayAddressBtn">📋 <span data-i18n="copy">Copy</span></button>
+    </div>
+
+    <label data-i18n="platform">Platform</label>
+    <div id="userPlatformSwitcher" class="platform-switcher">
+      <button class="platform-opt active" data-platform="telegram_channel">✈️<span>Telegram</span></button>
+      <button class="platform-opt" data-platform="telegram_bot">🤖<span>Bot</span></button>
+      <button class="platform-opt" data-platform="discord">🎮<span>Discord</span></button>
+      <button class="platform-opt" data-platform="youtube">▶️<span>YouTube</span></button>
+      <button class="platform-opt" data-platform="tiktok">🎵<span>TikTok</span></button>
+      <button class="platform-opt" data-platform="facebook">📘<span>Facebook</span></button>
+      <button class="platform-opt" data-platform="twitter">🐦<span>Twitter</span></button>
+      <button class="platform-opt" data-platform="instagram">📷<span>Instagram</span></button>
+      <button class="platform-opt" data-platform="website">🌐<span>Website</span></button>
+    </div>
+    <label data-i18n="taskTitle">Title</label>
+    <input id="userTaskTitleInput" type="text" placeholder="e.g. Join my channel" />
+    <label data-i18n="taskUrl">Link / URL</label>
+    <input id="userTaskUrlInput" type="text" placeholder="https://t.me/yourchannel" />
+    <label data-i18n="rewardCoins">Reward per user (ZX Coin, 0.2 - 100)</label>
+    <input id="userTaskRewardInput" type="number" value="1" min="0.2" max="100" step="0.1" />
+    <label data-i18n="slots">Number of people (slots)</label>
+    <input id="userTaskSlotsInput" type="number" value="100" min="1" />
+    <div class="budget-preview" id="budgetPreview">Total budget: 100 ZX (~$10.00)</div>
+    <button id="submitUserTaskBtn" class="primary-btn" data-i18n="submitForReview">Submit for Review</button>
+    <button class="close-modal" data-close="userTaskModal" data-i18n="cancel">Cancel</button>
+  </div>
+</div>
+
+<!-- ===== ADMIN: PENDING PAID TASKS ===== -->
+<div id="pendingTasksModal" class="modal hidden">
+  <div class="modal-box">
+    <h3 data-i18n="pendingTasksTitle">Pending Paid Tasks</h3>
+    <div id="pendingTasksList"></div>
+    <button class="close-modal" data-close="pendingTasksModal" data-i18n="close">Close</button>
+  </div>
+</div>
+
+<!-- ===== WITHDRAW MODAL ===== -->
+<div id="withdrawModal" class="modal hidden">
+  <div class="modal-box">
+    <div class="withdraw-modal-header">
+      <span class="wm-icon">🟢</span>
+      <h3 data-i18n="usdtWithdraw">USDT Withdraw</h3>
+    </div>
+    <div class="tab-row">
+      <button class="tab-btn active" data-wtab="withdraw" data-i18n="withdraw">Withdraw</button>
+      <button class="tab-btn" data-wtab="history" data-i18n="history">History</button>
+    </div>
+
+    <div id="withdrawTab-withdraw" class="withdraw-tab active">
+      <div class="wd-balance-box">
+        <div class="muted small">🟢 <span data-i18n="withdrawableBalance">Withdrawable Balance</span></div>
+        <div class="wd-balance-value"><span id="wdBalance">0.000</span> <span class="muted">USDT</span></div>
+      </div>
+      <div class="wd-amount-box">
+        <div class="wd-amount-row">
+          <span class="muted small" data-i18n="amount">Amount</span>
+          <button id="wdMaxBtn" class="max-btn">MAX</button>
+        </div>
+        <input id="wdAmountInput" type="number" placeholder="0.00" step="0.01" />
+      </div>
+      <label>🎯 <span data-i18n="recipientAddress">Recipient Address</span></label>
+      <input id="wdAddressInput" type="text" data-i18n-ph="enterBep20" placeholder="Enter BEP20 wallet address" />
+      <p class="muted small" data-i18n="bep20Note">Only BEP20 (starts with 0x) USDT withdraw address supported</p>
+      <div class="wd-info-box">
+        <div class="wd-info-row"><span class="muted">⏱ <span data-i18n="minimum">Minimum</span></span><strong id="wdMin">2 USDT</strong></div>
+        <div class="wd-info-row"><span class="muted">🟢 <span data-i18n="fee">Fee</span></span><strong class="green" data-i18n="free">Free</strong></div>
+        <div class="wd-info-row"><span class="muted">⭐ <span data-i18n="estArrival">Est. Arrival</span></span><strong class="green" id="wdArrival">0.000 USDT</strong></div>
+      </div>
+      <button id="submitWithdrawBtn" class="primary-btn">📤 <span data-i18n="submitWithdraw">Submit Withdraw</span></button>
+      <p class="muted small center" data-i18n="withdrawNote">After submission, our team will review and process the transfer within 24 hours</p>
+    </div>
+
+    <div id="withdrawTab-history" class="withdraw-tab">
+      <div id="withdrawHistoryList"></div>
+    </div>
+
+    <button class="close-modal" data-close="withdrawModal" data-i18n="close">Close</button>
   </div>
 </div>
 
@@ -188,4 +380,4 @@
 <script src="js/i18n.js"></script>
 <script src="js/app.js"></script>
 </body>
-  </html>
+                                                                                                                               </html>
