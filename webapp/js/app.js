@@ -571,8 +571,8 @@
 
   async function watchAdFlow() {
     try {
-      if (typeof window.showMonetagRewardedAd === 'function') {
-        await window.showMonetagRewardedAd();
+      if (typeof window.show_11539401 === 'function') {
+        await window.show_11539401();
       } else {
         await new Promise((resolve) => setTimeout(resolve, 1500));
       }
