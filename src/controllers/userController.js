@@ -46,6 +46,15 @@ async function getSettings() {
   return settings;
 }
 
+// Lightweight endpoint for frequent polling (live balance sync) - avoids the
+// heavier /me call which also hits the Telegram API for the profile photo.
+async function getBalance(req, res) {
+  const telegramId = String(req.tgUser.id);
+  const user = await User.findOne({ telegramId }, { balanceUSDT: 1 }).lean();
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  return res.json({ balanceUSDT: user.balanceUSDT });
+}
+
 async function getMe(req, res) {
   const telegramId = String(req.tgUser.id);
   let user = await User.findOne({ telegramId });
@@ -431,6 +440,7 @@ async function deleteEvent(req, res) {
 module.exports = {
   requireTelegramAuth,
   getMe,
+  getBalance,
   setLanguage,
   dailyCheckIn,
   getLeaderboard,
