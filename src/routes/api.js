@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   requireTelegramAuth,
   getMe,
+  getBalance,
   setLanguage,
   dailyCheckIn,
   getLeaderboard,
@@ -37,6 +38,7 @@ const {
   listPendingVerifications,
   approveVerification,
   rejectVerification,
+  claimTask,
 } = require('../controllers/taskController');
 
 const { MONETAG_ZONE_ID } = require('../config');
@@ -45,6 +47,7 @@ router.use(requireTelegramAuth);
 
 // user
 router.get('/me', getMe);
+router.get('/balance', getBalance); // lightweight, for live-sync polling
 router.post('/language', setLanguage);
 router.post('/checkin', dailyCheckIn);
 router.get('/leaderboard', getLeaderboard);
@@ -54,7 +57,7 @@ router.post('/achievements/claim', claimAchievement);
 router.post('/ads/watch', watchAd);
 router.get('/ads/history', getAdHistory);
 router.get('/ads/reward', getAdRewardSetting);
-router.post('/ads/reward', updateAdRewardSetting); // admin only (checked in controller)
+router.post('/ads/reward', updateAdRewardSetting); // admin only
 router.get('/config', (req, res) => res.json({ monetagZoneId: MONETAG_ZONE_ID }));
 
 // events
@@ -72,12 +75,13 @@ router.get('/tasks', listTasks);
 router.post('/tasks', createTask); // admin only
 router.delete('/tasks/:id', deleteTask); // admin only
 router.post('/tasks/go', startTask);
-router.post('/tasks/check', checkTask);
+router.post('/tasks/check', checkTask);       // verify -> status becomes "claimable"
+router.post('/tasks/claim', claimTask);       // claim -> credits the reward
 router.post('/tasks/verify', submitVerification);
 
 // admin: verification review queue
 router.get('/tasks/verifications', listPendingVerifications);
-router.post('/tasks/verifications/:id/approve', approveVerification);
+router.post('/tasks/verifications/:id/approve', approveVerification); // -> "claimable"
 router.post('/tasks/verifications/:id/reject', rejectVerification);
 
 // paid task requests (regular users pay a fixed amount, admin manually adds the task)
