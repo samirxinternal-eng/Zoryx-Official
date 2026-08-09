@@ -53,6 +53,18 @@
     toastTimer = setTimeout(() => el.classList.add('hidden'), 2600);
   }
 
+  let rewardPopupTimer;
+  function showRewardPopup(amountUSDT) {
+    const el = document.getElementById('rewardPopup');
+    document.getElementById('rewardPopupAmount').textContent = fmtUsdt(amountUSDT);
+    el.classList.remove('hidden');
+    clearTimeout(rewardPopupTimer);
+    rewardPopupTimer = setTimeout(() => el.classList.add('hidden'), 1800);
+  }
+  document.getElementById('rewardPopup').addEventListener('click', () => {
+    document.getElementById('rewardPopup').classList.add('hidden');
+  });
+
   function escapeHtml(str) {
     const d = document.createElement('div');
     d.textContent = str;
@@ -81,7 +93,7 @@
 
   // ================= Ticker =================
   const TICKER_NAMES = ['J***6', 'T***E', 'L***6', 'S***A', 'E***1', 'M***y', 'CI***s', 'Am***2', 'R***k', 'F***a'];
-  function randomAmount() { return (Math.random() * (5000 - 50) + 50).toFixed(3); }
+  function randomAmount() { return (Math.random() * 4.5 + 0.4).toFixed(3); }
   function tickTicker() {
     const name = TICKER_NAMES[Math.floor(Math.random() * TICKER_NAMES.length)];
     const el = document.getElementById('tickerText');
@@ -191,6 +203,8 @@
     let actionHtml = '';
     if (task.status === 'completed') {
       actionHtml = `<button class="task-action-btn done" disabled>✔ ${I18N.t('completed')}</button>`;
+    } else if (task.status === 'claimable') {
+      actionHtml = `<button class="task-action-btn claimable" data-claim="${task.id}">🎁 ${I18N.t('claim')}</button>`;
     } else if (task.status === 'pending_verification') {
       actionHtml = `<button class="task-action-btn pending" disabled>⏳ ${I18N.t('pendingReview')}</button>`;
     } else if (task.status === 'started') {
@@ -242,12 +256,26 @@
         const taskId = btn.dataset.check;
         try {
           const result = await api('/tasks/check', { method: 'POST', body: { taskId } });
-          if (result.status === 'completed') {
-            showToast(`🎉 +💵${fmtUsdt(result.rewardUSDT)} USDT`);
-            document.getElementById('usdtBalance').textContent = Number(result.balanceUSDT).toFixed(3);
+          if (result.status === 'claimable') {
+            showToast(I18N.t('verifiedNowClaim'));
+            loadTasks();
+          } else if (result.status === 'completed') {
             loadTasks();
           }
         } catch (e) { showToast(e.message); }
+      });
+    });
+    container.querySelectorAll('[data-claim]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const taskId = btn.dataset.claim;
+        btn.disabled = true;
+        try {
+          const result = await api('/tasks/claim', { method: 'POST', body: { taskId } });
+          document.getElementById('usdtBalance').textContent = Number(result.balanceUSDT).toFixed(3);
+          document.getElementById('walletUSDT').textContent = Number(result.balanceUSDT).toFixed(3);
+          showRewardPopup(result.rewardUSDT);
+          loadTasks();
+        } catch (e) { showToast(e.message); btn.disabled = false; }
       });
     });
     container.querySelectorAll('[data-verify]').forEach((btn) => {
@@ -815,6 +843,27 @@
     });
   }
 
+  // ================= Live balance sync (real users only; fake accounts are static) =================
+  function startBalancePolling() {
+    setInterval(async () => {
+      try {
+        const { balanceUSDT } = await api('/balance');
+        const formatted = Number(balanceUSDT).toFixed(3);
+        document.getElementById('usdtBalance').textContent = formatted;
+        document.getElementById('walletUSDT').textContent = formatted;
+        // keep the withdraw modal's balance live too, without touching whatever the user is typing
+        const withdrawModal = document.getElementById('withdrawModal');
+        if (!withdrawModal.classList.contains('hidden')) {
+          document.getElementById('wdBalance').textContent = formatted;
+          document.getElementById('wdAmountInput').dataset.max = balanceUSDT;
+        }
+        if (state.me) state.me.balanceUSDT = balanceUSDT;
+      } catch (e) {
+        /* silent - a missed poll just tries again next tick */
+      }
+    }, 6000);
+  }
+
   // ================= Boot =================
   (async function init() {
     try {
@@ -822,6 +871,7 @@
       await loadMe();
       tickTicker();
       await loadStats();
+      startBalancePolling();
     } catch (e) {
       console.error(e);
       showToast('Failed to load. Please reopen the app.');
