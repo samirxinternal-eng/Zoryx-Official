@@ -48,7 +48,7 @@ async function listTasks(req, res) {
       actionType: task.actionType,
       rewardUSDT: task.rewardUSDT,
       verificationMode: getVerificationMode(task.platform),
-      status: c ? c.status : 'new', // new | started | pending_verification | completed
+      status: c ? c.status : 'new', // new | started | pending_verification | claimable | completed
     };
   });
 
@@ -114,9 +114,6 @@ async function deleteTask(req, res) {
 }
 
 // ================= Regular user: request a paid task be posted =================
-// Simplified flow: user pays a FIXED amount (TASK_POST_PAYMENT_USDT) out-of-band,
-// submits platform+url+title, admin verifies the payment manually and then
-// creates the real Task themselves via createTask above.
 async function submitTaskRequest(req, res) {
   const telegramId = String(req.tgUser.id);
   const { title, url, platform } = req.body;
@@ -130,8 +127,6 @@ async function submitTaskRequest(req, res) {
 
   const urlNormalized = normalizeUrl(url);
 
-  // anti-spam: same link can't be submitted again while a request is pending,
-  // or if it's already a live task
   const [dupRequest, dupTask] = await Promise.all([
     TaskRequest.findOne({ urlNormalized, status: 'pending' }),
     Task.findOne({ urlNormalized, active: true }),
@@ -214,7 +209,7 @@ async function rejectTaskRequest(req, res) {
   return res.json({ ok: true });
 }
 
-// ================= Go / Verify flow =================
+// ================= Go =================
 async function startTask(req, res) {
   const telegramId = String(req.tgUser.id);
   const { taskId } = req.body;
@@ -231,7 +226,9 @@ async function startTask(req, res) {
   return res.json({ ok: true, status: 'started' });
 }
 
-// wait-verify / auto-verify platforms use this ("Check" button)
+// ================= Check (auto/wait platforms) =================
+// Verifies eligibility only. On success the task becomes CLAIMABLE - the user
+// still has to tap "Claim" to actually receive the reward.
 async function checkTask(req, res) {
   const telegramId = String(req.tgUser.id);
   const { taskId } = req.body;
@@ -245,6 +242,9 @@ async function checkTask(req, res) {
   }
   if (completion.status === 'completed') {
     return res.json({ ok: true, status: 'completed', alreadyCompleted: true });
+  }
+  if (completion.status === 'claimable') {
+    return res.json({ ok: true, status: 'claimable' });
   }
 
   const mode = getVerificationMode(task.platform);
@@ -270,11 +270,14 @@ async function checkTask(req, res) {
     return res.status(400).json({ error: 'This task requires manual verification. Tap "Verify Now" instead.' });
   }
 
-  return completeTaskForUser(task, completion, telegramId, res);
+  completion.status = 'claimable';
+  completion.claimableAt = new Date();
+  await completion.save();
+
+  return res.json({ ok: true, status: 'claimable' });
 }
 
-// manual-verify platforms use this ("Verify Now" button) - user submits their
-// username on that platform, an admin reviews it later
+// ================= Verify Now (manual platforms) =================
 async function submitVerification(req, res) {
   const telegramId = String(req.tgUser.id);
   const { taskId, username } = req.body;
@@ -290,8 +293,8 @@ async function submitVerification(req, res) {
   if (!completion) {
     return res.status(400).json({ error: 'Tap "Go" first before verifying' });
   }
-  if (completion.status === 'completed') {
-    return res.json({ ok: true, status: 'completed', alreadyCompleted: true });
+  if (completion.status === 'completed' || completion.status === 'claimable') {
+    return res.json({ ok: true, status: completion.status, alreadyCompleted: true });
   }
 
   completion.status = 'pending_verification';
@@ -336,6 +339,8 @@ async function listPendingVerifications(req, res) {
   });
 }
 
+// Admin approves the submitted username -> task becomes CLAIMABLE (not
+// completed yet). The user still has to open the app and tap Claim.
 async function approveVerification(req, res) {
   const telegramId = String(req.tgUser.id);
   if (!(await isAdmin(telegramId))) return res.status(403).json({ error: 'Not authorized' });
@@ -345,10 +350,15 @@ async function approveVerification(req, res) {
     return res.status(404).json({ error: 'Verification not found' });
   }
 
-  await completeTaskForUser(completion.taskId, completion, completion.userId, null, true);
+  completion.status = 'claimable';
+  completion.claimableAt = new Date();
+  await completion.save();
 
   try {
-    await bot.telegram.sendMessage(completion.userId, `✅ Your task "${completion.taskId.title}" was verified! Reward credited.`);
+    await bot.telegram.sendMessage(
+      completion.userId,
+      `✅ Your submission for "${completion.taskId.title}" was verified! Open ZORY X BOT → Tasks and tap Claim to receive your reward.`
+    );
   } catch (e) {}
 
   return res.json({ ok: true });
@@ -377,12 +387,23 @@ async function rejectVerification(req, res) {
   return res.json({ ok: true });
 }
 
-// shared: marks a completion as completed + credits the user's balance.
-// If `res` is null, it's being called from the admin-approval path (no HTTP response needed here).
-async function completeTaskForUser(task, completion, telegramId, res, skipResponse) {
+// ================= Claim =================
+// Final step for EVERY task type (auto/wait/manual alike) - only after this
+// does the reward actually get credited to the user's USDT balance.
+async function claimTask(req, res) {
+  const telegramId = String(req.tgUser.id);
+  const { taskId } = req.body;
+
+  const task = await Task.findById(taskId);
+  if (!task) return res.status(404).json({ error: 'Task not found' });
+
+  const completion = await TaskCompletion.findOne({ userId: telegramId, taskId });
+  if (!completion || completion.status !== 'claimable') {
+    return res.status(400).json({ error: 'Nothing to claim for this task yet.' });
+  }
+
   if (task.maxCompletions && task.completionsCount >= task.maxCompletions) {
-    if (res) return res.status(400).json({ error: 'This task has reached its completion limit.' });
-    return;
+    return res.status(400).json({ error: 'This task has reached its completion limit.' });
   }
 
   completion.status = 'completed';
@@ -397,14 +418,12 @@ async function completeTaskForUser(task, completion, telegramId, res, skipRespon
   user.completedTasksCount += 1;
   await user.save();
 
-  if (res) {
-    return res.json({
-      ok: true,
-      status: 'completed',
-      rewardUSDT: task.rewardUSDT,
-      balanceUSDT: user.balanceUSDT,
-    });
-  }
+  return res.json({
+    ok: true,
+    status: 'completed',
+    rewardUSDT: task.rewardUSDT,
+    balanceUSDT: user.balanceUSDT,
+  });
 }
 
 module.exports = {
@@ -421,4 +440,5 @@ module.exports = {
   listPendingVerifications,
   approveVerification,
   rejectVerification,
+  claimTask,
 };
