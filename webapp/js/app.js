@@ -572,7 +572,14 @@
   async function watchAdFlow() {
     try {
       if (typeof window.show_11539401 === 'function') {
-        await window.show_11539401();
+        // ৩টা ad একটার পর একটা দেখাও — কোনোটা miss/fail করলে সাইলেন্টলি skip করে পরেরটায় চলে যাও
+        for (let i = 0; i < 3; i++) {
+          try {
+            await window.show_11539401();
+          } catch (adErr) {
+            // এই ad skip হলো, পরেরটায় চলে যাও
+          }
+        }
       } else {
         await new Promise((resolve) => setTimeout(resolve, 1500));
       }
@@ -586,7 +593,6 @@
   }
   document.getElementById('watchAdBtn').addEventListener('click', watchAdFlow);
   document.getElementById('watchAdHomeBtn').addEventListener('click', () => { navigate('tasks'); watchAdFlow(); });
-
   // ================= Rank / Friends =================
   document.getElementById('copyLinkBtn').addEventListener('click', () => {
     const input = document.getElementById('referralLinkInput');
