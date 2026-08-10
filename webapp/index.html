@@ -400,8 +400,8 @@
         <input id="wdAmountInput" type="number" placeholder="0.00" step="0.01" />
       </div>
       <label>🎯 <span data-i18n="recipientAddress">Recipient Address</span></label>
-      <input id="wdAddressInput" type="text" data-i18n-ph="enterBep20" placeholder="Enter BEP20 wallet address" />
-      <p class="muted small" data-i18n="bep20Note">Only BEP20 (starts with 0x) USDT withdraw address supported</p>
+      <input id="wdAddressInput" type="text" data-i18n-ph="enterBep20" placeholder="Enter the wallet address you want to receive USDT on" />
+      <p class="muted small" data-i18n="bep20Note">You can enter any wallet address (any network) — double check it before submitting, since transfers can't be reversed.</p>
       <div class="wd-info-box">
         <div class="wd-info-row"><span class="muted">⏱ <span data-i18n="minimum">Minimum</span></span><strong id="wdMin">2 USDT</strong></div>
         <div class="wd-info-row"><span class="muted">🟢 <span data-i18n="fee">Fee</span></span><strong class="green" data-i18n="free">Free</strong></div>
@@ -421,7 +421,7 @@
 
 <div id="toast" class="toast hidden"></div>
 
-<!-- ===== REWARD ANIMATION POPUP (Claim success) ===== -->
+<!-- ===== REWARD ANIMATION POPUP ===== -->
 <div id="rewardPopup" class="reward-popup hidden">
   <div class="reward-popup-inner">
     <div class="reward-popup-icon">💰</div>
