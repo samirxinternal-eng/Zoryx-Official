@@ -332,12 +332,9 @@ async function getWithdrawInfo(req, res) {
   const user = await User.findOne({ telegramId });
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  // Displayed "minimum withdraw" is randomized cosmetically each time this loads
-  const displayMinUSDT = Math.round((Math.random() * (5000 - 50) + 50) * 100) / 100;
-
   return res.json({
     withdrawableUSDT: user.balanceUSDT,
-    minUSDT: displayMinUSDT,
+    minUSDT: WITHDRAW_MIN_USDT,
     feeUSDT: 0,
   });
 }
@@ -346,8 +343,9 @@ async function createWithdrawRequest(req, res) {
   const telegramId = String(req.tgUser.id);
   const { amountUSDT, recipientAddress } = req.body;
 
-  if (!recipientAddress || !/^0x[a-fA-F0-9]{40}$/.test(recipientAddress.trim())) {
-    return res.status(400).json({ error: 'Please enter a valid BEP20 (0x...) address' });
+  const addr = (recipientAddress || '').trim();
+  if (!addr || addr.length < 10) {
+    return res.status(400).json({ error: 'Please enter a valid wallet address' });
   }
   const amount = Number(amountUSDT);
   if (!amount || amount < WITHDRAW_MIN_USDT) {
@@ -371,7 +369,7 @@ async function createWithdrawRequest(req, res) {
     userId: telegramId,
     amountCoins: amount, // kept for schema compat; equals amountUSDT now (1:1, no coin unit)
     amountUSDT: amount,
-    recipientAddress: recipientAddress.trim(),
+    recipientAddress: addr,
     status: 'pending',
   });
 
@@ -379,7 +377,7 @@ async function createWithdrawRequest(req, res) {
     try {
       await bot.telegram.sendMessage(
         ownerId,
-        `💸 New withdraw request\nUser: ${telegramId}\nAmount: ${amount} USDT\nAddress: ${recipientAddress}\nRequest ID: ${request._id}\n\nUse /withdrawals to review pending requests.`
+        `💸 New withdraw request\nUser: ${telegramId}\nAmount: ${amount} USDT\nAddress: ${addr}\nRequest ID: ${request._id}\n\nUse /withdrawals to review pending requests.`
       );
     } catch (e) {
       /* ignore unreachable owner */
