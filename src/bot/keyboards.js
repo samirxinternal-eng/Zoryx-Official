@@ -2,17 +2,21 @@ const { Markup } = require('telegraf');
 const { WEBAPP_URL, SUPPORTED_LANGS } = require('../config');
 
 const LANG_LABELS = {
-  bn: '🇧🇩 বাংলা',
   en: '🇬🇧 English',
-  hi: '🇮🇳 हिंदी',
+  zh: '🇨🇳 中文',
+  ru: '🇷🇺 Русский',
   ar: '🇸🇦 العربية',
+  fr: '🇫🇷 Français',
+  pt: '🇧🇷 Português',
+  es: '🇪🇸 Español',
+  vi: '🇻🇳 Tiếng Việt',
+  bn: '🇧🇩 বাংলা',
 };
 
 function languageKeyboard() {
   const buttons = SUPPORTED_LANGS.map((code) =>
     Markup.button.callback(LANG_LABELS[code], `setlang_${code}`)
   );
-  // 2 per row
   const rows = [];
   for (let i = 0; i < buttons.length; i += 2) rows.push(buttons.slice(i, i + 2));
   return Markup.inlineKeyboard(rows);
