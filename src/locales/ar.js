@@ -1,29 +1,24 @@
 module.exports = {
-  chooseLanguage: '🌐 اختر لغتك:',
-  languageSet: '✅ تم ضبط اللغة على العربية!',
+  chooseLanguage: `🌐 اختر لغتك:`,
+  languageSet: `✅ تم ضبط اللغة على العربية!`,
+  marketingIntro: `🚀 حجم المهام والأرباح في تصاعد سريع، والبوت يعمل بسلاسة تامة!\n\n💰 يتم طرح مئات المهام الجديدة يوميًا، وبعض المستخدمين يكسبون بالفعل من 100$ إلى 3000$ شهريًا عبر البوت.\n\n🎉 افتح البوت وابدأ في تحقيق دخلك الخاص عبر الإنترنت اليوم!\n\n🌐 الرجاء اختيار لغتك`,
   welcome: (name) =>
-    `👋 مرحباً، *${name}*!\n\n✨ مرحباً بك في *ZORY X BOT* — أكمل المهام، اكسب العملات، ادعُ أصدقاءك وتصدّر لوحة المتصدرين!\n\n👇 اضغط على الزر أدناه لفتح التطبيق.`,
-  openApp: '🚀 افتح ZORY X BOT',
-  changeLanguage: '🌐 تغيير اللغة',
-  helpTitle: '🛠 *قائمة أوامر المشرف — ZORY X BOT*',
-  helpBody:
-    '/start — بدء البوت ورسالة الترحيب\n' +
-    '/help — قائمة الأوامر هذه (للمشرفين فقط)\n' +
-    '/announcement — إرسال رسالة لجميع المستخدمين\n' +
-    '/addadmin <telegram_id> — إضافة مشرف جديد (المالك فقط)\n' +
-    '/removeadmin <telegram_id> — إزالة مشرف (المالك فقط)\n' +
-    '/stats — إحصائيات المستخدمين والمشرفين\n' +
-    '/withdrawals — قائمة طلبات السحب المعلقة (المالك فقط)\n' +
-    '/approvewithdraw <id> — تحديد السحب كمُرسَل\n' +
-    '/rejectwithdraw <id> — رفض السحب واسترجاع الرصيد\n\n' +
-    'ℹ️ يتم إضافة/تعديل المهام من قسم *Earn* في التطبيق المصغر (زر إضافة مهمة يظهر للمشرفين فقط).',
-  announcementAsk: '📢 أرسل الآن رسالة الإعلان. سيتم إرسالها لجميع المستخدمين.',
-  announcementSending: (count) => `⏳ جارٍ الإرسال إلى ${count} مستخدم...`,
-  announcementDone: (sent, failed) => `✅ اكتمل الإعلان!\nتم الإرسال: ${sent}\nفشل: ${failed}`,
-  notAdmin: '⛔ هذا الأمر للمشرفين فقط.',
-  addAdminUsage: 'الاستخدام: /addadmin <telegram_id>',
-  addAdminDone: (id) => `✅ تمت إضافة ${id} كمشرف.`,
-  removeAdminDone: (id) => `🗑 تمت إزالة ${id} من المشرفين.`,
-  stats: (users, admins, tasks) =>
-    `📊 *الإحصائيات*\n👥 إجمالي المستخدمين: ${users}\n🛡 إجمالي المشرفين: ${admins}\n📝 إجمالي المهام: ${tasks}`,
+    `🎉 *مرحبًا بك في ZORY X BOT!*\n\nمرحبًا، ${name}!\n\n💰 أكمل مهام وسائل التواصل الاجتماعي لكسب USDT\n📅 سجّل حضورك يوميًا لكسب USDT\n👥 ادعُ أصدقاءك واحصل على عمولة تصل إلى 20%\n\n🚀 ادعُ أصدقاءك لتكسب من 100$ إلى 3000$ USDT شهريًا\n\n👇 اضغط أدناه لتبدأ الربح!`,
+  welcomeLinks: (officialChannel, communityChannel) =>
+    `🔔 الإشعارات ➔ ${officialChannel}\n📢 الإعلانات ➔ ${officialChannel}\n👥 المجتمع ➔ ${communityChannel}\n\n⚡ ابقَ على اطلاع ولا تفوّت المهام الجديدة!`,
+  openApp: `🚀 افتح ZORY X BOT`,
+  changeLanguage: `🌐 تغيير اللغة`,
+  ownerHelpTitle: `🛠 *قائمة أوامر المالك — ZORY X BOT*`,
+  ownerHelpBody: `/start — بدء البوت وعرض رسالة الترحيب\n/help — قائمة الأوامر هذه\n/announcement — إرسال رسالة لجميع المستخدمين\n/addadmin <telegram_id> — إضافة مشرف جديد (المالك فقط)\n/removeadmin <telegram_id> — إزالة مشرف (المالك فقط)\n/stats — إحصائيات المستخدمين والمشرفين\n/totalusers — إجمالي عدد من بدأ استخدام البوت\n/withdrawals — قائمة طلبات السحب المعلقة\n/approvewithdraw <id> — تحديد السحب كمُرسَل\n/rejectwithdraw <id> — رفض السحب واسترجاع الرصيد\n\nℹ️ يتم إضافة/تعديل المهام من قسم *Earn* في التطبيق المصغر.`,
+  adminHelpTitle: `🛠 *قائمة أوامر المشرف — ZORY X BOT*`,
+  adminHelpBody: `/announcement — إرسال رسالة لجميع المستخدمين\n/totalusers — إجمالي عدد من بدأ استخدام البوت\n/withdrawals — قائمة طلبات السحب المعلقة\n/approvewithdraw <id> — تحديد السحب كمُرسَل\n/rejectwithdraw <id> — رفض السحب واسترجاع الرصيد`,
+  announcementAsk: `📢 أرسل الآن رسالة الإعلان. سيتم إرسالها لجميع المستخدمين.`,
+  announcementSending: (count) => `⏳ ${count}...`,
+  announcementDone: (sent, failed) => `✅ أُرسل: ${sent} / فشل: ${failed}`,
+  notAdmin: `⛔ هذا الأمر للمشرفين فقط.`,
+  addAdminUsage: `الاستخدام: /addadmin <telegram_id>`,
+  addAdminDone: (id) => `✅ ${id}`,
+  removeAdminDone: (id) => `🗑️ ${id}`,
+  stats: (users, admins, tasks) => `📊 مستخدمون: ${users} | مشرفون: ${admins} | مهام: ${tasks}`,
+  totalUsersText: (count) => `📊 إجمالي عدد من بدأ استخدام البوت: *${count}*`,
 };
