@@ -10,6 +10,7 @@ const {
   addAdminCommand,
   removeAdminCommand,
   statsCommand,
+  totalUsersCommand,
   withdrawalsCommand,
   approveWithdrawCommand,
   rejectWithdrawCommand,
@@ -28,11 +29,12 @@ bot.command('announcement', announcementCommand);
 bot.command('addadmin', addAdminCommand);
 bot.command('removeadmin', removeAdminCommand);
 bot.command('stats', statsCommand);
+bot.command('totalusers', totalUsersCommand);
 bot.command('withdrawals', withdrawalsCommand);
 bot.command('approvewithdraw', approveWithdrawCommand);
 bot.command('rejectwithdraw', rejectWithdrawCommand);
 
-bot.action(/setlang_(bn|en|hi|ar)/, setLanguageAction);
+bot.action(/setlang_(en|zh|ru|ar|fr|pt|es|vi|bn)/, setLanguageAction);
 bot.action('change_lang', changeLanguageAction);
 
 bot.on('text', async (ctx) => {
