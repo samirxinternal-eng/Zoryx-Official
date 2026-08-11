@@ -1,7 +1,7 @@
 const User = require('../../models/User');
 const { t } = require('../../locales');
 const { languageKeyboard, mainMenuKeyboard } = require('../keyboards');
-const { REFERRAL_REWARD_USDT, DEFAULT_LANG } = require('../../config');
+const { REFERRAL_REWARD_USDT, DEFAULT_LANG, OFFICIAL_CHANNEL, COMMUNITY_CHANNEL } = require('../../config');
 
 module.exports = async function startCommand(ctx) {
   const from = ctx.from;
@@ -34,7 +34,6 @@ module.exports = async function startCommand(ctx) {
       );
       if (referrer) {
         try {
-          const rl = t(referrer.language || DEFAULT_LANG);
           await ctx.telegram.sendMessage(
             referrer.telegramId,
             `🎉 +${REFERRAL_REWARD_USDT} USDT! ${from.first_name || 'A friend'} joined using your invite link.`
@@ -45,7 +44,6 @@ module.exports = async function startCommand(ctx) {
       }
     }
   } else {
-    // keep profile info fresh
     user.firstName = from.first_name || user.firstName;
     user.lastName = from.last_name || user.lastName;
     user.username = from.username || user.username;
@@ -53,11 +51,14 @@ module.exports = async function startCommand(ctx) {
   }
 
   if (!user.language) {
-    // first time -> ask language before showing welcome
-    return ctx.reply(t(DEFAULT_LANG).chooseLanguage, languageKeyboard());
+    // first time -> marketing intro + language picker (matches the reference screenshot)
+    return ctx.reply(t(DEFAULT_LANG).marketingIntro, languageKeyboard());
   }
 
+  // returning user with a language already set -> show the detailed welcome
+  // message plus the language buttons again underneath (so they can switch anytime)
   const locale = t(user.language);
   const displayName = from.first_name || from.username || 'Friend';
-  return ctx.replyWithMarkdown(locale.welcome(displayName), mainMenuKeyboard(locale));
+  await ctx.replyWithMarkdown(locale.welcome(displayName));
+  return ctx.reply(locale.welcomeLinks(OFFICIAL_CHANNEL, COMMUNITY_CHANNEL), languageKeyboard());
 };
