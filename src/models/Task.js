@@ -34,4 +34,4 @@ const taskSchema = new mongoose.Schema(
 taskSchema.statics.PLATFORMS = PLATFORMS;
 taskSchema.statics.ACTIONS = ACTIONS;
 
-module.exports = mongoose.model('Task', taskSchema);
+module.exports = mongoose.model('Task', taskSchema);module.exports = mongoose.model('Task', taskSchema);
