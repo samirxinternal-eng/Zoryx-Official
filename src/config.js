@@ -43,6 +43,6 @@ module.exports = {
   BASE_FAKE_REWARDS_USD: Number(process.env.BASE_FAKE_REWARDS_USD || 124811),
   LAUNCH_DATE: process.env.LAUNCH_DATE || '2026-01-05T00:00:00.000Z',
 
-  SUPPORTED_LANGS: ['bn', 'en', 'hi', 'ar'],
-  DEFAULT_LANG: 'bn',
+  SUPPORTED_LANGS: ['en', 'zh', 'ru', 'ar', 'fr', 'pt', 'es', 'vi', 'bn'],
+  DEFAULT_LANG: 'en',
 };
