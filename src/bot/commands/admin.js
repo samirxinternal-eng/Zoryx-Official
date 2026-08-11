@@ -3,7 +3,7 @@ const Admin = require('../../models/Admin');
 const Task = require('../../models/Task');
 const WithdrawRequest = require('../../models/WithdrawRequest');
 const { t } = require('../../locales');
-const { isOwner } = require('../middlewares/adminCheck');
+const { isOwner, isAdmin } = require('../middlewares/adminCheck');
 const { DEFAULT_LANG } = require('../../config');
 
 async function localeFor(telegramId) {
@@ -44,7 +44,7 @@ async function removeAdminCommand(ctx) {
 async function statsCommand(ctx) {
   const telegramId = String(ctx.from.id);
   const locale = await localeFor(telegramId);
-  if (!isOwner(telegramId)) return;
+  if (!isOwner(telegramId)) return; // full stats stay owner-only
 
   const [users, admins, tasks] = await Promise.all([
     User.countDocuments({ isFake: false }),
@@ -55,10 +55,20 @@ async function statsCommand(ctx) {
   return ctx.replyWithMarkdown(locale.stats(users, admins, tasks));
 }
 
-// ==== Withdraw request review (owner only) ====
+// ==== Total users who have /start'ed the bot (owner + admin) ====
+async function totalUsersCommand(ctx) {
+  const telegramId = String(ctx.from.id);
+  const locale = await localeFor(telegramId);
+  if (!(await isAdmin(telegramId))) return; // silent for regular users
+
+  const count = await User.countDocuments({ isFake: false });
+  return ctx.replyWithMarkdown(locale.totalUsersText(count));
+}
+
+// ==== Withdraw request review (owner + admin) ====
 async function withdrawalsCommand(ctx) {
   const telegramId = String(ctx.from.id);
-  if (!isOwner(telegramId)) return;
+  if (!(await isAdmin(telegramId))) return;
 
   const pending = await WithdrawRequest.find({ status: 'pending' }).sort({ createdAt: 1 }).limit(15).lean();
   if (!pending.length) return ctx.reply('✅ No pending withdrawal requests.');
@@ -73,7 +83,7 @@ async function withdrawalsCommand(ctx) {
 
 async function approveWithdrawCommand(ctx) {
   const telegramId = String(ctx.from.id);
-  if (!isOwner(telegramId)) return;
+  if (!(await isAdmin(telegramId))) return;
 
   const parts = ctx.message.text.trim().split(/\s+/);
   if (parts.length < 2) return ctx.reply('Usage: /approvewithdraw <request_id>');
@@ -94,7 +104,7 @@ async function approveWithdrawCommand(ctx) {
 
 async function rejectWithdrawCommand(ctx) {
   const telegramId = String(ctx.from.id);
-  if (!isOwner(telegramId)) return;
+  if (!(await isAdmin(telegramId))) return;
 
   const parts = ctx.message.text.trim().split(/\s+/);
   if (parts.length < 2) return ctx.reply('Usage: /rejectwithdraw <request_id>');
@@ -124,6 +134,7 @@ module.exports = {
   addAdminCommand,
   removeAdminCommand,
   statsCommand,
+  totalUsersCommand,
   withdrawalsCommand,
   approveWithdrawCommand,
   rejectWithdrawCommand,
