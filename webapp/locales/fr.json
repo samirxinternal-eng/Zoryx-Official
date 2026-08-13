@@ -76,6 +76,7 @@
   "cancel": "Annuler",
   "go": "Aller",
   "check": "Vérifier",
+  "processing": "Traitement en cours...",
   "verifyNow": "Vérifier maintenant",
   "pendingReview": "En attente de révision",
   "verifyNowTitle": "Vérifier la tâche",
