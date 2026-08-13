@@ -76,6 +76,7 @@
   "cancel": "取消",
   "go": "前往",
   "check": "检查",
+  "processing": "处理中...",
   "verifyNow": "立即验证",
   "pendingReview": "审核中",
   "verifyNowTitle": "验证任务",
