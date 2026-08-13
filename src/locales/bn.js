@@ -21,4 +21,7 @@ module.exports = {
   removeAdminDone: (id) => `🗑️ ${id}`,
   stats: (users, admins, tasks) => `📊 ইউজার: ${users} | এডমিন: ${admins} | টাস্ক: ${tasks}`,
   totalUsersText: (count) => `📊 মোট কতজন বট স্টার্ট করেছে: *${count}*`,
+  checkinReminder: (streak, reward) =>
+    `📅 *চেক-ইন রিমাইন্ডার*\n\n⏰ আপনি আজ চেক-ইন করেননি!\n🔥 বর্তমান স্ট্রিক: ${streak} দিন\n🎁 আজকের রিওয়ার্ড: ${reward} USDT\n\nপ্রতিদিন চেক-ইন করতে ভুলবেন না!`,
+  checkInNowBtn: `📅 এখনই চেক ইন করুন`,
 };
