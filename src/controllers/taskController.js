@@ -254,13 +254,12 @@ async function checkTask(req, res) {
     // (e.g. the link had a trailing space or query string), try extracting
     // it again from the stored URL before giving up.
     if (!task.channelUsername) {
-      const { extractChannelUsername } = require('../utils/extractChannelUsername');
       const reExtracted = extractChannelUsername(task.url);
       if (reExtracted) {
         task.channelUsername = reExtracted;
         await task.save();
       }
-    }
+     }
 
     if (!task.channelUsername) {
       return res.status(400).json({
