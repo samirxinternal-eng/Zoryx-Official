@@ -76,6 +76,7 @@
   "cancel": "Отмена",
   "go": "Перейти",
   "check": "Проверить",
+  "processing": "Обработка...",
   "verifyNow": "Проверить сейчас",
   "pendingReview": "На рассмотрении",
   "verifyNowTitle": "Проверка задания",
