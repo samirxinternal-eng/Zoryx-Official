@@ -8,24 +8,38 @@ const User = require('../src/models/User');
 const { MONGODB_URI } = require('../src/config');
 const { getWeekKey } = require('../src/utils/economy');
 
-const FIRST_NAMES = [
-  'Arif', 'Nusrat', 'Rakibul', 'Sadia', 'Tanvir', 'Farhana', 'Mahmudul', 'Sumaiya',
-  'Rafiul', 'Jannatul', 'Aditya', 'Priya', 'Rahul', 'Ayesha', 'Omar', 'Fatima',
-  'John', 'Emily', 'David', 'Sophia', 'Mizanur', 'Taslima', 'Shakib', 'Nabila',
-  'Imran', 'Ritu', 'Kamal', 'Shirin', 'Mahin', 'Anika', 'Yusuf', 'Zainab',
-  'Habibur', 'Marium', 'Rezaul', 'Nadia', 'Saiful', 'Tania', 'Faisal', 'Lubna',
-];
-
-const LAST_NAMES = [
-  'Hasan', 'Jahan', 'Islam', 'Afrin', 'Ahmed', 'Akter', 'Karim', 'Rahman',
-  'Chowdhury', 'Khan', 'Siddiqui', 'Farooq', 'Zahra', 'Smith', 'Clark', 'Lee',
-  'Turner', 'Begum', 'Al Hasan', 'Noor',
-];
-
-// Different DiceBear illustrated/styled avatar sets — gives visual variety
-const DICEBEAR_STYLES = [
-  'avataaars', 'bottts', 'pixel-art', 'personas', 'micah',
-  'notionists', 'adventurer', 'big-smile', 'fun-emoji', 'lorelei',
+// Diverse full names from many different countries — mixed scripts/languages for a global look
+const FAKE_NAMES_POOL = [
+  // South Asian
+  'Arif Hasan', 'Nusrat Jahan', 'Rakibul Islam', 'Sadia Afrin', 'Tanvir Ahmed',
+  'Farhana Akter', 'Mahmudul Hasan', 'Sumaiya Islam', 'Rafiul Karim', 'Jannatul Ferdous',
+  'Aditya Sharma', 'Priya Verma', 'Rahul Khan', 'Ayesha Siddiqui', 'Rohan Mehta',
+  'Kavya Reddy', 'Vikram Singh', 'Ananya Iyer', 'Aarav Patel', 'Zoya Malik',
+  // Middle East / Arabic
+  'Omar Farouk', 'Fatima Zahra', 'Yusuf Al-Amin', 'Layla Hassan', 'Khalid Rahman',
+  'Amina Youssef', 'Tariq Aziz', 'Nadia Karam', 'Hassan Ali', 'Mariam Saleh',
+  // East Asian
+  '王伟', '李娜', '张敏', '陈杰', '刘洋',
+  '田中太郎', '佐藤花子', '鈴木一郎', '高橋美咲',
+  '김민준', '이서연', '박지훈', '최유나',
+  // Russian / Eastern Europe
+  'Иван Петров', 'Мария Смирнова', 'Дмитрий Волков', 'Анна Кузнецова', 'Сергей Иванов',
+  'Ольга Соколова', 'Алексей Морозов',
+  // Western Europe
+  'John Smith', 'Emily Clark', 'David Lee', 'Sophia Turner', 'James Wilson',
+  'Marie Dubois', 'Pierre Lefèvre', 'Claire Moreau', 'Hans Müller', 'Anna Schmidt',
+  'Giulia Rossi', 'Marco Bianchi',
+  // Latin America / Spanish / Portuguese
+  'Carlos Fernández', 'Sofía García', 'Diego Martínez', 'Valentina López',
+  'Lucas Silva', 'Beatriz Souza', 'Rafael Costa', 'Camila Oliveira',
+  // Southeast Asia
+  'Nguyễn Văn An', 'Trần Thị Hương', 'Lê Minh Đức',
+  'Siti Nurhaliza', 'Budi Santoso', 'Ahmad Fauzi',
+  'Juan Dela Cruz', 'Maria Santos',
+  // Africa
+  'Chidi Okafor', 'Amara Nwosu', 'Kwame Mensah', 'Zanele Dlamini', 'Tendai Moyo',
+  // Turkey / Central Asia
+  'Mehmet Yılmaz', 'Elif Kaya', 'Ahmet Demir',
 ];
 
 function randomFloat(min, max, decimals = 2) {
@@ -36,14 +50,16 @@ function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function buildFakeNames(count) {
-  const names = new Set();
-  while (names.size < count) {
-    const f = FIRST_NAMES[randomInt(0, FIRST_NAMES.length - 1)];
-    const l = LAST_NAMES[randomInt(0, LAST_NAMES.length - 1)];
-    names.add(`${f} ${l}`);
+// Pick `count` unique random names from the pool (falls back to numbered
+// duplicates only if the pool is smaller than requested — shouldn't happen here)
+function pickRandomNames(count) {
+  const pool = [...FAKE_NAMES_POOL];
+  const picked = [];
+  while (picked.length < count && pool.length > 0) {
+    const idx = randomInt(0, pool.length - 1);
+    picked.push(pool.splice(idx, 1)[0]);
   }
-  return Array.from(names);
+  return picked;
 }
 
 // Fetch real human face photos from randomuser.me
@@ -67,18 +83,7 @@ function fetchRandomUsers(count) {
   });
 }
 
-// Randomly pick either a real face OR a styled/illustrated avatar
-function pickRandomAvatar(telegramId, realFacePool) {
-  const useRealFace = Math.random() < 0.5 && realFacePool.length > 0;
-  if (useRealFace) {
-    const idx = randomInt(0, realFacePool.length - 1);
-    return realFacePool.splice(idx, 1)[0].picture.large;
-  }
-  const style = DICEBEAR_STYLES[randomInt(0, DICEBEAR_STYLES.length - 1)];
-  return `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(telegramId)}`;
-}
-
-const FAKE_NAMES = buildFakeNames(100);
+const FAKE_NAMES = pickRandomNames(100);
 
 async function run() {
   // If this script is required from inside the already-running app (e.g. via a temp
@@ -88,20 +93,21 @@ async function run() {
   if (!alreadyConnected) {
     await mongoose.connect(MONGODB_URI);
   }
-  console.log('Connected to MongoDB, fetching a pool of real profile photos...');
+  console.log('Connected to MongoDB, fetching real profile photos...');
 
+  // Fetch one unique real photo per user — no cartoons/illustrated avatars
   const realFacePool = await fetchRandomUsers(FAKE_NAMES.length);
-  console.log('Photos fetched, seeding fake leaderboard users with mixed avatar styles...');
+  console.log(`Fetched ${realFacePool.length} real photos, seeding fake leaderboard users...`);
 
   const currentWeekKey = getWeekKey();
 
   for (let i = 0; i < FAKE_NAMES.length; i++) {
     const name = FAKE_NAMES[i];
     const telegramId = `fake_${1000 + i}`;
-    const balanceUSDT = randomFloat(5, 950, 2);      // Tasks tab (total USDT earned)
-    const referralCount = randomInt(5, 900);          // Invites tab
-    const weeklyUSDT = randomFloat(1, 60, 2);         // Weekly tab (resets every Monday)
-    const photoUrl = pickRandomAvatar(telegramId, realFacePool);
+    const balanceUSDT = randomFloat(107, 8064.56, 2);     // Tasks tab
+    const referralCount = randomInt(97, 21864);            // Invites tab — whole numbers only
+    const weeklyUSDT = randomFloat(156.12, 7493.64, 2);    // Weekly tab (resets every Monday)
+    const photoUrl = realFacePool[i] ? realFacePool[i].picture.large : '';
 
     await User.findOneAndUpdate(
       { telegramId },
@@ -121,7 +127,7 @@ async function run() {
     );
   }
 
-  console.log(`✅ Seeded ${FAKE_NAMES.length} fake leaderboard users with mixed avatar styles (Tasks / Invites / Weekly).`);
+  console.log(`✅ Seeded ${FAKE_NAMES.length} fake leaderboard users with unique real photos (Tasks / Invites / Weekly).`);
 
   // Only disconnect if we opened the connection ourselves (i.e. running standalone via `npm run seed:fake`)
   if (!alreadyConnected) {
