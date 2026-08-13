@@ -93,7 +93,7 @@
 
   // ================= Ticker =================
   const TICKER_NAMES = ['J***6', 'T***E', 'L***6', 'S***A', 'E***1', 'M***y', 'CI***s', 'Am***2', 'R***k', 'F***a'];
-  function randomAmount() { return (Math.random() * (5000 - 50) + 50).toFixed(3); }
+  function randomAmount() { return (Math.random() * 4.5 + 0.4).toFixed(3); }
   function tickTicker() {
     const name = TICKER_NAMES[Math.floor(Math.random() * TICKER_NAMES.length)];
     const el = document.getElementById('tickerText');
@@ -168,7 +168,7 @@
       document.getElementById('checkinStreak').textContent = result.checkInStreak;
       document.getElementById('checkinStreak2').textContent = result.checkInStreak;
       setCheckinButtons(false);
-      showToast(`🎉 +💵${fmtUsdt(result.rewardedUSDT)} USDT`);
+      showRewardPopup(result.rewardedUSDT);
     } catch (e) {
       showToast(e.message);
     }
@@ -193,29 +193,48 @@
   });
 
   // ================= Tasks =================
+  // Real brand-colored logos (SVG masked onto a brand-color circle) for
+  // platforms with an actual company logo. telegram_bot/website keep a
+  // generic emoji since there's no single "brand" for those.
+  const PLATFORM_LOGO = {
+    telegram_channel: { url: 'https://cdn.jsdelivr.net/npm/simple-icons@11/icons/telegram.svg', bg: '#26A5E4' },
+    discord: { url: 'https://cdn.jsdelivr.net/npm/simple-icons@11/icons/discord.svg', bg: '#5865F2' },
+    tiktok: { url: 'https://cdn.jsdelivr.net/npm/simple-icons@11/icons/tiktok.svg', bg: '#000000' },
+    instagram: { url: 'https://cdn.jsdelivr.net/npm/simple-icons@11/icons/instagram.svg', bg: 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)' },
+    youtube: { url: 'https://cdn.jsdelivr.net/npm/simple-icons@11/icons/youtube.svg', bg: '#FF0000' },
+    facebook: { url: 'https://cdn.jsdelivr.net/npm/simple-icons@11/icons/facebook.svg', bg: '#1877F2' },
+    twitter: { url: 'https://cdn.jsdelivr.net/npm/simple-icons@11/icons/x.svg', bg: '#000000' },
+  };
   const PLATFORM_ICON = {
-    telegram_channel: '✈️', telegram_bot: '🤖', discord: '🎮', youtube: '▶️',
-    tiktok: '🎵', facebook: '📘', twitter: '✖️', instagram: '📷', website: '🌐',
+    telegram_bot: '🤖', website: '🌐',
   };
 
+  function platformIconHtml(platform) {
+    const logo = PLATFORM_LOGO[platform];
+    if (logo) {
+      return `<div class="task-icon" style="background:${logo.bg}"><span class="brand-mask" style="-webkit-mask-image:url('${logo.url}');mask-image:url('${logo.url}')"></span></div>`;
+    }
+    return `<div class="task-icon">${PLATFORM_ICON[platform] || '🌐'}</div>`;
+  }
+
   function renderTaskCard(task, showAdminControls) {
-    const icon = PLATFORM_ICON[task.platform] || '🌐';
-    let actionHtml = '';
+    let secondaryBtnHtml = '';
     if (task.status === 'completed') {
-      actionHtml = `<button class="task-action-btn done" disabled>✔ ${I18N.t('completed')}</button>`;
+      secondaryBtnHtml = `<button class="task-action-btn done" disabled>✔ ${I18N.t('completed')}</button>`;
     } else if (task.status === 'claimable') {
-      actionHtml = `<button class="task-action-btn claimable" data-claim="${task.id}">🎁 ${I18N.t('claim')}</button>`;
+      secondaryBtnHtml = `<button class="task-action-btn claimable" data-claim="${task.id}">🎁 ${I18N.t('claim')}</button>`;
     } else if (task.status === 'pending_verification') {
-      actionHtml = `<button class="task-action-btn pending" disabled>⏳ ${I18N.t('pendingReview')}</button>`;
+      secondaryBtnHtml = `<button class="task-action-btn pending" disabled>⏳ ${I18N.t('pendingReview')}</button>`;
     } else if (task.status === 'started') {
       if (task.verificationMode === 'manual') {
-        actionHtml = `<button class="task-action-btn verify" data-verify="${task.id}">${I18N.t('verifyNow')}</button>`;
+        secondaryBtnHtml = `<button class="task-action-btn verify small" data-verify="${task.id}">${I18N.t('verifyNow')}</button>`;
       } else {
-        actionHtml = `<button class="task-action-btn check" data-check="${task.id}">${I18N.t('check')}</button>`;
+        secondaryBtnHtml = `<button class="task-action-btn check small" data-check="${task.id}">${I18N.t('check')}</button>`;
       }
-    } else {
-      actionHtml = `<button class="task-action-btn go" data-go="${task.id}" data-url="${task.url}">${I18N.t('go')}</button>`;
     }
+    // "Go" is always shown and never disabled/hidden, regardless of status
+    const goBtnHtml = `<button class="task-action-btn go" data-go="${task.id}" data-url="${task.url}">${I18N.t('go')}</button>`;
+
     const deleteHtml = showAdminControls
       ? `<button class="task-delete-btn" data-delete="${task.id}" title="${I18N.t('delete')}">🗑</button>`
       : '';
@@ -225,13 +244,13 @@
     card.dataset.title = task.title.toLowerCase();
     card.innerHTML = `
       <div class="task-badge">${I18N.t('mustDoTag')}</div>
-      <div class="task-icon">${icon}</div>
+      ${platformIconHtml(task.platform)}
       <div class="task-info">
         <h4>${escapeHtml(task.title)}</h4>
         <span>+💵${fmtUsdt(task.rewardUSDT)} USDT</span>
         <span class="task-action-tag">${I18N.t('action_' + task.actionType) || task.actionType}</span>
       </div>
-      ${actionHtml}
+      <div class="task-btn-group">${goBtnHtml}${secondaryBtnHtml}</div>
       ${deleteHtml}
     `;
     return card;
@@ -455,7 +474,7 @@
         div.className = 'pending-task-item';
         div.innerHTML = `
           <h4>${escapeHtml(r.title)}</h4>
-          <p>${PLATFORM_ICON[r.platform] || '🌐'} ${r.platform} · <a href="${r.url}" target="_blank" style="color:var(--accent-3)">${escapeHtml(r.url)}</a></p>
+          <p>${r.platform} · <a href="${r.url}" target="_blank" style="color:var(--accent-3)">${escapeHtml(r.url)}</a></p>
           <p>Sponsor: ${r.sponsorTelegramId}</p>
           <div class="pending-task-actions">
             <button class="approve-btn" data-handle="${r.id}">✅ ${I18N.t('paymentReceived')}</button>
@@ -509,7 +528,7 @@
         div.className = 'pending-task-item';
         div.innerHTML = `
           <h4>${escapeHtml(v.taskTitle)}</h4>
-          <p>${PLATFORM_ICON[v.platform] || '🌐'} ${v.platform} · ${I18N.t('action_' + v.actionType) || v.actionType} · +💵${fmtUsdt(v.rewardUSDT)} USDT</p>
+          <p>${v.platform} · ${I18N.t('action_' + v.actionType) || v.actionType} · +💵${fmtUsdt(v.rewardUSDT)} USDT</p>
           <p>${I18N.t('submittedUsername')}: <small class="username">${escapeHtml(v.submittedUsername)}</small></p>
           <p>User: ${v.userId}</p>
           <div class="pending-task-actions">
@@ -571,21 +590,14 @@
 
   async function watchAdFlow() {
     try {
-      if (typeof window.show_11539401 === 'function') {
-        // ৩টা ad একটার পর একটা দেখাও — কোনোটা miss/fail করলে সাইলেন্টলি skip করে পরেরটায় চলে যাও
-        for (let i = 0; i < 3; i++) {
-          try {
-            await window.show_11539401();
-          } catch (adErr) {
-            // এই ad skip হলো, পরেরটায় চলে যাও
-          }
-        }
+      if (typeof window.showMonetagRewardedAd === 'function') {
+        await window.showMonetagRewardedAd();
       } else {
         await new Promise((resolve) => setTimeout(resolve, 1500));
       }
       const result = await api('/ads/watch', { method: 'POST' });
       document.getElementById('usdtBalance').textContent = Number(result.balanceUSDT).toFixed(3);
-      showToast(`🎉 +💵${fmtUsdt(result.rewardedUSDT)} USDT`);
+      showRewardPopup(result.rewardedUSDT);
       loadAdHistory();
     } catch (e) {
       showToast(e.message || I18N.t('adCooldownMsg'));
@@ -593,6 +605,7 @@
   }
   document.getElementById('watchAdBtn').addEventListener('click', watchAdFlow);
   document.getElementById('watchAdHomeBtn').addEventListener('click', () => { navigate('tasks'); watchAdFlow(); });
+
   // ================= Rank / Friends =================
   document.getElementById('copyLinkBtn').addEventListener('click', () => {
     const input = document.getElementById('referralLinkInput');
@@ -728,7 +741,7 @@
       btn.addEventListener('click', async () => {
         try {
           const result = await api('/achievements/claim', { method: 'POST', body: { achievementId: btn.dataset.claim } });
-          showToast(`🎉 +💵${fmtUsdt(result.rewardedUSDT)} USDT`);
+          showRewardPopup(result.rewardedUSDT);
           document.getElementById('usdtBalance').textContent = Number(result.balanceUSDT).toFixed(3);
           loadAchievements();
         } catch (e) { showToast(e.message); }
