@@ -21,4 +21,7 @@ module.exports = {
   removeAdminDone: (id) => `🗑️ ${id}`,
   stats: (users, admins, tasks) => `📊 مستخدمون: ${users} | مشرفون: ${admins} | مهام: ${tasks}`,
   totalUsersText: (count) => `📊 إجمالي عدد من بدأ استخدام البوت: *${count}*`,
+  checkinReminder: (streak, reward) =>
+    `📅 *تذكير بتسجيل الحضور*\n\n⏰ لم تسجل حضورك اليوم بعد!\n🔥 السلسلة الحالية: ${streak} أيام\n🎁 مكافأة اليوم: ${reward} USDT\n\nلا تنسَ تسجيل حضورك يوميًا!`,
+  checkInNowBtn: `📅 سجّل الآن`,
 };
