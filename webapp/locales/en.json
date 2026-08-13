@@ -76,6 +76,7 @@
   "cancel": "Cancel",
   "go": "Go",
   "check": "Check",
+  "processing": "Processing...",
   "verifyNow": "Verify Now",
   "pendingReview": "Pending Review",
   "verifyNowTitle": "Verify Task",
