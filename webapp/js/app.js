@@ -93,7 +93,16 @@
 
   // ================= Ticker =================
   const TICKER_NAMES = ['J***6', 'T***E', 'L***6', 'S***A', 'E***1', 'M***y', 'CI***s', 'Am***2', 'R***k', 'F***a'];
-  function randomAmount() { return (Math.random() * 4.5 + 0.4).toFixed(3); }
+  function randomAmount() {
+    // 60% of the time show a smaller amount (50–100 USDT), 40% of the time a larger one (100–3000 USDT)
+    let amount;
+    if (Math.random() < 0.6) {
+      amount = Math.random() * (100 - 50) + 50;
+    } else {
+      amount = Math.random() * (3000 - 100) + 100;
+    }
+    return amount.toFixed(3);
+  }
   function tickTicker() {
     const name = TICKER_NAMES[Math.floor(Math.random() * TICKER_NAMES.length)];
     const el = document.getElementById('tickerText');
