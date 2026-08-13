@@ -16,10 +16,13 @@ const PLATFORM_ACTIONS = {
 };
 
 // Platforms verified automatically via the Telegram Bot API (getChatMember)
-const AUTO_VERIFY_PLATFORMS = ['telegram_channel'];
+// NOTE: telegram_channel moved to WAIT_VERIFY below - most channels used here
+// are private invite links (t.me/+xxxx), which the Bot API cannot resolve to
+// check membership, so real auto-verification isn't possible for those.
+const AUTO_VERIFY_PLATFORMS = [];
 
 // Platforms verified with a simple "wait a few seconds then Check" flow
-const WAIT_VERIFY_PLATFORMS = ['telegram_bot', 'website'];
+const WAIT_VERIFY_PLATFORMS = ['telegram_channel', 'telegram_bot', 'website'];
 
 // Platforms that require the user to submit their username on that platform,
 // which an admin then manually reviews and approves/rejects ("Verify Now")
