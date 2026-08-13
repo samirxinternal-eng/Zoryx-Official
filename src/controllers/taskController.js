@@ -9,7 +9,7 @@ const { addBalance, normalizeUrl } = require('../utils/economy');
 const { PLATFORM_ACTIONS, getVerificationMode } = require('../utils/taskActions');
 const { MIN_TASK_REWARD_USDT, MAX_TASK_REWARD_USDT, OWNER_IDS } = require('../config');
 
-const MIN_WAIT_MS = 8000; // wait-verify platforms: min time between "Go" and "Check"
+const MIN_WAIT_MS = 10000; // wait-verify platforms: min time between "Go" and "Check"
 
 function validateReward(rewardUSDT) {
   const r = Number(rewardUSDT);
