@@ -280,17 +280,32 @@
       });
     });
     container.querySelectorAll('[data-check]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => {
         const taskId = btn.dataset.check;
-        try {
-          const result = await api('/tasks/check', { method: 'POST', body: { taskId } });
-          if (result.status === 'claimable') {
-            showToast(I18N.t('verifiedNowClaim'));
-            loadTasks();
-          } else if (result.status === 'completed') {
-            loadTasks();
+        if (btn.disabled) return; // already processing, ignore repeat taps
+
+        btn.disabled = true;
+        btn.classList.remove('check');
+        btn.classList.add('processing');
+        btn.textContent = I18N.t('processing') || 'Processing...';
+
+        setTimeout(async () => {
+          try {
+            const result = await api('/tasks/check', { method: 'POST', body: { taskId } });
+            if (result.status === 'claimable') {
+              showToast(I18N.t('verifiedNowClaim'));
+              loadTasks();
+            } else if (result.status === 'completed') {
+              loadTasks();
+            }
+          } catch (e) {
+            showToast(e.message);
+            btn.disabled = false;
+            btn.classList.remove('processing');
+            btn.classList.add('check');
+            btn.textContent = I18N.t('check');
           }
-        } catch (e) { showToast(e.message); }
+        }, 10000);
       });
     });
     container.querySelectorAll('[data-claim]').forEach((btn) => {
