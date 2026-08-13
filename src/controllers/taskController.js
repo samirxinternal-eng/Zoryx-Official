@@ -210,12 +210,25 @@ async function rejectTaskRequest(req, res) {
 }
 
 // ================= Go =================
+// IMPORTANT: only creates/marks the completion as "started" if the user
+// hasn't already progressed on this task. If the task is already claimable,
+// pending_verification, or completed, "Go" just re-opens the link WITHOUT
+// resetting progress - this is what previously allowed unlimited re-claiming
+// (tap Go -> status reset to "started" -> Check -> Claim -> repeat).
 async function startTask(req, res) {
   const telegramId = String(req.tgUser.id);
   const { taskId } = req.body;
 
   const task = await Task.findById(taskId);
   if (!task || !task.active) return res.status(404).json({ error: 'Task not found' });
+
+  const existing = await TaskCompletion.findOne({ userId: telegramId, taskId });
+
+  if (existing && ['claimable', 'pending_verification', 'completed'].includes(existing.status)) {
+    // Already progressed past "started" - don't touch it, just let the
+    // frontend re-open the link. Status stays exactly as it was.
+    return res.json({ ok: true, status: existing.status });
+  }
 
   await TaskCompletion.findOneAndUpdate(
     { userId: telegramId, taskId },
