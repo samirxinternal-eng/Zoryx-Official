@@ -21,4 +21,7 @@ module.exports = {
   removeAdminDone: (id) => `🗑️ ${id}`,
   stats: (users, admins, tasks) => `📊 用户: ${users} | 管理员: ${admins} | 任务: ${tasks}`,
   totalUsersText: (count) => `📊 已启动机器人的总用户数：*${count}*`,
+  checkinReminder: (streak, reward) =>
+    `📅 *签到提醒*\n\n⏰ 你今天还没有签到！\n🔥 当前连续天数： ${streak} 天\n🎁 今日奖励： ${reward} USDT\n\n别忘了每天签到哦！`,
+  checkInNowBtn: `📅 立即签到`,
 };
