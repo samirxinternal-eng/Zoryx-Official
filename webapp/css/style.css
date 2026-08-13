@@ -164,6 +164,15 @@ body::before {
 }
 .task-action-btn.check { background: linear-gradient(135deg, #22c55e, #16a34a); }
 .task-action-btn.done { background: rgba(255,255,255,0.1); color: var(--text-muted); }
+.task-btn-group { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; align-items: stretch; }
+.task-action-btn.small { padding: 6px 10px; font-size: 10px; }
+.brand-mask {
+  display: block; width: 22px; height: 22px;
+  background-color: #fff;
+  -webkit-mask-size: contain; mask-size: contain;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+}
 
 .fab {
   position: fixed;
@@ -278,6 +287,7 @@ body::before {
   font-size: 14px;
 }
 .lang-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.lang-options .lang-option:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .lang-option {
   background: var(--card-bg); border: 1px solid var(--card-border);
   color: var(--text-main); border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 600;
@@ -602,7 +612,7 @@ html[dir="rtl"] .task-info, html[dir="rtl"] .ad-text { text-align: right; }
   font-size: 9px; color: var(--text-muted); text-transform: uppercase;
   letter-spacing: 0.4px; margin-top: 2px; display: block;
 }
-.task-action-btn.verify { order: -1; background: linear-gradient(135deg, #f59e0b, #ea580c); }
+.task-action-btn.verify { background: linear-gradient(135deg, #f59e0b, #ea580c); }
 .task-action-btn.pending { background: rgba(251,191,36,0.15); color: var(--gold); }
 
 /* ===== EVENTS ===== */
@@ -670,4 +680,4 @@ html[dir="rtl"] .task-info, html[dir="rtl"] .ad-text { text-align: right; }
 }
 .reward-popup-sub {
   font-size: 12px; color: var(--text-muted); margin-top: 4px;
-        }
+}
