@@ -5,6 +5,7 @@ const cors = require('cors');
 const connectDB = require('./db');
 const bot = require('./bot/bot');
 const apiRoutes = require('./routes/api');
+const { startCheckinReminderScheduler } = require('./bot/jobs/checkinReminder');
 const { PORT, WEBHOOK_DOMAIN, BOT_TOKEN } = require('./config');
 
 async function main() {
@@ -43,6 +44,9 @@ async function main() {
       console.log('ℹ️ WEBHOOK_DOMAIN not set, starting long polling (dev mode)...');
       bot.launch();
     }
+
+    // daily check-in reminder scheduler
+    startCheckinReminderScheduler(bot);
   });
 }
 
