@@ -8,15 +8,18 @@ const User = require('../src/models/User');
 const { MONGODB_URI } = require('../src/config');
 const { getWeekKey } = require('../src/utils/economy');
 
-const FAKE_NAMES = [
-  'Arif Hasan', 'Nusrat Jahan', 'Rakibul Islam', 'Sadia Afrin', 'Tanvir Ahmed',
-  'Farhana Akter', 'Mahmudul Hasan', 'Sumaiya Islam', 'Rafiul Karim', 'Jannatul Ferdous',
-  'Aditya Sharma', 'Priya Verma', 'Rahul Khan', 'Ayesha Siddiqui', 'Omar Farooq',
-  'Fatima Zahra', 'John Smith', 'Emily Clark', 'David Lee', 'Sophia Turner',
-  'Mizanur Rahman', 'Taslima Begum', 'Shakib Al Hasan', 'Nabila Noor', 'Imran Chowdhury',
-  'Ritu Paul', 'Kamal Uddin', 'Shirin Akhter', 'Mahin Rahman', 'Anika Tabassum',
-  'Yusuf Ali', 'Zainab Khatun', 'Habibur Rahman', 'Marium Akter', 'Rezaul Karim',
-  'Nadia Islam', 'Saiful Islam', 'Tania Sultana', 'Faisal Ahmed', 'Lubna Yasmin',
+const FIRST_NAMES = [
+  'Arif', 'Nusrat', 'Rakibul', 'Sadia', 'Tanvir', 'Farhana', 'Mahmudul', 'Sumaiya',
+  'Rafiul', 'Jannatul', 'Aditya', 'Priya', 'Rahul', 'Ayesha', 'Omar', 'Fatima',
+  'John', 'Emily', 'David', 'Sophia', 'Mizanur', 'Taslima', 'Shakib', 'Nabila',
+  'Imran', 'Ritu', 'Kamal', 'Shirin', 'Mahin', 'Anika', 'Yusuf', 'Zainab',
+  'Habibur', 'Marium', 'Rezaul', 'Nadia', 'Saiful', 'Tania', 'Faisal', 'Lubna',
+];
+
+const LAST_NAMES = [
+  'Hasan', 'Jahan', 'Islam', 'Afrin', 'Ahmed', 'Akter', 'Karim', 'Rahman',
+  'Chowdhury', 'Khan', 'Siddiqui', 'Farooq', 'Zahra', 'Smith', 'Clark', 'Lee',
+  'Turner', 'Begum', 'Al Hasan', 'Noor',
 ];
 
 // Different DiceBear illustrated/styled avatar sets — gives visual variety
@@ -31,6 +34,16 @@ function randomFloat(min, max, decimals = 2) {
 }
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function buildFakeNames(count) {
+  const names = new Set();
+  while (names.size < count) {
+    const f = FIRST_NAMES[randomInt(0, FIRST_NAMES.length - 1)];
+    const l = LAST_NAMES[randomInt(0, LAST_NAMES.length - 1)];
+    names.add(`${f} ${l}`);
+  }
+  return Array.from(names);
 }
 
 // Fetch real human face photos from randomuser.me
@@ -65,8 +78,16 @@ function pickRandomAvatar(telegramId, realFacePool) {
   return `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(telegramId)}`;
 }
 
+const FAKE_NAMES = buildFakeNames(100);
+
 async function run() {
-  await mongoose.connect(MONGODB_URI);
+  // If this script is required from inside the already-running app (e.g. via a temp
+  // admin route), mongoose is already connected — reuse that connection and don't
+  // disconnect it afterwards, or we'd kill the live app's database connection.
+  const alreadyConnected = mongoose.connection.readyState === 1;
+  if (!alreadyConnected) {
+    await mongoose.connect(MONGODB_URI);
+  }
   console.log('Connected to MongoDB, fetching a pool of real profile photos...');
 
   const realFacePool = await fetchRandomUsers(FAKE_NAMES.length);
@@ -101,10 +122,13 @@ async function run() {
   }
 
   console.log(`✅ Seeded ${FAKE_NAMES.length} fake leaderboard users with mixed avatar styles (Tasks / Invites / Weekly).`);
-  await mongoose.disconnect();
+
+  // Only disconnect if we opened the connection ourselves (i.e. running standalone via `npm run seed:fake`)
+  if (!alreadyConnected) {
+    await mongoose.disconnect();
+  }
 }
 
 run().catch((err) => {
   console.error('Seed failed:', err);
-  process.exit(1);
 });
