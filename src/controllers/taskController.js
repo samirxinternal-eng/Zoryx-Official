@@ -249,7 +249,25 @@ async function checkTask(req, res) {
 
   const mode = getVerificationMode(task.platform);
 
-  if (mode === 'auto' && task.channelUsername) {
+  if (mode === 'auto') {
+    // Self-heal: if channelUsername wasn't saved when the task was created
+    // (e.g. the link had a trailing space or query string), try extracting
+    // it again from the stored URL before giving up.
+    if (!task.channelUsername) {
+      const { extractChannelUsername } = require('../utils/extractChannelUsername');
+      const reExtracted = extractChannelUsername(task.url);
+      if (reExtracted) {
+        task.channelUsername = reExtracted;
+        await task.save();
+      }
+    }
+
+    if (!task.channelUsername) {
+      return res.status(400).json({
+        error: 'This channel link could not be verified automatically. Please contact support.',
+      });
+    }
+
     try {
       const member = await bot.telegram.getChatMember(task.channelUsername, telegramId);
       const joined = ['member', 'administrator', 'creator'].includes(member.status);
