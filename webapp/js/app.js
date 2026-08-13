@@ -614,11 +614,11 @@
 
   async function watchAdFlow() {
     try {
-      if (typeof window.showMonetagRewardedAd === 'function') {
-        await window.showMonetagRewardedAd();
+      if (typeof window.show_11539401 === 'function') {
+        await window.show_11539401();
       } else {
         await new Promise((resolve) => setTimeout(resolve, 1500));
-      }
+    }
       const result = await api('/ads/watch', { method: 'POST' });
       document.getElementById('usdtBalance').textContent = Number(result.balanceUSDT).toFixed(3);
       showRewardPopup(result.rewardedUSDT);
