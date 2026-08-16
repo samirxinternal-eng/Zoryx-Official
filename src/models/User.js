@@ -21,7 +21,20 @@ const userSchema = new mongoose.Schema(
     weeklyWeekKey: { type: String, default: null },
     isFake: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
-    awaitingAnnouncement: { type: Boolean, default: false },
+
+    // ==== Admin/Owner broadcast flow state (multi-step /announcement or /announcementimage) ====
+    // null               -> not currently composing a broadcast
+    // 'awaiting_text'    -> /announcement: waiting for the text message
+    // 'awaiting_image'   -> /announcementimage: waiting for the photo
+    // 'awaiting_caption' -> /announcementimage: photo received, waiting for the caption text
+    // 'awaiting_button'  -> waiting for a button link, or /nobutton
+    broadcastStep: {
+      type: String,
+      enum: [null, 'awaiting_text', 'awaiting_image', 'awaiting_caption', 'awaiting_button'],
+      default: null,
+    },
+    broadcastDraftPhotoId: { type: String, default: null }, // Telegram file_id of the uploaded photo
+    broadcastDraftText: { type: String, default: null }, // the text / caption content
   },
   { timestamps: true }
 );
